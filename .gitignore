@@ -1,0 +1,15 @@
+*~
+debian/files
+debian/libglibutil-dev.debhelper.log
+debian/libglibutil-dev.substvars
+debian/libglibutil-dev
+debian/libglibutil.debhelper.log
+debian/libglibutil.postinst.debhelper
+debian/libglibutil.postrm.debhelper
+debian/libglibutil.substvars
+debian/libglibutil
+debian/tmp
+documentation.list
+installroot
+build
+RPMS

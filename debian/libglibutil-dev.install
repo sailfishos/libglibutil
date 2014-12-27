@@ -1,0 +1,3 @@
+debian/tmp/usr/lib/libglibutil.so usr/lib
+include/*.h usr/include/glibutil
+build/libglibutil.pc usr/lib/pkgconfig

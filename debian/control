@@ -1,0 +1,18 @@
+Source: libglibutil
+Section: libs
+Priority: optional
+Maintainer: Slava Monich <slava.monich@jolla.com>
+Build-Depends: debhelper (>= 7), libglib2.0-dev (>= 2.0)
+Standards-Version: 3.8.4
+
+Package: libglibutil
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Library of glib utilities
+
+Package: libglibutil-dev
+Section: libdevel
+Architecture: any
+Depends: libglibutil (= ${binary:Version}), ${misc:Depends}
+Description: Development files for libglibutil
