@@ -1,4 +1,7 @@
 *~
+test/coverage/full.gcov
+test/coverage/libglibutil.gcov
+test/coverage/results
 debian/files
 debian/libglibutil-dev.debhelper.log
 debian/libglibutil-dev.substvars

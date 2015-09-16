@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# This script requires lcov to be installed
+#
+
+TESTS="test_strv"
+FLAVOR="release"
+
+pushd `dirname $0` > /dev/null
+COV_DIR="$PWD"
+pushd .. > /dev/null
+TEST_DIR="$PWD"
+pushd .. > /dev/null
+BASE_DIR="$PWD"
+popd > /dev/null
+popd > /dev/null
+popd > /dev/null
+
+export LD_LIBRARY_PATH="$BASE_DIR/build/$FLAVOR"
+
+make GCOV=1 -C "$BASE_DIR" clean $FLAVOR
+for t in $TESTS ; do
+    pushd "$TEST_DIR/$t"
+    make GCOV=1 -C "$TEST_DIR/$t" clean $FLAVOR || exit 1
+    build/$FLAVOR/$t || exit 1
+    popd
+done
+
+# LCOV 1.10 has branch coverage disabled per default
+LCOV_OPT="--rc lcov_branch_coverage=1"
+GENHTML_OPT="--branch-coverage"
+
+FULL_COV="$COV_DIR/full.gcov"
+GLIBUTIL_COV="$COV_DIR/libglibutil.gcov"
+rm -f "$FULL_COV" "$GLIBUTIL_COV"
+lcov $LCOV_OPT -c -d "$LD_LIBRARY_PATH" -b "$BASE_DIR" -o "$FULL_COV" || exit 1
+lcov $LCOV_OPT -e "$FULL_COV" "$BASE_DIR/src/*" -o "$GLIBUTIL_COV" || exit 1
+genhtml $GENHTML_OPT "$GLIBUTIL_COV" --output-directory "$COV_DIR/results" || exit 1

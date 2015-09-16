@@ -34,7 +34,9 @@ LIB = $(LIB_SONAME).$(VERSION_MINOR).$(VERSION_RELEASE)
 # Sources
 #
 
-SRC = gutil_log.c
+SRC = \
+  gutil_log.c \
+  gutil_strv.c
 
 #
 # Directories
@@ -45,6 +47,19 @@ INCLUDE_DIR = include
 BUILD_DIR = build
 DEBUG_BUILD_DIR = $(BUILD_DIR)/debug
 RELEASE_BUILD_DIR = $(BUILD_DIR)/release
+
+#
+# Code coverage
+#
+
+ifndef GCOV
+GCOV = 0
+endif
+
+ifneq ($(GCOV),0)
+CFLAGS += --coverage
+LDFLAGS += --coverage
+endif
 
 #
 # Tools and flags
@@ -111,6 +126,24 @@ debug: $(DEBUG_LIB) $(DEBUG_LINK)
 release: $(RELEASE_LIB) $(RELEASE_LINK)
 
 pkgconfig: $(PKGCONFIG)
+
+print_debug_lib:
+	@echo $(DEBUG_LIB)
+
+print_release_lib:
+	@echo $(RELEASE_LIB)
+
+print_debug_link:
+	@echo $(DEBUG_LINK)
+
+print_release_link:
+	@echo $(RELEASE_LINK)
+
+print_debug_path:
+	@echo $(DEBUG_BUILD_DIR)
+
+print_release_path:
+	@echo $(RELEASE_BUILD_DIR)
 
 clean:
 	rm -f *~ $(SRC_DIR)/*~ $(INCLUDE_DIR)/*~
