@@ -46,4 +46,4 @@ make -C test test
 %defattr(-,root,root,-)
 %{_libdir}/pkgconfig/*.pc
 %{_libdir}/%{name}.so
-%{_includedir}/glibutil/*.h
+%{_includedir}/gutil/*.h
