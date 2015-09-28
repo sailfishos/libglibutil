@@ -45,6 +45,14 @@ gutil_strv_length(
     gchar** sv);
 
 /**
+ * Returns i-th strings in the array, NULL if index is out of bounds.
+ */
+const char*
+gutil_strv_at(
+    gchar** sv,
+    guint i);
+
+/**
  * Returns index of the specified string in the string array,
  * or -1 if the string is not found.
  */

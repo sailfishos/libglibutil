@@ -40,12 +40,31 @@ gutil_strv_length(
     gchar** sv)
 {
     if (G_LIKELY(sv)) {
-        guint i=0;
+        guint i = 0;
         while (sv[i]) i++;
         return i;
     } else {
         return 0;
     }
+}
+
+/**
+ * Returns i-th strings in the array, NULL if index is out of bounds.
+ */
+const char*
+gutil_strv_at(
+    gchar** sv,
+    guint i)
+{
+    if (G_LIKELY(sv)) {
+        guint k = 0;
+        while (sv[k] && k < i) k++;
+        if (k == i) {
+            /* We also end up here if i == len but that's OK */
+            return sv[k];
+        }
+    }
+    return NULL;
 }
 
 /**

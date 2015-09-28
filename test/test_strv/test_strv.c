@@ -42,6 +42,31 @@ typedef struct test_desc {
 } TestDesc;
 
 /*==========================================================================*
+ * Basic
+ *==========================================================================*/
+
+static
+int
+test_basic()
+{
+    int ret = RET_ERR;
+    char** sv = g_strsplit("a,b", ",", 0);
+
+    if (gutil_strv_length(NULL) == 0 &&
+        gutil_strv_length(sv) == 2 &&
+        !g_strcmp0(gutil_strv_at(sv, 0), "a") &&
+        !g_strcmp0(gutil_strv_at(sv, 1), "b") &&
+        !gutil_strv_at(sv, 2) &&
+        !gutil_strv_at(sv, 3) &&
+        !gutil_strv_at(NULL, 0)) {
+        ret = RET_OK;
+    }
+
+    g_strfreev(sv);
+    return ret;
+}
+
+/*==========================================================================*
  * Equal
  *==========================================================================*/
 
@@ -119,6 +144,9 @@ test_find()
 
 static const TestDesc all_tests[] = {
     {
+        "Basic",
+        test_basic
+    },{
         "Equal",
         test_equal
     },{
