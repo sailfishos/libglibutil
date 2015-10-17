@@ -37,7 +37,7 @@
  */
 guint
 gutil_strv_length(
-    gchar** sv)
+    gchar* const* sv)
 {
     if (G_LIKELY(sv)) {
         guint i = 0;
@@ -53,7 +53,7 @@ gutil_strv_length(
  */
 const char*
 gutil_strv_at(
-    gchar** sv,
+    gchar* const* sv,
     guint i)
 {
     if (G_LIKELY(sv)) {
@@ -73,12 +73,12 @@ gutil_strv_at(
  */
 int
 gutil_strv_find(
-    char** sv,
+    char* const* sv,
     const char* s)
 {
     if (sv && s) {
         int i = 0;
-        char** ptr;
+        char* const* ptr;
         for (ptr = sv; *ptr; ptr++, i++) {
             if (!strcmp(*ptr, s)) {
                 return i;
@@ -93,7 +93,7 @@ gutil_strv_find(
  */
 gboolean
 gutil_strv_contains(
-    char** sv,
+    char* const* sv,
     const char* s)
 {
     return gutil_strv_find(sv, s) >= 0;
@@ -123,8 +123,8 @@ gutil_strv_add(
  */
 gboolean
 gutil_strv_equal(
-    char** sv1,
-    char** sv2)
+    char* const* sv1,
+    char* const* sv2)
 {
     const guint len1 = gutil_strv_length(sv1);
     const guint len2 = gutil_strv_length(sv2);

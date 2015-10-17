@@ -42,14 +42,14 @@ G_BEGIN_DECLS
  */
 guint
 gutil_strv_length(
-    gchar** sv);
+    gchar* const* sv);
 
 /**
  * Returns i-th strings in the array, NULL if index is out of bounds.
  */
 const char*
 gutil_strv_at(
-    gchar** sv,
+    gchar* const* sv,
     guint i);
 
 /**
@@ -58,7 +58,7 @@ gutil_strv_at(
  */
 int
 gutil_strv_find(
-    char** sv,
+    char* const* sv,
     const char* s);
 
 /**
@@ -66,7 +66,7 @@ gutil_strv_find(
  */
 gboolean
 gutil_strv_contains(
-    char** sv,
+    char* const* sv,
     const char* s);
 
 /**
@@ -82,8 +82,8 @@ gutil_strv_add(
  */
 gboolean
 gutil_strv_equal(
-    char** sv1,
-    char** sv2);
+    char* const* sv1,
+    char* const* sv2);
 
 G_END_DECLS
 
