@@ -1,3 +1,9 @@
+libglibutil (1.0.1) unstable; urgency=low
+
+  * Use three-digit version for pkg-config
+
+ -- Slava Monich <slava.monich@jolla.com>  Mon, 16 Nov 2015 14:01:15 +0200
+
 libglibutil (1.0.0) unstable; urgency=low
 
   * Initial release
