@@ -1,3 +1,10 @@
+libglibutil (1.0.2) unstable; urgency=low
+
+  * Makefile cleanup
+  * Removed unnecessary CR from the assert message
+
+ -- Slava Monich <slava.monich@jolla.com>  Thu, 24 Dec 2015 00:33:08 +0200
+
 libglibutil (1.0.1) unstable; urgency=low
 
   * Use three-digit version for pkg-config
