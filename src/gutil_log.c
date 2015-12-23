@@ -335,7 +335,7 @@ gutil_log_assert(
     const char* file,
     int line)
 {
-    gutil_log(module, level, "Assert %s failed at %s:%d\r", expr, file, line);
+    gutil_log(module, level, "Assert %s failed at %s:%d", expr, file, line);
 }
 
 /**
