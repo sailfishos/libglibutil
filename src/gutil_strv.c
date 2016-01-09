@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Jolla Ltd.
+ * Copyright (C) 2014-2016 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -37,7 +37,7 @@
  */
 guint
 gutil_strv_length(
-    gchar* const* sv)
+    const GStrV* sv)
 {
     if (G_LIKELY(sv)) {
         guint i = 0;
@@ -53,7 +53,7 @@ gutil_strv_length(
  */
 const char*
 gutil_strv_at(
-    gchar* const* sv,
+    const GStrV* sv,
     guint i)
 {
     if (G_LIKELY(sv)) {
@@ -73,12 +73,12 @@ gutil_strv_at(
  */
 int
 gutil_strv_find(
-    char* const* sv,
+    const GStrV* sv,
     const char* s)
 {
     if (sv && s) {
         int i = 0;
-        char* const* ptr;
+        const GStrV* ptr;
         for (ptr = sv; *ptr; ptr++, i++) {
             if (!strcmp(*ptr, s)) {
                 return i;
@@ -93,7 +93,7 @@ gutil_strv_find(
  */
 gboolean
 gutil_strv_contains(
-    char* const* sv,
+    const GStrV* sv,
     const char* s)
 {
     return gutil_strv_find(sv, s) >= 0;
@@ -102,14 +102,14 @@ gutil_strv_contains(
 /**
  * Appends new string to the array.
  */
-char**
+GStrV*
 gutil_strv_add(
-    char** sv,
+    GStrV* sv,
     const char* s)
 {
     if (s) {
         const guint len = gutil_strv_length(sv);
-        char** newsv = g_realloc(sv, sizeof(char*)*(len+2));
+        GStrV* newsv = g_realloc(sv, sizeof(char*)*(len+2));
         newsv[len] = g_strdup(s);
         newsv[len+1] = NULL;
         return newsv;
@@ -123,8 +123,8 @@ gutil_strv_add(
  */
 gboolean
 gutil_strv_equal(
-    char* const* sv1,
-    char* const* sv2)
+    const GStrV* sv1,
+    const GStrV* sv2)
 {
     const guint len1 = gutil_strv_length(sv1);
     const guint len2 = gutil_strv_length(sv2);

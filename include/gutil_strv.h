@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Jolla Ltd.
+ * Copyright (C) 2014-2016 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -42,14 +42,14 @@ G_BEGIN_DECLS
  */
 guint
 gutil_strv_length(
-    gchar* const* sv);
+    const GStrV* sv);
 
 /**
  * Returns i-th strings in the array, NULL if index is out of bounds.
  */
 const char*
 gutil_strv_at(
-    gchar* const* sv,
+    const GStrV* sv,
     guint i);
 
 /**
@@ -58,7 +58,7 @@ gutil_strv_at(
  */
 int
 gutil_strv_find(
-    char* const* sv,
+    const GStrV* sv,
     const char* s);
 
 /**
@@ -66,15 +66,15 @@ gutil_strv_find(
  */
 gboolean
 gutil_strv_contains(
-    char* const* sv,
+    const GStrV* sv,
     const char* s);
 
 /**
  * Appends new string to the array.
  */
-char**
+GStrV*
 gutil_strv_add(
-    char** sv,
+    GStrV* sv,
     const char* s);
 
 /**
@@ -82,8 +82,8 @@ gutil_strv_add(
  */
 gboolean
 gutil_strv_equal(
-    char* const* sv1,
-    char* const* sv2);
+    const GStrV* sv1,
+    const GStrV* sv2);
 
 G_END_DECLS
 

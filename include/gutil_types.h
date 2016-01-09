@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Jolla Ltd.
+ * Copyright (C) 2014-2016 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -39,6 +39,7 @@
 #include <stdio.h>
 
 typedef struct glog_module GLogModule;
+typedef char* GStrV;
 
 #endif /* GUTIL_TYPES_H */
 
