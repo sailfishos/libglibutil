@@ -1,4 +1,6 @@
 *~
+test/libglibutil_test.ncb
+test/libglibutil_test.opt
 test/coverage/full.gcov
 test/coverage/libglibutil.gcov
 test/coverage/results

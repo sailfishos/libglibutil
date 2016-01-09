@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Jolla Ltd.
+ * Copyright (C) 2014-2016 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -186,8 +186,11 @@ extern GLogModule GLOG_MODULE_NAME;
 #endif
 
 #ifndef GLOG_VARARGS
-#  define GLOG_VA_NONE(x) static inline void GUTIL_##x(const char* f, ...) {}
-#  define GLOG_VA(x) static inline void GUTIL_##x(const char* f, ...) { \
+#  define GLOG_VA_FN(x) _gutil_log_##x
+#  define GLOG_VA_NONE(x) G_INLINE_FUNC \
+    void GLOG_VA_FN(x)(const char* f, ...) {}
+#  define GLOG_VA(x) G_INLINE_FUNC \
+    void GLOG_VA_FN(x)(const char* f, ...) { \
     if (f && f[0]) {                                                    \
         va_list va; va_start(va,f);                                     \
         gutil_logv(GLOG_MODULE_CURRENT, GLOG_LEVEL_##x, f, va);         \
@@ -247,6 +250,7 @@ gutil_log_assert(
 #  endif /* GUTIL_LOG_ERR */
 #else
 #  define GERR_                 GERR
+#  define GERR                  GLOG_VA_FN(ERR)
 #  if GUTIL_LOG_ERR
      GLOG_VA(ERR)
 #  else
@@ -266,6 +270,7 @@ gutil_log_assert(
 #  endif /* GUTIL_LOGL_WARN */
 #else
 #  define GWARN_                GWARN
+#  define GWARN                 GLOG_VA_FN(WARN)
 #  if GUTIL_LOG_WARN
      GLOG_VA(WARN)
 #  else
@@ -285,6 +290,7 @@ gutil_log_assert(
 #  endif /* GUTIL_LOG_INFO */
 #else
 #  define GINFO_                GINFO
+#  define GINFO                 GLOG_VA_FN(INFO)
 #  if GUTIL_LOG_INFO
      GLOG_VA(INFO)
 #  else
@@ -304,6 +310,7 @@ gutil_log_assert(
 #  endif /* GUTIL_LOG_DEBUG */
 #else
 #  define GDEBUG_               GDEBUG
+#  define GDEBUG                GLOG_VA_FN(DEBUG)
 #  if GUTIL_LOG_DEBUG
      GLOG_VA(DEBUG)
 #  else
@@ -323,6 +330,7 @@ gutil_log_assert(
 #  endif /* GUTIL_LOG_VERBOSE */
 #else
 #  define GVERBOSE_              GVERBOSE
+#  define GVERBOSE               GLOG_VA_FN(VERBOSE)
 #  if GUTIL_LOG_VERBOSE
      GLOG_VA(VERBOSE)
 #  else
