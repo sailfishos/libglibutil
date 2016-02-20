@@ -6,7 +6,7 @@
 # Required packages
 #
 
-PKGS = glib-2.0
+PKGS = glib-2.0 gobject-2.0
 
 #
 # Default target
@@ -43,6 +43,7 @@ LIB = $(LIB_SONAME).$(VERSION_MINOR).$(VERSION_RELEASE)
 
 SRC = \
   gutil_log.c \
+  gutil_misc.c \
   gutil_strv.c
 
 #
