@@ -1,10 +1,10 @@
 Name: libglibutil
-Version: 1.0.4
+Version: 1.0.5
 Release: 0
 Summary: Library of glib utilities
 Group: Development/Libraries
 License: BSD
-URL: https://github.com/nemomobile/libglibutil
+URL: https://git.merproject.org/mer-core/libglibutil
 Source: %{name}-%{version}.tar.bz2
 BuildRequires: glib2-devel >= 2.0
 Requires(post): /sbin/ldconfig
