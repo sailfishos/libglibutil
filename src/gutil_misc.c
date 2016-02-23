@@ -45,7 +45,7 @@ gutil_disconnect_handlers(
         for (i=0; i<count; i++) {
             if (ids[i]) {
                 g_signal_handler_disconnect(instance, ids[i]);
-                ids[0] = 0;
+                ids[i] = 0;
             }
         }
     }
