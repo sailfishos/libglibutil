@@ -135,6 +135,38 @@ test_find()
     GASSERT(!gutil_strv_contains(NULL, NULL));
     if (gutil_strv_contains(NULL, NULL)) ret = RET_ERR;
 
+    g_strfreev(sv);
+    return ret;
+}
+
+/*==========================================================================*
+ * Sort
+ *==========================================================================*/
+
+static
+int
+test_sort()
+{
+    int ret = RET_OK;
+    char** in = g_strsplit("c,a,d,b", ",", 0);
+    char** a1 = g_strsplit("a,b,c,d", ",", 0);
+    char** d1 = g_strsplit("d,c,b,a", ",", 0);
+    char** a2 = gutil_strv_sort(g_strdupv(in), TRUE);
+    char** d2 = gutil_strv_sort(g_strdupv(in), FALSE);
+
+    GASSERT(gutil_strv_equal(a1, a2));
+    if (!gutil_strv_equal(a1, a2)) ret = RET_ERR;
+
+    GASSERT(gutil_strv_equal(d1, d2));
+    if (!gutil_strv_equal(d1, d2)) ret = RET_ERR;
+
+    if (gutil_strv_sort(NULL, FALSE)) ret = RET_ERR;
+
+    g_strfreev(a1);
+    g_strfreev(a2);
+    g_strfreev(d1);
+    g_strfreev(d2);
+    g_strfreev(in);
     return ret;
 }
 
@@ -152,6 +184,9 @@ static const TestDesc all_tests[] = {
     },{
         "Find",
         test_find
+    },{
+        "Sort",
+        test_sort
     }
 };
 

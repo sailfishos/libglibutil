@@ -32,6 +32,8 @@
 
 #include "gutil_strv.h"
 
+#include <stdlib.h>
+
 /**
  * NULL-tolerant version of g_strv_length
  */
@@ -138,6 +140,41 @@ gutil_strv_equal(
         return TRUE;
     }
     return FALSE;
+}
+
+static
+int
+gutil_strv_sort_ascending(
+    const void* p1,
+    const void* p2)
+{
+    return strcmp(*(char**)p1, *(char**)p2);
+}
+
+static
+int
+gutil_strv_sort_descending(
+    const void* p1,
+    const void* p2)
+{
+    return -strcmp(*(char**)p1, *(char**)p2);
+}
+
+/**
+ * Sorts the string array
+ */
+GStrV*
+gutil_strv_sort(
+    GStrV* sv,
+    gboolean ascending)
+{
+    guint len = gutil_strv_length(sv);
+    if (len > 0) {
+        qsort(sv, len, sizeof(char*), ascending ?
+              gutil_strv_sort_ascending :
+              gutil_strv_sort_descending);
+    }
+    return sv;
 }
 
 /*

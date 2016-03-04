@@ -85,6 +85,14 @@ gutil_strv_equal(
     const GStrV* sv1,
     const GStrV* sv2);
 
+/**
+ * Sorts the string array
+ */
+GStrV*
+gutil_strv_sort(
+    GStrV* sv,
+    gboolean ascending);
+
 G_END_DECLS
 
 #endif /* GUTIL_STRV_H */
