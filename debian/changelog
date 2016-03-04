@@ -1,3 +1,10 @@
+libglibutil (1.0.6) unstable; urgency=low
+
+  * Added gutil_strv_sort function
+  * Added gutil_inotify_watch API
+
+ -- Slava Monich <slava.monich@jolla.com>  Sat, 05 Mar 2016 01:13:34 +0200
+
 libglibutil (1.0.5) unstable; urgency=low
 
   * Fixed a bug gutil_disconnect_handlers
