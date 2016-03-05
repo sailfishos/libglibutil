@@ -91,6 +91,10 @@ SOURCE=.\src\gutil_log.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\gutil_misc.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\gutil_strv.c
 # End Source File
 # End Group
@@ -104,6 +108,10 @@ SOURCE=.\include\gutil_log.h
 # Begin Source File
 
 SOURCE=.\include\gutil_macros.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\gutil_misc.h
 # End Source File
 # Begin Source File
 
