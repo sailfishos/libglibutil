@@ -189,8 +189,9 @@ extern GLogModule GLOG_MODULE_NAME;
 #  define GLOG_VA_FN(x) _gutil_log_##x
 #  define GLOG_VA_NONE(x) G_INLINE_FUNC \
     void GLOG_VA_FN(x)(const char* f, ...) {}
-#  define GLOG_VA(x) G_INLINE_FUNC \
-    void GLOG_VA_FN(x)(const char* f, ...) { \
+#  define GLOG_VA(x) GLOG_VA_(GLOG_VA_FN(x),x)
+#  define GLOG_VA_(fn,x) G_INLINE_FUNC \
+    void fn(const char* f, ...) { \
     if (f && f[0]) {                                                    \
         va_list va; va_start(va,f);                                     \
         gutil_logv(GLOG_MODULE_CURRENT, GLOG_LEVEL_##x, f, va);         \
@@ -310,11 +311,11 @@ gutil_log_assert(
 #  endif /* GUTIL_LOG_DEBUG */
 #else
 #  define GDEBUG_               GDEBUG
-#  define GDEBUG                GLOG_VA_FN(DEBUG)
+#  define GDEBUG                GLOG_VA_FN(debug)
 #  if GUTIL_LOG_DEBUG
-     GLOG_VA(DEBUG)
+     GLOG_VA_(GDEBUG,DEBUG)
 #  else
-     GLOG_VA_NONE(DEBUG)
+     GLOG_VA_NONE_(GDEBUG,DEBUG)
 #  endif /* GUTIL_LOG_DEBUG */
 #endif /* GLOG_VARARGS */
 
