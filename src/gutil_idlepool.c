@@ -1,0 +1,229 @@
+/*
+ * Copyright (C) 2016 Jolla Ltd.
+ * Contact: Slava Monich <slava.monich@jolla.com>
+ *
+ * You may use this file under the terms of BSD license as follows:
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *   3. Neither the name of the Jolla Ltd nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <gutil_idlepool.h>
+#include <gutil_log.h>
+
+typedef struct gutil_idle_pool_item GUtilIdlePoolItem;
+
+struct gutil_idle_pool_item {
+    GUtilIdlePoolItem* next;
+    gpointer pointer;
+    GDestroyNotify destroy;
+};
+
+struct gutil_idle_pool {
+    GObject object;
+    guint idle_id;
+    GUtilIdlePoolItem* first;
+    GUtilIdlePoolItem* last;
+};
+
+typedef GObjectClass GUtilIdlePoolClass;
+G_DEFINE_TYPE(GUtilIdlePool, gutil_idle_pool, G_TYPE_OBJECT)
+
+GUtilIdlePool*
+gutil_idle_pool_new()
+{
+    return g_object_new(GUTIL_IDLE_POOL_TYPE, NULL);
+}
+
+GUtilIdlePool*
+gutil_idle_pool_ref(
+    GUtilIdlePool* self)
+{
+    if (G_LIKELY(self)) {
+        g_object_ref(GUTIL_IDLE_POOL(self));
+    }
+    return self;
+}
+
+void
+gutil_idle_pool_unref(
+    GUtilIdlePool* self)
+{
+    if (G_LIKELY(self)) {
+        g_object_unref(GUTIL_IDLE_POOL(self));
+    }
+}
+
+void
+gutil_idle_pool_drain(
+    GUtilIdlePool* self)
+{
+    if (G_LIKELY(self)) {
+        GUtilIdlePoolItem* items = self->first;
+        while (items) {
+            GUtilIdlePoolItem* item = items;
+            self->first = self->last = NULL;
+            while (item) {
+                item->destroy(item->pointer);
+                item = item->next;
+            }
+            g_slice_free_chain(GUtilIdlePoolItem, items, next);
+            items = self->first;
+        }
+        if (self->idle_id) {
+            g_source_remove(self->idle_id);
+            self->idle_id = 0;
+        }
+    }
+}
+
+static
+gboolean
+gutil_idle_pool_idle(
+    gpointer user_data)
+{
+    GUtilIdlePool* self = user_data;
+    self->idle_id = 0;
+    gutil_idle_pool_ref(self);
+    gutil_idle_pool_drain(self);
+    gutil_idle_pool_unref(self);
+    return G_SOURCE_REMOVE;
+}
+
+void
+gutil_idle_pool_add(
+    GUtilIdlePool* self,
+    gpointer pointer,
+    GDestroyNotify destroy)
+{
+    if (G_LIKELY(self) && G_LIKELY(destroy)) {
+        GUtilIdlePoolItem* item = g_slice_new(GUtilIdlePoolItem);
+        item->next = NULL;
+        item->pointer = pointer;
+        item->destroy = destroy;
+        if (self->last) {
+            self->last->next = item;
+        } else {
+            GASSERT(!self->first);
+            self->first = item;
+        }
+        self->last = item;
+        if (!self->idle_id) {
+            self->idle_id = g_idle_add(gutil_idle_pool_idle, self);
+        }
+    }
+}
+
+void
+gutil_idle_pool_add_object(
+    GUtilIdlePool* self,
+    gpointer object)
+{
+    if (G_LIKELY(object)) {
+        gutil_idle_pool_add(self, G_OBJECT(object), g_object_unref);
+    }
+}
+
+void
+gutil_idle_pool_add_variant(
+    GUtilIdlePool* self,
+    GVariant* variant)
+{
+    if (G_LIKELY(variant)) {
+        gutil_idle_pool_add(self, variant, (GDestroyNotify)g_variant_unref);
+    }
+}
+
+void
+gutil_idle_pool_add_ptr_array(
+    GUtilIdlePool* self,
+    GPtrArray* array)
+{
+    if (G_LIKELY(array)) {
+        gutil_idle_pool_add(self, array, (GDestroyNotify)g_ptr_array_unref);
+    }
+}
+
+void
+gutil_idle_pool_add_object_ref(
+    GUtilIdlePool* self,
+    gpointer object)
+{
+    if (G_LIKELY(self) && G_LIKELY(object)) {
+        gutil_idle_pool_add_object(self, g_object_ref(object));
+    }
+}
+
+void
+gutil_idle_pool_add_variant_ref(
+    GUtilIdlePool* self,
+    GVariant* variant)
+{
+    if (G_LIKELY(self) && G_LIKELY(variant)) {
+        gutil_idle_pool_add_variant(self, g_variant_ref(variant));
+    }
+}
+
+void
+gutil_idle_pool_add_ptr_array_ref(
+    GUtilIdlePool* self,
+    GPtrArray* array)
+{
+    if (G_LIKELY(self) && G_LIKELY(array)) {
+        gutil_idle_pool_add_ptr_array(self, g_ptr_array_ref(array));
+    }
+}
+
+static
+void
+gutil_idle_pool_dispose(
+    GObject* object)
+{
+    GUtilIdlePool* self = GUTIL_IDLE_POOL(object);
+    gutil_idle_pool_drain(self);
+    G_OBJECT_CLASS(gutil_idle_pool_parent_class)->dispose(object);
+}
+
+static
+void
+gutil_idle_pool_init(
+    GUtilIdlePool* self)
+{
+}
+
+static
+void gutil_idle_pool_class_init(
+    GUtilIdlePoolClass* klass)
+{
+    G_OBJECT_CLASS(klass)->dispose = gutil_idle_pool_dispose;
+}
+
+/*
+ * Local Variables:
+ * mode: C
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

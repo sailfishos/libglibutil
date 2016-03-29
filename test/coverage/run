@@ -3,7 +3,7 @@
 # This script requires lcov to be installed
 #
 
-TESTS="test_strv"
+TESTS="test_idlepool test_strv"
 FLAVOR="release"
 
 pushd `dirname $0` > /dev/null

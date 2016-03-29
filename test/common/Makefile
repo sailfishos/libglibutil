@@ -18,7 +18,7 @@ endif
 # Required packages
 #
 
-PKGS = glib-2.0
+PKGS += glib-2.0
 
 #
 # Default target
@@ -138,6 +138,9 @@ test_banner:
 
 test: test_banner debug 
 	@LD_LIBRARY_PATH="$(LIB_DIR)/$(DEBUG_LIB_PATH)" $(DEBUG_EXE)
+
+valgrind: test_banner debug
+	@LD_LIBRARY_PATH="$(LIB_DIR)/$(DEBUG_LIB_PATH)" G_DEBUG=gc-friendly G_SLICE=always-malloc valgrind --tool=memcheck --leak-check=full --show-possibly-lost=no $(DEBUG_EXE)
 
 $(DEBUG_BUILD_DIR):
 	mkdir -p $@

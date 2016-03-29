@@ -45,6 +45,7 @@ SRC = \
   gutil_log.c \
   gutil_inotify.c \
   gutil_misc.c \
+  gutil_idlepool.c \
   gutil_strv.c
 
 #
