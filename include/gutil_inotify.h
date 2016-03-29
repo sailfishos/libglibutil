@@ -48,6 +48,11 @@ typedef void
     const char* name,
     void* arg);
 
+GType gutil_inotify_watch_get_type();
+#define GUTIL_INOTIFY_WATCH_TYPE (gutil_inotify_watch_get_type())
+#define GUTIL_INOTIFY_WATCH(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),\
+        GUTIL_INOTIFY_WATCH_TYPE, GUtilInotifyWatch))
+
 GUtilInotifyWatch*
 gutil_inotify_watch_new(
     const char* path,

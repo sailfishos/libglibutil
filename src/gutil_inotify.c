@@ -73,9 +73,6 @@ enum gutil_inotify_watch_signal {
 static guint gutil_inotify_watch_signals[SIGNAL_COUNT] = { 0 };
 
 G_DEFINE_TYPE(GUtilInotifyWatch, gutil_inotify_watch, G_TYPE_OBJECT)
-#define GUTIL_INOTIFY_WATCH_TYPE (gutil_inotify_watch_get_type())
-#define GUTIL_INOTIFY_WATCH(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),\
-	GUTIL_INOTIFY_WATCH_TYPE, GUtilInotifyWatch))
 
 /*==========================================================================*
  * GUtilInotify
@@ -133,8 +130,8 @@ gutil_inotify_read(
         g_error_free(error);
         return FALSE;
     } else {
-	const char* next = self->buf;
-	while (nbytes > 0) {
+        const char* next = self->buf;
+        while (nbytes > 0) {
             const struct inotify_event* event = (void*)next;
             const size_t len = sizeof(struct inotify_event) + event->len;
             const char* path = event->len ? event->name : NULL;
@@ -152,8 +149,8 @@ gutil_inotify_read(
                             event->mask, event->cookie, path);
                     gutil_inotify_watch_unref(watch);
                 }
-		next += len;
-		nbytes -= len;
+                next += len;
+                nbytes -= len;
             }
         }
         return TRUE;
@@ -170,7 +167,7 @@ gutil_inotify_callback(
     GUtilInotify* self = user_data;
     if (condition & (G_IO_NVAL | G_IO_ERR | G_IO_HUP)) {
         self->io_watch_id = 0;
-	return G_SOURCE_REMOVE;
+        return G_SOURCE_REMOVE;
     } else {
         gboolean ok;
         gutil_inotify_ref(self);
@@ -372,13 +369,13 @@ static
 void gutil_inotify_watch_class_init(
     GUtilInotifyWatchClass* klass)
 {
-	GObjectClass* object_class = G_OBJECT_CLASS(klass);
-	object_class->dispose = gutil_inotify_watch_dispose;
-	object_class->finalize = gutil_inotify_watch_finalize;
-	gutil_inotify_watch_signals[SIGNAL_WATCH_EVENT] =
-            g_signal_new(SIGNAL_WATCH_EVENT_NAME, G_OBJECT_CLASS_TYPE(klass),
-                G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
-                3, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_POINTER);
+    GObjectClass* object_class = G_OBJECT_CLASS(klass);
+    object_class->dispose = gutil_inotify_watch_dispose;
+    object_class->finalize = gutil_inotify_watch_finalize;
+    gutil_inotify_watch_signals[SIGNAL_WATCH_EVENT] =
+        g_signal_new(SIGNAL_WATCH_EVENT_NAME, G_OBJECT_CLASS_TYPE(klass),
+            G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
+            G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_POINTER);
 }
 
 /*==========================================================================*
