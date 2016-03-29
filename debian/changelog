@@ -1,3 +1,9 @@
+libglibutil (1.0.7) unstable; urgency=low
+
+  * Added gutil_idle_pool API
+
+ -- Slava Monich <slava.monich@jolla.com>  Tue, 29 Mar 2016 17:29:46 +0300
+
 libglibutil (1.0.6) unstable; urgency=low
 
   * Added gutil_strv_sort function
