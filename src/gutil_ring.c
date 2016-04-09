@@ -175,7 +175,8 @@ gutil_ring_compact(
                 r->alloc = n;
                 r->start = 0;
                 r->end = 0;
-            } else if (r->data) {
+            } else {
+                GASSERT(r->data);
                 g_free(r->data);
                 r->data = NULL;
                 r->alloc = 0;
@@ -262,7 +263,7 @@ gutil_ring_put_front(
 {
     if (gutil_ring_reserve(r, gutil_ring_size(r) + 1)) {
         if (r->start >= 0) {
-            r->start = (r->start ? r->start : r->alloc) - 1;
+            r->start = (r->start + r->alloc - 1) % r->alloc;
         } else {
             r->start = 0;
             r->end = 1;
@@ -298,7 +299,7 @@ gutil_ring_get_last(
 {
     if (G_LIKELY(r) && r->start >= 0) {
         gpointer data;
-        r->end = (r->end ? r->end : r->alloc) - 1;
+        r->end = (r->end + r->alloc - 1) % r->alloc;
         data = r->data[r->end];
         if (r->start == r->end) {
             r->start = r->end = -1;
@@ -306,6 +307,60 @@ gutil_ring_get_last(
         return data;
     }
     return NULL;
+}
+
+gint
+gutil_ring_drop(
+    GUtilRing* r,
+    gint n)
+{
+    int size, dropped = 0;
+    if (n > 0 && (size = gutil_ring_size(r)) > 0) {
+        if (n >= size) {
+            dropped = size;
+            gutil_ring_clear(r);
+        } else {
+            dropped = n;
+            if (r->free_func) {
+                while ((n--) > 0) {
+                    r->free_func(r->data[r->start]);
+                    r->start = (r->start + 1) % r->alloc;
+                    GASSERT(r->start != r->end);
+                }
+            } else {
+                r->start = (r->start + n) % r->alloc;
+                GASSERT(r->start != r->end);
+            }
+        }
+    }
+    return dropped;
+}
+
+gint
+gutil_ring_drop_last(
+    GUtilRing* r,
+    gint n)
+{
+    int size, dropped = 0;
+    if (n > 0 && (size = gutil_ring_size(r)) > 0) {
+        if (n >= size) {
+            dropped = size;
+            gutil_ring_clear(r);
+        } else {
+            dropped = n;
+            if (r->free_func) {
+                while ((n--) > 0) {
+                    r->end = (r->end + r->alloc - 1) % r->alloc;
+                    r->free_func(r->data[r->end]);
+                    GASSERT(r->start != r->end);
+                }
+            } else {
+                r->end = (r->end + r->alloc - n) % r->alloc;
+                GASSERT(r->start != r->end);
+            }
+        }
+    }
+    return dropped;
 }
 
 gpointer

@@ -42,8 +42,8 @@ G_BEGIN_DECLS
  *
  * Note that `get' functions don't invoke the free function on the
  * elements they remove from the ring buffer. The ring buffer only
- * frees the elements it removes internally in gutil_ring_clear or
- * the last gutil_ring_unref.
+ * frees the elements it removes internally in gutil_ring_clear,
+ * gutil_ring_drop functions and the last gutil_ring_unref.
  */
 typedef struct gutil_ring GUtilRing;
 
@@ -115,6 +115,16 @@ gutil_ring_get(
 gpointer
 gutil_ring_get_last(
     GUtilRing* ring);
+
+gint
+gutil_ring_drop(
+    GUtilRing* ring,
+    gint count);
+
+gint
+gutil_ring_drop_last(
+    GUtilRing* ring,
+    gint count);
 
 gpointer
 gutil_ring_data_at(

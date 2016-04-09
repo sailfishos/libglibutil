@@ -64,6 +64,11 @@ test_basic()
         gutil_ring_can_put(NULL, 1) ||
         gutil_ring_put(NULL, NULL) ||
         gutil_ring_put_front(NULL, NULL) ||
+        gutil_ring_get(NULL) ||
+        gutil_ring_data_at(NULL, 0) ||
+        gutil_ring_get_last(NULL) ||
+        gutil_ring_drop(NULL, 1) ||
+        gutil_ring_drop_last(NULL, 1) ||
         gutil_ring_flatten(NULL, NULL)) {
         GDEBUG("NULL test failed");
         ret = RET_ERR;
@@ -80,6 +85,11 @@ test_basic()
         }
     }
 
+    if (gutil_ring_data_at(r, -1) || gutil_ring_data_at(r, n)) {
+        GDEBUG("Unexpected get with invalid index");
+        ret = RET_ERR;
+    }
+
     for (i=0; i<n && ret == RET_OK; i++) {
         if (gutil_ring_data_at(r, i) != GINT_TO_POINTER(i)) {
             GDEBUG("Data peek mismatch");
@@ -88,6 +98,7 @@ test_basic()
     }
 
     for (i=0; i<n && ret == RET_OK; i++) {
+        gutil_ring_flatten(r, NULL);
         gutil_ring_compact(r);
         if (gutil_ring_get(r) != GINT_TO_POINTER(i)) {
             GDEBUG("Data get mismatch");
@@ -95,6 +106,12 @@ test_basic()
         }
     }
 
+    if (gutil_ring_get(r)) {
+        GDEBUG("Data get mismatch 2");
+        ret = RET_ERR;
+    }
+
+    gutil_ring_compact(r);
     gutil_ring_compact(r);
     gutil_ring_unref(r);
     return ret;
@@ -143,6 +160,136 @@ test_put_front()
         }
     }
 
+    if (gutil_ring_get_last(r)) {
+        GDEBUG("Data get mismatch 3");
+        ret = RET_ERR;
+    }
+
+    gutil_ring_unref(r);
+    return ret;
+}
+
+/*==========================================================================*
+ * Drop
+ *==========================================================================*/
+
+int
+test_drop()
+{
+    int i, n = 5, get = 3, drop = 3, ret = RET_OK;
+    GUtilRing* r = gutil_ring_sized_new(0,n);
+
+    /* [01234] */
+    for (i=0; i<n; i++) {
+        gutil_ring_put(r, GINT_TO_POINTER(i));
+    }
+
+    /* ...[34] */
+    for (i=0; i<get && ret == RET_OK; i++) {
+        if (gutil_ring_get(r) != GINT_TO_POINTER(i)) {
+            GDEBUG("Data get mismatch");
+            ret = RET_ERR;
+        }
+    }
+
+    /* 567][34 */
+    for (i=0; i<get; i++) {
+        gutil_ring_put(r, GINT_TO_POINTER(n+i));
+    }
+
+    /* ..[67].. */
+    if (ret == RET_OK) {
+        if (gutil_ring_drop(r, drop) != drop) {
+            GDEBUG("Drop mismatch");
+            ret = RET_ERR;
+        }
+    }
+
+    if (ret == RET_OK) {
+        for (i=0; i<(n-drop) && ret == RET_OK; i++) {
+            if (gutil_ring_get(r) != GINT_TO_POINTER(get+drop+i)) {
+                GDEBUG("Data get mismatch 2");
+                ret = RET_ERR;
+            }
+        }
+    }
+
+    /* Drop more than the size of the buffer (i.e. clear it) */
+    for (i=0; i<n; i++) {
+        gutil_ring_put(r, GINT_TO_POINTER(i));
+    }
+
+    if (gutil_ring_drop(r, 0) != 0 ||
+        gutil_ring_drop(r, n+1) != n ||
+        gutil_ring_drop(r, 1) != 0 ||
+        gutil_ring_size(r) != 0) {
+        GDEBUG("Drop mismatch 2");
+        ret = RET_ERR;
+    }
+
+    gutil_ring_unref(r);
+    return ret;
+}
+
+/*==========================================================================*
+ * DropLast
+ *==========================================================================*/
+
+int
+test_drop_last()
+{
+    int i, n = 5, get = 2, drop = 3, ret = RET_OK;
+    GUtilRing* r = gutil_ring_sized_new(0,n);
+
+    /* [01234] */
+    for (i=0; i<n; i++) {
+        gutil_ring_put(r, GINT_TO_POINTER(i));
+    }
+
+    /* ..[234] */
+    for (i=0; i<get && ret == RET_OK; i++) {
+        if (gutil_ring_get(r) != GINT_TO_POINTER(i)) {
+            GDEBUG("Data get mismatch");
+            ret = RET_ERR;
+        }
+    }
+
+    /* 56][234 */
+    for (i=0; i<get; i++) {
+        gutil_ring_put(r, GINT_TO_POINTER(n+i));
+    }
+
+    /* ..[23]. */
+    if (ret == RET_OK) {
+        if (gutil_ring_drop_last(r, drop) != drop) {
+            GDEBUG("Drop mismatch");
+            ret = RET_ERR;
+        }
+    }
+
+    if (ret == RET_OK) {
+        gutil_ring_flatten(r, NULL);
+        for (i=0; i<(n-drop) && ret == RET_OK; i++) {
+            if (gutil_ring_get(r) != GINT_TO_POINTER(get+i)) {
+                GDEBUG("Data get mismatch 2");
+                ret = RET_ERR;
+            }
+        }
+    }
+
+    /* Drop more than the size of the buffer (i.e. clear it) */
+    for (i=0; i<n; i++) {
+        gutil_ring_put(r, GINT_TO_POINTER(i));
+    }
+
+    if (gutil_ring_drop_last(r, 0) != 0 ||
+        gutil_ring_drop_last(r, n+1) != n ||
+        gutil_ring_drop_last(r, 1) != 0 ||
+        gutil_ring_size(r) != 0) {
+        GDEBUG("Drop mismatch 2");
+        ret = RET_ERR;
+    }
+
     gutil_ring_unref(r);
     return ret;
 }
@@ -157,6 +304,12 @@ test_limit()
     int i, limit = 5, extra = 2, ret = RET_OK;
     GUtilRing* r = gutil_ring_sized_new(2, limit);
 
+    if (!gutil_ring_reserve(r, limit) ||
+        gutil_ring_reserve(r, limit+1)) {
+        GDEBUG("Unexpected reserve bahavior");
+        ret = RET_ERR;
+    }
+
     for (i=0; i<limit && ret == RET_OK; i++) {
         if (!gutil_ring_can_put(r, 1) ||
             !gutil_ring_put(r, GINT_TO_POINTER(i))) {
@@ -168,6 +321,13 @@ test_limit()
     if (gutil_ring_can_put(r, 1)) {
         ret = RET_ERR;
     } else {
+        if (gutil_ring_get_last(r) != GINT_TO_POINTER(limit-1) ||
+            gutil_ring_get_last(r) != GINT_TO_POINTER(limit-2) ||
+            !gutil_ring_put(r, GINT_TO_POINTER(limit-2)) ||
+            !gutil_ring_put(r, GINT_TO_POINTER(limit-1))) {
+            GDEBUG("Data get last mismatch");
+        }
+
         for (i=0; i<extra && ret == RET_OK; i++) {
             if (gutil_ring_get(r) != GINT_TO_POINTER(i)) {
                 GDEBUG("Data get mismatch");
@@ -249,7 +409,9 @@ int
 test_free()
 {
     int data[5];
-    int i, n = G_N_ELEMENTS(data), ret = RET_OK;
+    const int n = G_N_ELEMENTS(data);
+    const int drop = 2;
+    int i, ret = RET_OK;
     GUtilRing* r = gutil_ring_new();
 
     gutil_ring_set_free_func(r, test_free_func);
@@ -258,7 +420,10 @@ test_free()
         gutil_ring_put(r, data + i);
     }
 
+    /* Clear it twice */
     gutil_ring_clear(r);
+    gutil_ring_clear(r);
+
     for (i=0; i<n && ret == RET_OK; i++) {
         if (data[i] != 1) {
             GDEBUG("Free function not called");
@@ -284,6 +449,51 @@ test_free()
         }
     }
 
+    if (ret == RET_OK) {
+        r = gutil_ring_new();
+        gutil_ring_set_free_func(r, test_free_func);
+
+        memset(data, 0, sizeof(data));
+        for (i=0; i<n; i++) {
+            gutil_ring_put(r, data + i);
+        }
+
+        if (gutil_ring_drop(r, drop) != drop ||
+            gutil_ring_drop_last(r, drop) != drop ||
+            gutil_ring_size(r) != (n - 2*drop)) {
+            GDEBUG("Drop failed");
+            ret = RET_ERR;
+        }
+
+        for (i=drop; i<(n-drop); i++) {
+            if (gutil_ring_get(r) != data + i) {
+                GDEBUG("Unexpected get");
+                ret = RET_ERR;
+            }
+        }
+
+        for (i=0; i<n; i++) {
+            if (i < drop) {
+                if (data[i] != 1) {
+                    GDEBUG("Free function not called by drop");
+                    ret = RET_ERR;
+                }
+            } else if (i >= (n-drop)) {
+                if (data[i] != 1) {
+                    GDEBUG("Free function not called by drop last");
+                    ret = RET_ERR;
+                }
+            } else {
+                if (data[i] != 0) {
+                    GDEBUG("Free function called unexpectedly");
+                    ret = RET_ERR;
+                }
+            }
+        }
+
+        gutil_ring_unref(r);
+    }
+
     return ret;
 }
 
@@ -298,6 +508,12 @@ static const TestDesc all_tests[] = {
     },{
         "PutFront",
         test_put_front
+    },{
+        "Drop",
+        test_drop
+    },{
+        "DropLast",
+        test_drop_last
     },{
         "Limit",
         test_limit
