@@ -150,7 +150,7 @@ test_basic(GMainLoop* loop)
     gutil_idle_pool_add(test.pool, &test, test_basic_add_during_drain);
     gutil_idle_pool_unref(test.pool);
 
-    return RET_OK;
+    return test.ret;
 }
 
 /*==========================================================================*
