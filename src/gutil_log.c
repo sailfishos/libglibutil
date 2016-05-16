@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Jolla Ltd.
+ * Copyright (C) 2014-2016 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -52,14 +52,17 @@
 gboolean gutil_log_timestamp = TRUE;
 
 /* Log configuration */
+static GUTIL_DEFINE_LOG_FN2(gutil_log_default_proc);
 GLogProc gutil_log_func = gutil_log_stdout;
+GLogProc2 gutil_log_func2 = gutil_log_default_proc;
 GLogModule gutil_log_default = {
     NULL,               /* name      */
     NULL,               /* parent    */
     NULL,               /* reserved  */
     GLOG_LEVEL_MAX,     /* max_level */
     GLOG_LEVEL_DEFAULT, /* level     */
-    0                   /* flags     */
+    0,                  /* flags     */
+    0                   /* reserved2 */
 };
 
 /* Log level descriptions */
@@ -269,24 +272,46 @@ gutil_log_glib(
 }
 #endif /* GLOG_GLIB */
 
-/* Logging function */
+/**
+ * The caller of this function has already verified that the message needs
+ * to be printed. The default action is to forward it to gutil_log_func.
+ */
+static
 void
-gutil_logv_r(
+gutil_log_default_proc(
     const GLogModule* module,
     int level,
-    const char* prefix,
     const char* format,
     va_list va)
 {
-    if (module->parent && module->level == GLOG_LEVEL_INHERIT) {
-        gutil_logv_r(module->parent, level, prefix, format, va);
+    GLogProc log = gutil_log_func;
+    if (G_LIKELY(log)) {
+        log((module->flags & GLOG_FLAG_HIDE_NAME) ? NULL : module->name,
+            level, format, va);
+    }
+}
+
+/* Logging function */
+static
+void
+gutil_logv_r(
+    const GLogModule* module,
+    const GLogModule* check,
+    int level,
+    const char* format,
+    va_list va)
+{
+    if (check && check->level == GLOG_LEVEL_INHERIT && check->parent) {
+        gutil_logv_r(module, check->parent, level, format, va);
     } else {
-        const int max_level = (module->level == GLOG_LEVEL_INHERIT) ?
-            gutil_log_default.level : module->level;
-        if (level > GLOG_LEVEL_NONE && level <= max_level) {
-            GLogProc log = gutil_log_func;
+        const int max_level = (check && check->level != GLOG_LEVEL_INHERIT) ?
+            check->level : gutil_log_default.level;
+        if ((level > GLOG_LEVEL_NONE && level <= max_level) ||
+            (level == GLOG_LEVEL_ALWAYS)) {
+            GLogProc2 log = gutil_log_func2;
             if (G_LIKELY(log)) {
-                log(prefix, level, format, va);
+                if (!module) module = &gutil_log_default;
+                log(module, level, format, va);
             }
         }
     }
@@ -299,18 +324,8 @@ gutil_logv(
     const char* format,
     va_list va)
 {
-    if (level != GLOG_LEVEL_NONE && gutil_log_func) {
-        if (!module) module = &gutil_log_default;
-        if (G_UNLIKELY(level == GLOG_LEVEL_ALWAYS)) {
-            GLogProc log = gutil_log_func;
-            if (G_LIKELY(log)) {
-                if (level == GLOG_LEVEL_ALWAYS) {
-                    log(module->name, level, format, va);
-                }
-            }
-        } else {
-            gutil_logv_r(module, level, module->name, format, va);
-        }
+    if (level != GLOG_LEVEL_NONE && gutil_log_func2) {
+        gutil_logv_r(module, module, level, format, va);
     }
 }
 
@@ -347,12 +362,13 @@ gutil_log_enabled_r(
     const GLogModule* module,
     int level)
 {
-    if (module->parent && module->level == GLOG_LEVEL_INHERIT) {
+    if (module && module->level == GLOG_LEVEL_INHERIT && module->parent) {
         return gutil_log_enabled_r(module->parent, level);
     } else {
-        const int max_level = (module->level == GLOG_LEVEL_INHERIT) ?
+        const int max_level = (module && module->level == GLOG_LEVEL_INHERIT) ?
             gutil_log_default.level : module->level;
-        return (level > GLOG_LEVEL_NONE && level <= max_level);
+        return (level > GLOG_LEVEL_NONE && level <= max_level) ||
+               (level == GLOG_LEVEL_ALWAYS);
     }
 }
 
@@ -361,13 +377,8 @@ gutil_log_enabled(
     const GLogModule* module,
     int level)
 {
-    if (gutil_log_func) {
-        if (level == GLOG_LEVEL_ALWAYS) {
-            return TRUE;
-        } else if (level > GLOG_LEVEL_NONE) {
-            if (!module) module = &gutil_log_default;
-            return gutil_log_enabled_r(module, level);
-        }
+    if (level != GLOG_LEVEL_NONE && gutil_log_func2) {
+        return gutil_log_enabled_r(module, level);
     }
     return FALSE;
 }

@@ -82,9 +82,11 @@ struct glog_module {
     void* reserved;                 /* Reserved for future expansion */
     const int max_level;            /* Maximum level defined at compile time */
     int level;                      /* Current log level */
-    int flags;                      /* Flags (should be zero) */
+    int flags;                      /* Flags (see below) */
     int reserved2;                  /* Reserved for future expansion */
 };
+
+#define GLOG_FLAG_HIDE_NAME  (0x01) /* Don't print the module name */
 
 /* Command line parsing helper. Option format is [module]:level
  * where level can be either a number or log level name ("none", err etc.) */
@@ -144,6 +146,8 @@ extern const char GLOG_TYPE_SYSLOG[];
 /* Available log handlers */
 #define GUTIL_DEFINE_LOG_FN(fn)  void fn(const char* name, int level, \
     const char* format, va_list va)
+#define GUTIL_DEFINE_LOG_FN2(fn)  void fn(const GLogModule* module, \
+    int level, const char* format, va_list va)
 GUTIL_DEFINE_LOG_FN(gutil_log_stdout);
 GUTIL_DEFINE_LOG_FN(gutil_log_stderr);
 GUTIL_DEFINE_LOG_FN(gutil_log_glib);
@@ -153,7 +157,9 @@ GUTIL_DEFINE_LOG_FN(gutil_log_syslog);
 #define GLOG_MODULE_DECL(m) extern GLogModule m;
 GLOG_MODULE_DECL(gutil_log_default)
 typedef GUTIL_DEFINE_LOG_FN((*GLogProc));
+typedef GUTIL_DEFINE_LOG_FN2((*GLogProc2));
 extern GLogProc gutil_log_func;
+extern GLogProc2 gutil_log_func2;
 extern gboolean gutil_log_timestamp; /* Only affects stdout and stderr */
 
 /* Log module (optional) */
