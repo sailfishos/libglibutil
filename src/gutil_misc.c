@@ -32,8 +32,6 @@
 
 #include "gutil_misc.h"
 
-G_BEGIN_DECLS
-
 void
 gutil_disconnect_handlers(
     gpointer instance,
