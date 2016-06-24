@@ -87,11 +87,19 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\src\gutil_idlepool.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\gutil_log.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\gutil_misc.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\gutil_ring.c
 # End Source File
 # Begin Source File
 
@@ -103,6 +111,10 @@ SOURCE=.\src\gutil_strv.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\include\gutil_idlepool.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\include\gutil_log.h
 # End Source File
 # Begin Source File
@@ -112,6 +124,10 @@ SOURCE=.\include\gutil_macros.h
 # Begin Source File
 
 SOURCE=.\include\gutil_misc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\gutil_ring.h
 # End Source File
 # Begin Source File
 
