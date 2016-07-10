@@ -1,3 +1,9 @@
+libglibutil (1.0.11) unstable; urgency=low
+
+  * Moved GLOG_MODULE_DECL from gutil_log.h to gutil_types.h
+
+ -- Slava Monich <slava.monich@jolla.com>  Sun, 10 Jul 2016 11:46:30 +0300
+
 libglibutil (1.0.10) unstable; urgency=low
 
   * Fixed test_idlepool
