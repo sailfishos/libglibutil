@@ -154,7 +154,6 @@ GUTIL_DEFINE_LOG_FN(gutil_log_glib);
 GUTIL_DEFINE_LOG_FN(gutil_log_syslog);
 
 /* Log configuration */
-#define GLOG_MODULE_DECL(m) extern GLogModule m;
 GLOG_MODULE_DECL(gutil_log_default)
 typedef GUTIL_DEFINE_LOG_FN((*GLogProc));
 typedef GUTIL_DEFINE_LOG_FN2((*GLogProc2));

@@ -38,8 +38,10 @@
 #include <string.h>
 #include <stdio.h>
 
-typedef struct glog_module GLogModule;
 typedef char* GStrV;
+
+#define GLOG_MODULE_DECL(m) extern GLogModule m;
+typedef struct glog_module GLogModule;
 
 #endif /* GUTIL_TYPES_H */
 
