@@ -1,6 +1,6 @@
 # -*- Mode: makefile-gmake -*-
 
-.PHONY: clean all debug release
+.PHONY: clean all debug release test
 
 #
 # Required packages
@@ -157,11 +157,16 @@ print_release_path:
 	@echo $(RELEASE_BUILD_DIR)
 
 clean:
+	make -C test clean
+	rm -fr test/coverage/results test/coverage/*.gcov
 	rm -f *~ $(SRC_DIR)/*~ $(INCLUDE_DIR)/*~
 	rm -fr $(BUILD_DIR) RPMS installroot
 	rm -fr debian/tmp debian/libglibutil debian/libglibutil-dev
 	rm -f documentation.list debian/files debian/*.substvars
 	rm -f debian/*.debhelper.log debian/*.debhelper debian/*~
+
+test:
+	make -C test test
 
 $(GEN_DIR):
 	mkdir -p $@
