@@ -255,6 +255,12 @@ int main(int argc, char* argv[])
         { NULL }
     };
 
+    /* g_type_init has been deprecated since version 2.36
+     * the type system is initialised automagically since then */
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
+    g_type_init();
+    G_GNUC_END_IGNORE_DEPRECATIONS;
+
     options = g_option_context_new("[TEST]");
     g_option_context_add_main_entries(options, entries, NULL);
     if (g_option_context_parse(options, &argc, &argv, &error)) {
