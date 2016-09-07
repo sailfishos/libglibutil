@@ -1,3 +1,12 @@
+libglibutil (1.0.12) unstable; urgency=low
+
+  * Cleaned up debian build
+  * Fixed test_idlepool against glib < 2.36
+  * Added gutil_ring_max_size and gutil_ring_set_max_size
+  * Fixed gutil_ring_flatten behavior with empty ring buffer
+
+ -- Slava Monich <slava.monich@jolla.com>  Wed, 07 Sep 2016 12:43:14 +0300
+
 libglibutil (1.0.11) unstable; urgency=low
 
   * Moved GLOG_MODULE_DECL from gutil_log.h to gutil_types.h
