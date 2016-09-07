@@ -66,7 +66,7 @@ gutil_ring_new_full(
     GUtilRing* r = g_slice_new0(GUtilRing);
     r->ref_count = 1;
     r->start = r->end = -1;
-    r->maxsiz = max_size;
+    r->maxsiz = (max_size < 0) ? GUTIL_RING_UNLIMITED_SIZE : max_size;
     r->free_func = free_func;
     if (reserved_size) {
         r->data = g_new(gpointer, reserved_size);
@@ -114,6 +114,29 @@ gutil_ring_set_free_func(
     if (G_LIKELY(r)) {
         r->free_func = free_func;
     }    
+}
+
+gint
+gutil_ring_max_size(
+    GUtilRing* r)
+{
+    return G_LIKELY(r) ? r->maxsiz : 0;
+}
+
+void
+gutil_ring_set_max_size(
+    GUtilRing* r,
+    gint max_size)
+{
+    /* Normalize the value */
+    if (max_size < 0) max_size = GUTIL_RING_UNLIMITED_SIZE;
+    if (G_LIKELY(r) && r->maxsiz != max_size) {
+        const gint size = gutil_ring_size(r);
+        if (max_size >= 0 && size > max_size) {
+            gutil_ring_drop(r, size - max_size);
+        }
+        r->maxsiz = max_size;
+    }
 }
 
 gint

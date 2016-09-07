@@ -77,6 +77,15 @@ gutil_ring_set_free_func(
     GDestroyNotify free_func);
 
 gint
+gutil_ring_max_size(
+    GUtilRing* ring);
+
+void
+gutil_ring_set_max_size(
+    GUtilRing* ring,
+    gint max_size);
+
+gint
 gutil_ring_size(
     GUtilRing* ring);
 

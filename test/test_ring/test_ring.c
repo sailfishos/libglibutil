@@ -393,6 +393,89 @@ test_limit()
 }
 
 /*==========================================================================*
+ * MaxSize
+ *==========================================================================*/
+
+int
+test_max_size()
+{
+    int i, ret = RET_OK;
+    const int n = 5;
+    GUtilRing* r = gutil_ring_sized_new(0, -2);
+
+    if (gutil_ring_max_size(NULL) != 0 ||
+        gutil_ring_max_size(r) != GUTIL_RING_UNLIMITED_SIZE) {
+        GDEBUG("Unexpected unlimited max size");
+        ret = RET_ERR;
+    }
+
+    gutil_ring_set_max_size(NULL, n); /* This one shouldn't crash */
+    gutil_ring_set_max_size(r, n);
+    for (i=0; i<n; i++) {
+        if (!gutil_ring_put(r, GINT_TO_POINTER(i))) {
+            GDEBUG("Failed to put data");
+            ret = RET_ERR;
+        }
+    }
+    if (gutil_ring_put(r, GINT_TO_POINTER(i))) {
+        GDEBUG("Put unexpectedly succeeded");
+        ret = RET_ERR;
+    }
+    if (gutil_ring_size(r) != n) {
+        GDEBUG("Unexpected ring size");
+        ret = RET_ERR;
+    }
+    gutil_ring_set_max_size(r, n);
+    if (gutil_ring_size(r) != n) {
+        GDEBUG("Unexpected ring size 2");
+        ret = RET_ERR;
+    }
+
+    gutil_ring_set_max_size(r, 2*n);
+    for (i=0; i<n; i++) {
+        if (!gutil_ring_put(r, GINT_TO_POINTER(i+n))) {
+            GDEBUG("Failed to put data 2");
+            ret = RET_ERR;
+        }
+    }
+    if (gutil_ring_put(r, GINT_TO_POINTER(i))) {
+        GDEBUG("Put unexpectedly succeeded");
+        ret = RET_ERR;
+    }
+    if (gutil_ring_size(r) != 2*n) {
+        GDEBUG("Unexpected ring size 3");
+        ret = RET_ERR;
+    }
+
+    gutil_ring_set_max_size(r, n);
+    if (gutil_ring_size(r) != n) {
+        GDEBUG("Unexpected ring size 3");
+        ret = RET_ERR;
+    }
+
+    for (i=0; i<n; i++) {
+        if (gutil_ring_get(r) != GINT_TO_POINTER(i+n)) {
+            GDEBUG("Data get mismatch");
+            ret = RET_ERR;
+        }
+    }
+
+    if (gutil_ring_size(r)) {
+        GDEBUG("Ring is not empty");
+        ret = RET_ERR;
+    }
+
+    gutil_ring_set_max_size(r, -2);
+    if (gutil_ring_max_size(r) != GUTIL_RING_UNLIMITED_SIZE) {
+        GDEBUG("Unexpected unlimited max size 2");
+        ret = RET_ERR;
+    }
+
+    gutil_ring_unref(r);
+    return ret;
+}
+
+/*==========================================================================*
  * Free
  *==========================================================================*/
 
@@ -514,6 +597,9 @@ static const TestDesc all_tests[] = {
     },{
         "DropLast",
         test_drop_last
+    },{
+        "MaxSize",
+        test_max_size
     },{
         "Limit",
         test_limit
