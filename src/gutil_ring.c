@@ -405,7 +405,7 @@ gutil_ring_flatten(
 {
     gpointer* data = NULL;
     gint n = gutil_ring_size(r);
-    if (G_LIKELY(r) && n >= 0) {
+    if (G_LIKELY(r) && n > 0) {
         if (r->start > 0 && r->start >= r->end) {
             gpointer* buf = g_new(gpointer, n); 
             const gint n1 = r->alloc - r->start;

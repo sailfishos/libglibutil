@@ -113,6 +113,13 @@ test_basic()
 
     gutil_ring_compact(r);
     gutil_ring_compact(r);
+
+    gutil_ring_clear(r);
+    if (gutil_ring_flatten(r, &i) || i != 0) {
+        GDEBUG("Flattened data mismatch");
+        ret = RET_ERR;
+    }
+
     gutil_ring_unref(r);
     return ret;
 }
