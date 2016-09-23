@@ -30,23 +30,19 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "test_common.h"
+
 #include "gutil_ring.h"
 #include "gutil_log.h"
-
-#define RET_OK       (0)
-#define RET_ERR      (1)
-
-typedef struct test_desc {
-    const char* name;
-    int (*run)(void);
-} TestDesc;
 
 /*==========================================================================*
  * Basic
  *==========================================================================*/
 
 int
-test_basic()
+test_basic(
+    const TestDesc* test,
+    guint flags)
 {
     int i, n = 5, ret = RET_OK;
     GUtilRing* r = gutil_ring_new();
@@ -129,7 +125,9 @@ test_basic()
  *==========================================================================*/
 
 int
-test_put_front()
+test_put_front(
+    const TestDesc* test,
+    guint flags)
 {
     int i, n = 5, ret = RET_OK;
     GUtilRing* r = gutil_ring_new();
@@ -181,7 +179,9 @@ test_put_front()
  *==========================================================================*/
 
 int
-test_drop()
+test_drop(
+    const TestDesc* test,
+    guint flags)
 {
     int i, n = 5, get = 3, drop = 3, ret = RET_OK;
     GUtilRing* r = gutil_ring_sized_new(0,n);
@@ -243,7 +243,9 @@ test_drop()
  *==========================================================================*/
 
 int
-test_drop_last()
+test_drop_last(
+    const TestDesc* test,
+    guint flags)
 {
     int i, n = 5, get = 2, drop = 3, ret = RET_OK;
     GUtilRing* r = gutil_ring_sized_new(0,n);
@@ -306,7 +308,9 @@ test_drop_last()
  *==========================================================================*/
 
 int
-test_limit()
+test_limit(
+    const TestDesc* test,
+    guint flags)
 {
     int i, limit = 5, extra = 2, ret = RET_OK;
     GUtilRing* r = gutil_ring_sized_new(2, limit);
@@ -404,7 +408,9 @@ test_limit()
  *==========================================================================*/
 
 int
-test_max_size()
+test_max_size(
+    const TestDesc* test,
+    guint flags)
 {
     int i, ret = RET_OK;
     const int n = 5;
@@ -496,7 +502,9 @@ test_free_func(
 }
 
 int
-test_free()
+test_free(
+    const TestDesc* test,
+    guint flags)
 {
     int data[5];
     const int n = G_N_ELEMENTS(data);
@@ -592,102 +600,18 @@ test_free()
  *==========================================================================*/
 
 static const TestDesc all_tests[] = {
-    {
-        "Basic",
-        test_basic
-    },{
-        "PutFront",
-        test_put_front
-    },{
-        "Drop",
-        test_drop
-    },{
-        "DropLast",
-        test_drop_last
-    },{
-        "MaxSize",
-        test_max_size
-    },{
-        "Limit",
-        test_limit
-    },{
-        "Free",
-        test_free
-    }
+    { "Basic", test_basic },
+    { "PutFront", test_put_front },
+    { "Drop", test_drop },
+    { "DropLast", test_drop_last },
+    { "MaxSize", test_max_size },
+    { "Limit", test_limit },
+    { "Free", test_free }
 };
-
-static
-int
-test_run_one(
-    const TestDesc* desc)
-{
-    int ret = desc->run();
-    GINFO("%s: %s", (ret == RET_OK) ? "OK" : "FAILED", desc->name);
-    return ret;
-}
-
-static
-int
-test_run(
-    const char* name)
-{
-    int i, ret;
-    if (name) {
-        const TestDesc* found = NULL;
-        for (i=0, ret = RET_ERR; i<G_N_ELEMENTS(all_tests); i++) {
-            const TestDesc* test = all_tests + i;
-            if (!strcmp(test->name, name)) {
-                ret = test_run_one(test);
-                found = test;
-                break;
-            }
-        }
-        if (!found) GERR("No such test: %s", name);
-    } else {
-        for (i=0, ret = RET_OK; i<G_N_ELEMENTS(all_tests); i++) {
-            int test_status = test_run_one(all_tests + i);
-            if (ret == RET_OK && test_status != RET_OK) ret = test_status;
-        }
-    }
-    return ret;
-}
 
 int main(int argc, char* argv[])
 {
-    int ret = RET_ERR;
-    gboolean verbose = FALSE;
-    GError* error = NULL;
-    GOptionContext* options;
-    GOptionEntry entries[] = {
-        { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-          "Enable verbose output", NULL },
-        { NULL }
-    };
-
-    options = g_option_context_new("[TEST]");
-    g_option_context_add_main_entries(options, entries, NULL);
-    if (g_option_context_parse(options, &argc, &argv, &error)) {
-        gutil_log_timestamp = FALSE;
-        if (verbose) {
-            gutil_log_default.level = GLOG_LEVEL_VERBOSE;
-        }
-
-        if (argc < 2) {
-            ret = test_run(NULL);
-        } else {
-            int i;
-            for (i=1, ret = RET_OK; i<argc; i++) {
-                int test_status =  test_run(argv[i]);
-                if (ret == RET_OK && test_status != RET_OK) ret = test_status;
-            }
-        }
-    } else {
-        fprintf(stderr, "%s\n", GERRMSG(error));
-        g_error_free(error);
-        ret = RET_ERR;
-    }
-    g_option_context_free(options);
-    return ret;
+    return TEST_MAIN(argc, argv, all_tests);
 }
 
 /*

@@ -10,15 +10,14 @@ ifndef EXE
 ${error EXE not defined}
 endif
 
-ifndef SRC
-SRC = $(EXE).c
-endif
+SRC ?= $(EXE).c
+COMMON_SRC ?= test_main.c
 
 #
 # Required packages
 #
 
-PKGS += glib-2.0
+PKGS += gobject-2.0 glib-2.0
 
 #
 # Default target
@@ -89,10 +88,10 @@ RELEASE_CFLAGS = $(FULL_CFLAGS) $(RELEASE_FLAGS) -O2
 #
 
 DEBUG_OBJS = \
-  $(COMMON_SRC:%.c=$(DEBUG_BUILD_DIR)/%.o) \
+  $(COMMON_SRC:%.c=$(DEBUG_BUILD_DIR)/common_%.o) \
   $(SRC:%.c=$(DEBUG_BUILD_DIR)/%.o)
 RELEASE_OBJS = \
-  $(COMMON_SRC:%.c=$(RELEASE_BUILD_DIR)/%.o) \
+  $(COMMON_SRC:%.c=$(RELEASE_BUILD_DIR)/common_%.o) \
   $(SRC:%.c=$(RELEASE_BUILD_DIR)/%.o)
 
 DEBUG_LIB_FILE := $(shell $(QUIET_MAKE) -C $(LIB_DIR) print_debug_lib)
@@ -154,10 +153,10 @@ $(DEBUG_BUILD_DIR)/%.o : $(SRC_DIR)/%.c
 $(RELEASE_BUILD_DIR)/%.o : $(SRC_DIR)/%.c
 	$(CC) -c $(RELEASE_CFLAGS) -MT"$@" -MF"$(@:%.o=%.d)" $< -o $@
 
-$(DEBUG_BUILD_DIR)/%.o : $(COMMON_DIR)/%.c
+$(DEBUG_BUILD_DIR)/common_%.o : $(COMMON_DIR)/%.c
 	$(CC) -c $(DEBUG_CFLAGS) -MT"$@" -MF"$(@:%.o=%.d)" $< -o $@
 
-$(RELEASE_BUILD_DIR)/%.o : $(COMMON_DIR)/%.c
+$(RELEASE_BUILD_DIR)/common_%.o : $(COMMON_DIR)/%.c
 	$(CC) -c $(RELEASE_CFLAGS) -MT"$@" -MF"$(@:%.o=%.d)" $< -o $@
 
 $(DEBUG_EXE): $(DEBUG_LIB) $(DEBUG_BUILD_DIR) $(DEBUG_OBJS)

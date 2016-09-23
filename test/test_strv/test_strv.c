@@ -30,16 +30,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "test_common.h"
+
 #include "gutil_strv.h"
 #include "gutil_log.h"
-
-#define RET_OK       (0)
-#define RET_ERR      (1)
-
-typedef struct test_desc {
-    const char* name;
-    int (*run)();
-} TestDesc;
 
 /*==========================================================================*
  * Basic
@@ -47,7 +41,9 @@ typedef struct test_desc {
 
 static
 int
-test_basic()
+test_basic(
+    const TestDesc* test,
+    guint flags)
 {
     int ret = RET_ERR;
     char** sv = g_strsplit("a,b", ",", 0);
@@ -72,7 +68,9 @@ test_basic()
 
 static
 int
-test_equal()
+test_equal(
+    const TestDesc* test,
+    guint flags)
 {
     int ret = RET_OK;
     /* gutil_strv_add(NULL, NULL) is a nop */
@@ -109,7 +107,9 @@ test_equal()
 
 static
 int
-test_find()
+test_find(
+    const TestDesc* test,
+    guint flags)
 {
     int ret = RET_OK;
     char** sv = g_strsplit("a,b,b,c", ",", 0);
@@ -145,7 +145,9 @@ test_find()
 
 static
 int
-test_remove()
+test_remove(
+    const TestDesc* test,
+    guint flags)
 {
     int ret = RET_OK;
     char** sv = g_strsplit("a,b,c", ",", 0);
@@ -177,7 +179,9 @@ test_remove()
 
 static
 int
-test_sort()
+test_sort(
+    const TestDesc* test,
+    guint flags)
 {
     int ret = RET_OK;
     char** in = g_strsplit("c,a,d,b", ",", 0);
@@ -207,76 +211,16 @@ test_sort()
  *==========================================================================*/
 
 static const TestDesc all_tests[] = {
-    {
-        "Basic",
-        test_basic
-    },{
-        "Equal",
-        test_equal
-    },{
-        "Find",
-        test_find
-    },{
-        "Remove",
-        test_remove
-    },{
-        "Sort",
-        test_sort
-    }
+    { "Basic", test_basic },
+    { "Equal", test_equal },
+    { "Find", test_find },
+    { "Remove", test_remove },
+    { "Sort", test_sort }
 };
-
-static
-int
-test_run_once(
-    const TestDesc* desc)
-{
-    int ret = desc->run(desc);
-    GINFO("%s: %s", (ret == RET_OK) ? "OK" : "FAILED", desc->name);
-    return ret;
-}
-
-static
-int
-test_run(
-    const char* name)
-{
-    int i, ret;
-    if (name) {
-        const TestDesc* found = NULL;
-        for (i=0, ret = RET_ERR; i<G_N_ELEMENTS(all_tests); i++) {
-            const TestDesc* test = all_tests + i;
-            if (!strcmp(test->name, name)) {
-                ret = test_run_once(test);
-                found = test;
-                break;
-            }
-        }
-        if (!found) GERR("No such test: %s", name);
-    } else {
-        for (i=0, ret = RET_OK; i<G_N_ELEMENTS(all_tests); i++) {
-            int test_status = test_run_once(all_tests + i);
-            if (ret == RET_OK && test_status != RET_OK) ret = test_status;
-        }
-    }
-    return ret;
-}
 
 int main(int argc, char* argv[])
 {
-    int ret = RET_ERR;
-    gutil_log_timestamp = FALSE;
-    if (argc < 2) {
-        ret = test_run(NULL);
-    } else if (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
-        printf("Usage: test_strv [TEST]");
-    } else {
-        int i;
-        for (i=1, ret = RET_OK; i<argc; i++) {
-            int test_status =  test_run(argv[i]);
-            if (ret == RET_OK && test_status != RET_OK) ret = test_status;
-        }
-    }
-    return ret;
+    return TEST_MAIN(argc, argv, all_tests);
 }
 
 /*
