@@ -121,6 +121,31 @@ gutil_strv_add(
 }
 
 /**
+ * Removes the string from the specified position in the array.
+ */
+GStrV*
+gutil_strv_remove_at(
+    GStrV* sv,
+    int pos,
+    gboolean free_string)
+{
+    if (G_LIKELY(sv) && G_LIKELY(pos >= 0)) {
+        const int len = gutil_strv_length(sv);
+        if (pos < len) {
+            if (free_string) {
+                g_free(sv[pos]);
+            }
+            if (pos < len-1) {
+                memmove(sv + pos, sv + pos + 1, sizeof(char*)*(len-pos-1));
+            }
+            sv[len-1] = NULL;
+            sv = g_realloc(sv, sizeof(char*)*len);
+        }
+    }
+    return sv;
+}
+
+/**
  * Checks two string arrays for equality.
  */
 gboolean

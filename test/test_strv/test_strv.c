@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Jolla Ltd.
+ * Copyright (C) 2015-2016 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -140,6 +140,38 @@ test_find()
 }
 
 /*==========================================================================*
+ * Remove
+ *==========================================================================*/
+
+static
+int
+test_remove()
+{
+    int ret = RET_OK;
+    char** sv = g_strsplit("a,b,c", ",", 0);
+    char* c = sv[2];
+
+    if (gutil_strv_remove_at(NULL, 0, FALSE) ||
+        gutil_strv_remove_at(sv, 3, FALSE) != sv ||
+        gutil_strv_remove_at(sv, -1, FALSE) != sv) {
+        ret = RET_ERR;
+    }
+
+    sv = gutil_strv_remove_at(sv, 2, FALSE);
+    if (gutil_strv_contains(sv, "c")) ret = RET_ERR;
+
+    sv = gutil_strv_remove_at(sv, 0, TRUE);
+    if (gutil_strv_contains(sv, "a")) ret = RET_ERR;
+
+    GASSERT(gutil_strv_length(sv) == 1);
+    if (gutil_strv_length(sv) != 1) ret = RET_ERR;
+
+    g_free(c);
+    g_strfreev(sv);
+    return ret;
+}
+
+/*==========================================================================*
  * Sort
  *==========================================================================*/
 
@@ -184,6 +216,9 @@ static const TestDesc all_tests[] = {
     },{
         "Find",
         test_find
+    },{
+        "Remove",
+        test_remove
     },{
         "Sort",
         test_sort

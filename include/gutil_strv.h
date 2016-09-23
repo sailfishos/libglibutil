@@ -78,6 +78,15 @@ gutil_strv_add(
     const char* s);
 
 /**
+ * Removes the string from the specified position in the array.
+ */
+GStrV*
+gutil_strv_remove_at(
+    GStrV* sv,
+    int pos,
+    gboolean free_string);
+
+/**
  * Checks two string arrays for equality.
  */
 gboolean
