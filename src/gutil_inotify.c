@@ -252,24 +252,27 @@ gutil_inotify_watch_new(
     const char* path,
     guint32 mask)
 {
-    GUtilInotify* inotify = gutil_inotify_new();
-    if (inotify) {
-        int wd = inotify_add_watch(inotify->fd, path, mask);
-        if (wd >= 0) {
-            GUtilInotifyWatch* self = g_object_new(GUTIL_INOTIFY_WATCH_TYPE,0);
-            self->inotify = inotify;
-            self->wd = wd;
-            self->mask = mask;
-            self->path = g_strdup(path);
-            gutil_inotify_add_watch(inotify, self);
-            return self;
-        } else if (errno == ENOENT) {
-            GDEBUG("%s doesn't exist", path);
-        } else {
-            GERR("Failed to add inotify watch %s mask 0x%04x: %s", path, mask,
-                 strerror(errno));
+    if (G_LIKELY(path)) {
+        GUtilInotify* inotify = gutil_inotify_new();
+        if (G_LIKELY(inotify)) {
+            int wd = inotify_add_watch(inotify->fd, path, mask);
+            if (wd >= 0) {
+                GUtilInotifyWatch* self =
+                    g_object_new(GUTIL_INOTIFY_WATCH_TYPE,0);
+                self->inotify = inotify;
+                self->wd = wd;
+                self->mask = mask;
+                self->path = g_strdup(path);
+                gutil_inotify_add_watch(inotify, self);
+                return self;
+            } else if (errno == ENOENT) {
+                GDEBUG("%s doesn't exist", path);
+            } else {
+                GERR("Failed to add inotify watch %s mask 0x%04x: %s",
+                    path, mask, strerror(errno));
+            }
+            gutil_inotify_unref(inotify);
         }
-        gutil_inotify_unref(inotify);
     }
     return NULL;
 }
