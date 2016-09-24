@@ -85,10 +85,8 @@ GUtilInotify*
 gutil_inotify_ref(
     GUtilInotify* self)
 {
-    if (self) {
-        GASSERT(self->ref_count > 0);
-        g_atomic_int_inc(&self->ref_count);
-    }
+    GASSERT(self->ref_count > 0);
+    g_atomic_int_inc(&self->ref_count);
     return self;
 }
 
@@ -97,21 +95,19 @@ void
 gutil_inotify_unref(
     GUtilInotify* self)
 {
-    if (self) {
-        GASSERT(self->ref_count > 0);
-        if (g_atomic_int_dec_and_test(&self->ref_count)) {
-            if (self->io_watch_id) {
-                g_source_remove(self->io_watch_id);
-            }
-            GASSERT(!g_hash_table_size(self->watches));
-            g_hash_table_destroy(self->watches);
-            g_io_channel_shutdown(self->io_channel, FALSE, NULL);
-            g_io_channel_unref(self->io_channel);
-            close(self->fd);
-            g_free(self);
-            if (gutil_inotify_instance == self) {
-                gutil_inotify_instance = NULL;
-            }
+    GASSERT(self->ref_count > 0);
+    if (g_atomic_int_dec_and_test(&self->ref_count)) {
+        if (self->io_watch_id) {
+            g_source_remove(self->io_watch_id);
+        }
+        GASSERT(!g_hash_table_size(self->watches));
+        g_hash_table_destroy(self->watches);
+        g_io_channel_shutdown(self->io_channel, FALSE, NULL);
+        g_io_channel_unref(self->io_channel);
+        close(self->fd);
+        g_free(self);
+        if (gutil_inotify_instance == self) {
+            gutil_inotify_instance = NULL;
         }
     }
 }
