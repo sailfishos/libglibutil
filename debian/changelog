@@ -1,3 +1,11 @@
+libglibutil (1.0.14) unstable; urgency=low
+
+  * Another check for NULL in gutil_inotify_watch_new
+  * Removed unnecessary checks from gutil_inotify_ref/undef
+  * Added test_inotify
+
+ -- Slava Monich <slava.monich@jolla.com>  Sat, 24 Sep 2016 17:30:39 +0300
+
 libglibutil (1.0.13) unstable; urgency=low
 
   * Added gutil_strv_remove_at
