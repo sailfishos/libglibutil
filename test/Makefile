@@ -3,6 +3,7 @@
 all:
 %:
 	@$(MAKE) -C test_idlepool $*
+	@$(MAKE) -C test_inotify $*
 	@$(MAKE) -C test_misc $*
 	@$(MAKE) -C test_ring $*
 	@$(MAKE) -C test_strv $*
