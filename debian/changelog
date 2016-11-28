@@ -1,3 +1,9 @@
+libglibutil (1.0.15) unstable; urgency=low
+
+  * Added gutil_time_notify API
+
+ -- Slava Monich <slava.monich@jolla.com>  Mon, 28 Nov 2016 19:02:36 +0200
+
 libglibutil (1.0.14) unstable; urgency=low
 
   * Another check for NULL in gutil_inotify_watch_new
