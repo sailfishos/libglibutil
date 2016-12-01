@@ -51,8 +51,8 @@ struct gutil_time_notify {
 };
 
 enum gutil_time_notify_signal {
-	SIGNAL_TIME_CHANGED,
-	SIGNAL_COUNT
+    SIGNAL_TIME_CHANGED,
+    SIGNAL_COUNT
 };
 
 #define SIGNAL_TIME_CHANGED_NAME   "time-changed"
@@ -63,11 +63,11 @@ typedef GObjectClass GUtilTimeNotifyClass;
 G_DEFINE_TYPE(GUtilTimeNotify, gutil_time_notify, G_TYPE_OBJECT)
 #define PARENT_CLASS gutil_time_notify_parent_class
 
-struct gutil_time_notify*
+GUtilTimeNotify*
 gutil_time_notify_new()
 {
     /* There's no need to have more than one instance. */
-    static struct gutil_time_notify *gutil_time_notify_instance = NULL;
+    static GUtilTimeNotify* gutil_time_notify_instance = NULL;
     if (gutil_time_notify_instance) {
         gutil_time_notify_ref(gutil_time_notify_instance);
     } else {
@@ -78,9 +78,9 @@ gutil_time_notify_new()
     return gutil_time_notify_instance;
 }
 
-struct gutil_time_notify*
+GUtilTimeNotify*
 gutil_time_notify_ref(
-    struct gutil_time_notify* self)
+    GUtilTimeNotify* self)
 {
     if (G_LIKELY(self)) {
         g_object_ref(GUTIL_TIME_NOTIFY(self));
@@ -90,7 +90,7 @@ gutil_time_notify_ref(
 
 void
 gutil_time_notify_unref(
-    struct gutil_time_notify* self)
+    GUtilTimeNotify* self)
 {
     if (G_LIKELY(self)) {
         g_object_unref(GUTIL_TIME_NOTIFY(self));
@@ -99,7 +99,7 @@ gutil_time_notify_unref(
 
 gulong
 gutil_time_notify_add_handler(
-    struct gutil_time_notify* self,
+    GUtilTimeNotify* self,
     GUtilTimeNotifyFunc fn,
     void* arg)
 {
@@ -109,7 +109,7 @@ gutil_time_notify_add_handler(
 
 void
 gutil_time_notify_remove_handler(
-    struct gutil_time_notify* self,
+    GUtilTimeNotify* self,
     gulong id)
 {
     if (G_LIKELY(self) && G_LIKELY(id)) {
@@ -124,13 +124,13 @@ gutil_time_notify_callback(
     GIOCondition condition,
     gpointer user_data)
 {
-    struct gutil_time_notify *self = GUTIL_TIME_NOTIFY(user_data);
+    GUtilTimeNotify* self = GUTIL_TIME_NOTIFY(user_data);
     if (condition & (G_IO_NVAL | G_IO_ERR | G_IO_HUP)) {
         self->io_watch_id = 0;
         return G_SOURCE_REMOVE;
     } else {
         gsize bytes_read = 0;
-        GError *error = NULL;
+        GError* error = NULL;
         guint64 exp;
         gutil_time_notify_ref(self);
         g_io_channel_read_chars(self->io_channel, (void*)&exp, sizeof(exp),
@@ -149,7 +149,7 @@ gutil_time_notify_callback(
 static
 void
 gutil_time_notify_init(
-    struct gutil_time_notify *self)
+    GUtilTimeNotify* self)
 {
     const int fd = timerfd_create(CLOCK_REALTIME, 0);
     if (fd >= 0) {
@@ -177,9 +177,9 @@ gutil_time_notify_init(
 static
 void
 gutil_time_notify_finalize(
-    GObject *object)
+    GObject* object)
 {
-    struct gutil_time_notify *self = GUTIL_TIME_NOTIFY(object);
+    GUtilTimeNotify* self = GUTIL_TIME_NOTIFY(object);
     if (self->io_channel) {
         if (self->io_watch_id) {
             g_source_remove(self->io_watch_id);
