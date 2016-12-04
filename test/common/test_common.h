@@ -35,33 +35,18 @@
 
 #include <gutil_types.h>
 
-#define RET_OK         (0)
-#define RET_ERR        (1)
-#define RET_CMDLINE    (2)
-#define RET_NOTFOUND   (3)
-#define RET_TIMEOUT    (4)
-
 #define TEST_FLAG_DEBUG (0x01)
 
-typedef struct test_desc TestDesc;
-struct test_desc {
-    const char* name;
-    int (*run)(const TestDesc* test, guint flags);
-};
+typedef struct test_opt {
+    int flags;
+} TestOpt;
 
-int
-test_main(
+/* Should be invoked after g_test_init */
+void
+test_init(
+    TestOpt* opt,
     int argc,
-    char* argv[],
-    const void* tests,
-    gsize test_size,
-    int test_count,
-    guint flags);
-
-#define TEST_MAIN(argc,argv,tests) \
-    test_main(argc,argv,tests,sizeof(tests[0]),G_N_ELEMENTS(tests),0)
-#define TEST_MAIN_FLAGS(argc,argv,tests,flags) \
-    test_main(argc,argv,tests,sizeof(tests[0]),G_N_ELEMENTS(tests),flags)
+    char* argv[]);
 
 #endif /* TEST_COMMON_H */
 

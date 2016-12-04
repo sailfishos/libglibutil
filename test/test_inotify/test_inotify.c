@@ -41,8 +41,10 @@
 #define TEST_TIMEOUT (10) /* seconds */
 #define TMP_DIR_TEMPLATE "test_inotify_XXXXXX"
 
+static TestOpt test_opt;
+
 typedef struct test_inotify {
-    const TestDesc* desc;
+    const char* name;
     GMainLoop* loop;
     GUtilInotifyWatch* watch1;
     GUtilInotifyWatch* watch2;
@@ -50,16 +52,8 @@ typedef struct test_inotify {
     char* dir2;
     guint timeout_id;
     gboolean array_free_count;
-    int ret;
+    gboolean ok;
 } TestInotify;
-
-typedef struct test_inotify_desc {
-    TestDesc test;
-    size_t alloc;
-    gboolean (*init)(TestInotify* test);
-    void (*deinit)(TestInotify* test);
-    void (*free)(TestInotify* test);
-} TestInotifyDesc;
 
 static
 gboolean
@@ -67,10 +61,61 @@ test_inotify_timeout(
     gpointer param)
 {
     TestInotify* test = param;
-    GERR("%s TIMEOUT", test->desc->name);
+    GERR("%s TIMEOUT", test->name);
     test->timeout_id = 0;
     g_main_loop_quit(test->loop);
     return G_SOURCE_REMOVE;
+}
+
+static
+void
+test_inotify_common(
+    TestInotify* test,
+    gboolean (*init)(TestInotify* test),
+    void (*deinit)(TestInotify* test))
+{
+    const int mask = IN_ALL_EVENTS | IN_ONLYDIR | IN_EXCL_UNLINK;
+
+    test->ok = FALSE;
+    test->dir1 = g_dir_make_tmp(TMP_DIR_TEMPLATE, NULL);
+    test->dir2 = g_dir_make_tmp(TMP_DIR_TEMPLATE, NULL);
+    test->watch1 = gutil_inotify_watch_new(test->dir1, mask);
+    test->watch2 = gutil_inotify_watch_new(test->dir2, mask);
+
+    GDEBUG("%s: directory 1: %s", test->name, test->dir1);
+    GDEBUG("%s: directory 2: %s", test->name, test->dir2);
+
+    /* Initialize the event loop */
+    test->loop = g_main_loop_new(NULL, TRUE);
+    if (!(test_opt.flags & TEST_FLAG_DEBUG)) {
+        test->timeout_id = g_timeout_add_seconds(TEST_TIMEOUT,
+            test_inotify_timeout, test);
+    }
+
+    if (init) {
+        init(test);
+    }
+
+    /* Run the event loop */
+    g_main_loop_run(test->loop);
+
+    if (deinit) {
+        deinit(test);
+    }
+
+    g_assert(test->ok);
+    if (!(test_opt.flags & TEST_FLAG_DEBUG)) {
+        g_assert(test->timeout_id);
+        g_source_remove(test->timeout_id);
+    }
+
+    g_main_loop_unref(test->loop);
+    gutil_inotify_watch_destroy(test->watch1);
+    gutil_inotify_watch_destroy(test->watch2);
+    remove(test->dir1);
+    remove(test->dir2);
+    g_free(test->dir1);
+    g_free(test->dir2);
 }
 
 /*==========================================================================*
@@ -78,42 +123,31 @@ test_inotify_timeout(
  *==========================================================================*/
 
 static
-int
+void
 test_inotify_basic(
-    const TestDesc* desc,
-    guint flags)
+    void)
 {
-    int ret = RET_OK;
     char* dir = g_dir_make_tmp(TMP_DIR_TEMPLATE, NULL);
     GUtilInotifyWatch* watch = gutil_inotify_watch_new(dir, IN_ALL_EVENTS);
 
     /* These have no effect, just testing NULL-telerance */
-    gutil_inotify_watch_new(NULL, 0);
-    gutil_inotify_watch_ref(NULL);
+    g_assert(!gutil_inotify_watch_new(NULL, 0));
+    g_assert(!gutil_inotify_watch_ref(NULL));
     gutil_inotify_watch_unref(NULL);
     gutil_inotify_watch_destroy(NULL);
     gutil_inotify_watch_remove_handler(NULL, 0);
     gutil_inotify_watch_remove_handler(watch, 0);
 
-    if (gutil_inotify_watch_callback_new(NULL, 0, NULL, NULL)) { 
-        ret = RET_ERR;
-    }
-
-    if (gutil_inotify_watch_add_handler(NULL, NULL, NULL) ||
-        gutil_inotify_watch_add_handler(watch, NULL, NULL)) {
-        ret = RET_ERR;
-    }
+    g_assert(!gutil_inotify_watch_callback_new(NULL, 0, NULL, NULL));
+    g_assert(!gutil_inotify_watch_add_handler(NULL, NULL, NULL));
+    g_assert(!gutil_inotify_watch_add_handler(watch, NULL, NULL));
 
     gutil_inotify_watch_destroy(watch);
 
     /* Remove the directory and try to watch it. That should fail */
     remove(dir);
-    if (gutil_inotify_watch_new(dir, IN_ALL_EVENTS)) {
-        ret = RET_ERR;
-    }
-
+    g_assert(!gutil_inotify_watch_new(dir, IN_ALL_EVENTS));
     g_free(dir);
-    return ret;
 }
 
 /*==========================================================================*
@@ -158,7 +192,7 @@ test_inotify_move_to(
     if ((mask & IN_MOVED_TO) && !g_strcmp0(move->fname, name)) {
         GDEBUG("%s moved to %s", name, move->test.dir2);
         if (move->from == 1) {
-            move->test.ret = RET_OK;
+            move->test.ok = TRUE;
             g_main_loop_quit(move->test.loop);
         }
     }
@@ -196,6 +230,19 @@ test_inotify_move_deinit(
     gutil_inotify_watch_remove_handler(test->watch2, move->id2);
     remove(move->dest);
     g_free(move->dest);
+}
+
+static
+void
+test_inotify_move(
+    void)
+{
+    TestInotifyMove move;
+    memset(&move, 0, sizeof(move));
+    move.test.name = "move";
+    test_inotify_common(&move.test,
+        test_inotify_move_init,
+        test_inotify_move_deinit);
 }
 
 /*==========================================================================*
@@ -240,7 +287,7 @@ test_inotify_callback_to(
     if ((mask & IN_MOVED_TO) && !g_strcmp0(cb->fname, name)) {
         GDEBUG("%s moved to %s", name, cb->test.dir2);
         if (cb->from == 1) {
-            cb->test.ret = RET_OK;
+            cb->test.ok = TRUE;
             g_main_loop_quit(cb->test.loop);
         }
     }
@@ -280,92 +327,33 @@ test_inotify_callback_deinit(
     g_free(cb->dest);
 }
 
+static
+void
+test_inotify_callback(
+    void)
+{
+    TestInotifyCallback callback;
+    memset(&callback, 0, sizeof(callback));
+    callback.test.name = "callback";
+    test_inotify_common(&callback.test,
+        test_inotify_callback_init,
+        test_inotify_callback_deinit);
+}
+
 /*==========================================================================*
  * Common
  *==========================================================================*/
 
-static
-int
-test_inotify_common(
-    const TestDesc* desc,
-    guint flags)
-{
-    TestInotifyDesc* test_desc = G_CAST(desc, TestInotifyDesc, test);
-    TestInotify* test = g_malloc0(MAX(test_desc->alloc, sizeof(TestInotify)));
-    const int mask = IN_ALL_EVENTS | IN_ONLYDIR | IN_EXCL_UNLINK;
-    int ret;
-
-    test->ret = RET_ERR;
-    test->desc = desc;
-    test->dir1 = g_dir_make_tmp(TMP_DIR_TEMPLATE, NULL);
-    test->dir2 = g_dir_make_tmp(TMP_DIR_TEMPLATE, NULL);
-    test->watch1 = gutil_inotify_watch_new(test->dir1, mask);
-    test->watch2 = gutil_inotify_watch_new(test->dir2, mask);
-
-    GDEBUG("%s: directory 1: %s", desc->name, test->dir1);
-    GDEBUG("%s: directory 2: %s", desc->name, test->dir2);
-
-    /* Initialize the event loop */
-    test->loop = g_main_loop_new(NULL, TRUE);
-    if (!(flags & TEST_FLAG_DEBUG)) {
-        test->timeout_id = g_timeout_add_seconds(TEST_TIMEOUT,
-            test_inotify_timeout, test);
-    }
-
-    if (!test_desc->init ||
-        test_desc->init(test)) {
-
-        /* Run the event loop */
-        g_main_loop_run(test->loop);
-
-        if (test_desc->deinit) {
-            test_desc->deinit(test);
-        }
-
-        if (test->timeout_id) {
-            g_source_remove(test->timeout_id);
-        } else if (test->ret == RET_OK){
-            test->ret = RET_TIMEOUT;
-        }
-    }
-
-    g_main_loop_unref(test->loop);
-    gutil_inotify_watch_destroy(test->watch1);
-    gutil_inotify_watch_destroy(test->watch2);
-    remove(test->dir1);
-    remove(test->dir2);
-    g_free(test->dir1);
-    g_free(test->dir2);
-
-    ret = test->ret;
-    if (test_desc->free) {
-        test_desc->free(test);
-    } else {
-        g_free(test);
-    }
-                          
-    return ret;
-}
-
-static const TestInotifyDesc all_tests[] = {
-    {
-        { "Basic", test_inotify_basic }
-    },{
-        { "Move", test_inotify_common },
-        sizeof(TestInotifyMove),
-        test_inotify_move_init,
-        test_inotify_move_deinit
-    },{
-        { "Callback", test_inotify_common },
-        sizeof(TestInotifyCallback),
-        test_inotify_callback_init,
-        test_inotify_callback_deinit
-    }
-};
+#define TEST_PREFIX "/inotify/"
 
 int main(int argc, char* argv[])
 {
-    return TEST_MAIN_FLAGS(argc, argv, all_tests, TEST_FLAG_DEBUG);
+    g_test_init(&argc, &argv, NULL);
+    g_test_add_func(TEST_PREFIX "basic", test_inotify_basic);
+    g_test_add_func(TEST_PREFIX "move", test_inotify_move);
+    g_test_add_func(TEST_PREFIX "callback", test_inotify_callback);
+    test_init(&test_opt, argc, argv);
+    return g_test_run();
 }
 
 /*

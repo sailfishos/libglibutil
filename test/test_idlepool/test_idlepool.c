@@ -37,17 +37,18 @@
 
 #define TEST_TIMEOUT (10) /* seconds */
 
+static TestOpt test_opt;
+
 /*==========================================================================*
  * Basic
  *==========================================================================*/
 
 typedef struct test_basic {
-    const TestDesc* desc;
     GMainLoop* loop;
     GUtilIdlePool* pool;
     guint timeout_id;
     gboolean array_free_count;
-    int ret;
+    gboolean ok;
 } TestBasic;
 
 static
@@ -84,7 +85,7 @@ test_basic_last(
 {
     TestBasic* test = param;
     if (test->array_free_count == 1) {
-        test->ret = RET_OK;
+        test->ok = TRUE;
     }
 }
 
@@ -104,17 +105,16 @@ test_basic_timeout(
     gpointer param)
 {
     TestBasic* test = param;
-    GERR("%s TIMEOUT", test->desc->name);
+    GERR("TIMEOUT");
     test->timeout_id = 0;
     g_main_loop_quit(test->loop);
     return G_SOURCE_REMOVE;
 }
 
 static
-int
+void
 test_basic(
-    const TestDesc* desc,
-    guint flags)
+    void)
 {
     GPtrArray* array = g_ptr_array_new_with_free_func(test_basic_array_free);
     GVariant* variant = g_variant_take_ref(g_variant_new_int32(1));
@@ -122,12 +122,10 @@ test_basic(
     TestBasic test;
 
     memset(&test, 0, sizeof(test));
-    test.desc = desc;
     test.loop = g_main_loop_new(NULL, TRUE);
     test.pool = gutil_idle_pool_new();
-    test.ret = RET_ERR;
 
-    if (!(flags & TEST_FLAG_DEBUG)) {
+    if (!(test_opt.flags & TEST_FLAG_DEBUG)) {
         test.timeout_id = g_timeout_add_seconds(TEST_TIMEOUT,
             test_basic_timeout, &test);
     }
@@ -166,27 +164,27 @@ test_basic(
     gutil_idle_pool_add(test.pool, &test, test_basic_add_during_drain);
     gutil_idle_pool_unref(test.pool);
 
-    if (test.timeout_id) {
+    g_assert(test.ok);
+    if (!(test_opt.flags & TEST_FLAG_DEBUG)) {
+        g_assert(test.timeout_id);
         g_source_remove(test.timeout_id);
-    } else if (test.ret == RET_OK){
-        test.ret = RET_TIMEOUT;
     }
 
     g_main_loop_unref(test.loop);
-    return test.ret;
 }
 
 /*==========================================================================*
  * Common
  *==========================================================================*/
 
-static const TestDesc all_tests[] = {
-    { "Basic", test_basic }
-};
+#define TEST_PREFIX "/idlepool/"
 
 int main(int argc, char* argv[])
 {
-    return TEST_MAIN_FLAGS(argc, argv, all_tests, TEST_FLAG_DEBUG);
+    g_test_init(&argc, &argv, NULL);
+    g_test_add_func(TEST_PREFIX "basic", test_basic);
+    test_init(&test_opt, argc, argv);
+    return g_test_run();
 }
 
 /*

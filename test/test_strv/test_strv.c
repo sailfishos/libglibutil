@@ -35,31 +35,28 @@
 #include "gutil_strv.h"
 #include "gutil_log.h"
 
+static TestOpt test_opt;
+
 /*==========================================================================*
  * Basic
  *==========================================================================*/
 
 static
-int
+void
 test_basic(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int ret = RET_ERR;
     char** sv = g_strsplit("a,b", ",", 0);
 
-    if (gutil_strv_length(NULL) == 0 &&
-        gutil_strv_length(sv) == 2 &&
-        !g_strcmp0(gutil_strv_at(sv, 0), "a") &&
-        !g_strcmp0(gutil_strv_at(sv, 1), "b") &&
-        !gutil_strv_at(sv, 2) &&
-        !gutil_strv_at(sv, 3) &&
-        !gutil_strv_at(NULL, 0)) {
-        ret = RET_OK;
-    }
+    g_assert(gutil_strv_length(NULL) == 0);
+    g_assert(gutil_strv_length(sv) == 2);
+    g_assert(!g_strcmp0(gutil_strv_at(sv, 0), "a"));
+    g_assert(!g_strcmp0(gutil_strv_at(sv, 1), "b"));
+    g_assert(!gutil_strv_at(sv, 2));
+    g_assert(!gutil_strv_at(sv, 3));
+    g_assert(!gutil_strv_at(NULL, 0));
 
     g_strfreev(sv);
-    return ret;
 }
 
 /*==========================================================================*
@@ -67,12 +64,10 @@ test_basic(
  *==========================================================================*/
 
 static
-int
+void
 test_equal(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int ret = RET_OK;
     /* gutil_strv_add(NULL, NULL) is a nop */
     char** sv1 = gutil_strv_add(gutil_strv_add(gutil_strv_add(gutil_strv_add(
         gutil_strv_add(gutil_strv_add(NULL, NULL), "a"), "b"), "c"), " "), "");
@@ -81,24 +76,16 @@ test_equal(
     char** sv4 = g_strsplit("a,b,c,,", ",", 0);
     char** sv5 = g_strsplit("a,b,c,", ",", 0);
 
-    GASSERT(gutil_strv_equal(sv1, sv2));
-    if (!gutil_strv_equal(sv1, sv2)) ret = RET_ERR;
-
-    GASSERT(!gutil_strv_equal(sv1, sv3));
-    if (gutil_strv_equal(sv1, sv3)) ret = RET_ERR;
-
-    GASSERT(!gutil_strv_equal(sv1, sv4));
-    if (gutil_strv_equal(sv1, sv4)) ret = RET_ERR;
-
-    GASSERT(!gutil_strv_equal(sv1, sv5));
-    if (gutil_strv_equal(sv1, sv5)) ret = RET_ERR;
+    g_assert(gutil_strv_equal(sv1, sv2));
+    g_assert(!gutil_strv_equal(sv1, sv3));
+    g_assert(!gutil_strv_equal(sv1, sv4));
+    g_assert(!gutil_strv_equal(sv1, sv5));
 
     g_strfreev(sv1);
     g_strfreev(sv2);
     g_strfreev(sv3);
     g_strfreev(sv4);
     g_strfreev(sv5);
-    return ret;
 }
 
 /*==========================================================================*
@@ -106,37 +93,20 @@ test_equal(
  *==========================================================================*/
 
 static
-int
+void
 test_find(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int ret = RET_OK;
     char** sv = g_strsplit("a,b,b,c", ",", 0);
 
-    GASSERT(gutil_strv_contains(sv, "a"));
-    if (!gutil_strv_contains(sv, "a")) ret = RET_ERR;
-
-    GASSERT(gutil_strv_contains(sv, "b"));
-    if (!gutil_strv_contains(sv, "b")) ret = RET_ERR;
-
-    GASSERT(gutil_strv_contains(sv, "c"));
-    if (!gutil_strv_contains(sv, "c")) ret = RET_ERR;
-
-    GASSERT(!gutil_strv_contains(sv, "d"));
-    if (gutil_strv_contains(sv, "d")) ret = RET_ERR;
-
-    GASSERT(gutil_strv_find(sv, "b") == 1);
-    if (gutil_strv_find(sv, "b") != 1) ret = RET_ERR;
-
-    GASSERT(!gutil_strv_contains(NULL, "a"));
-    if (gutil_strv_contains(NULL, "a")) ret = RET_ERR;
-
-    GASSERT(!gutil_strv_contains(NULL, NULL));
-    if (gutil_strv_contains(NULL, NULL)) ret = RET_ERR;
-
+    g_assert(gutil_strv_contains(sv, "a"));
+    g_assert(gutil_strv_contains(sv, "b"));
+    g_assert(gutil_strv_contains(sv, "c"));
+    g_assert(!gutil_strv_contains(sv, "d"));
+    g_assert(gutil_strv_find(sv, "b") == 1);
+    g_assert(!gutil_strv_contains(NULL, "a"));
+    g_assert(!gutil_strv_contains(NULL, NULL));
     g_strfreev(sv);
-    return ret;
 }
 
 /*==========================================================================*
@@ -144,33 +114,26 @@ test_find(
  *==========================================================================*/
 
 static
-int
+void
 test_remove(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int ret = RET_OK;
     char** sv = g_strsplit("a,b,c", ",", 0);
     char* c = sv[2];
 
-    if (gutil_strv_remove_at(NULL, 0, FALSE) ||
-        gutil_strv_remove_at(sv, 3, FALSE) != sv ||
-        gutil_strv_remove_at(sv, -1, FALSE) != sv) {
-        ret = RET_ERR;
-    }
+    g_assert(!gutil_strv_remove_at(NULL, 0, FALSE));
+    g_assert(gutil_strv_remove_at(sv, 3, FALSE) == sv);
+    g_assert(gutil_strv_remove_at(sv, -1, FALSE) == sv);
 
     sv = gutil_strv_remove_at(sv, 2, FALSE);
-    if (gutil_strv_contains(sv, "c")) ret = RET_ERR;
+    g_assert(!gutil_strv_contains(sv, "c"));
 
     sv = gutil_strv_remove_at(sv, 0, TRUE);
-    if (gutil_strv_contains(sv, "a")) ret = RET_ERR;
-
-    GASSERT(gutil_strv_length(sv) == 1);
-    if (gutil_strv_length(sv) != 1) ret = RET_ERR;
+    g_assert(!gutil_strv_contains(sv, "a"));
+    g_assert(gutil_strv_length(sv) == 1);
 
     g_free(c);
     g_strfreev(sv);
-    return ret;
 }
 
 /*==========================================================================*
@@ -178,49 +141,43 @@ test_remove(
  *==========================================================================*/
 
 static
-int
+void
 test_sort(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int ret = RET_OK;
     char** in = g_strsplit("c,a,d,b", ",", 0);
     char** a1 = g_strsplit("a,b,c,d", ",", 0);
     char** d1 = g_strsplit("d,c,b,a", ",", 0);
     char** a2 = gutil_strv_sort(g_strdupv(in), TRUE);
     char** d2 = gutil_strv_sort(g_strdupv(in), FALSE);
 
-    GASSERT(gutil_strv_equal(a1, a2));
-    if (!gutil_strv_equal(a1, a2)) ret = RET_ERR;
-
-    GASSERT(gutil_strv_equal(d1, d2));
-    if (!gutil_strv_equal(d1, d2)) ret = RET_ERR;
-
-    if (gutil_strv_sort(NULL, FALSE)) ret = RET_ERR;
+    g_assert(gutil_strv_equal(a1, a2));
+    g_assert(gutil_strv_equal(d1, d2));
+    g_assert(!gutil_strv_sort(NULL, FALSE));
 
     g_strfreev(a1);
     g_strfreev(a2);
     g_strfreev(d1);
     g_strfreev(d2);
     g_strfreev(in);
-    return ret;
 }
 
 /*==========================================================================*
  * Common
  *==========================================================================*/
 
-static const TestDesc all_tests[] = {
-    { "Basic", test_basic },
-    { "Equal", test_equal },
-    { "Find", test_find },
-    { "Remove", test_remove },
-    { "Sort", test_sort }
-};
+#define TEST_PREFIX "/strv/"
 
 int main(int argc, char* argv[])
 {
-    return TEST_MAIN(argc, argv, all_tests);
+    g_test_init(&argc, &argv, NULL);
+    g_test_add_func(TEST_PREFIX "basic", test_basic);
+    g_test_add_func(TEST_PREFIX "equal", test_equal);
+    g_test_add_func(TEST_PREFIX "find", test_find);
+    g_test_add_func(TEST_PREFIX "remove", test_remove);
+    g_test_add_func(TEST_PREFIX "sort", test_sort);
+    test_init(&test_opt, argc, argv);
+    return g_test_run();
 }
 
 /*

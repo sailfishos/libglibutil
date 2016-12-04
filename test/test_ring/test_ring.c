@@ -35,20 +35,22 @@
 #include "gutil_ring.h"
 #include "gutil_log.h"
 
+static TestOpt test_opt;
+
 /*==========================================================================*
  * Basic
  *==========================================================================*/
 
-int
+static
+void
 test_basic(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int i, n = 5, ret = RET_OK;
+    int i, n = 5;
     GUtilRing* r = gutil_ring_new();
 
     /* Test NULL tolerance */
-    gutil_ring_ref(NULL);
+    g_assert(!gutil_ring_ref(NULL));
     gutil_ring_unref(NULL);
     gutil_ring_set_free_func(NULL, NULL);
     gutil_ring_set_free_func(r, NULL);
@@ -56,134 +58,101 @@ test_basic(
     gutil_ring_clear(NULL);
     gutil_ring_compact(NULL);
     gutil_ring_reserve(NULL, 0);
-    if (gutil_ring_size(NULL) != 0 ||
-        gutil_ring_can_put(NULL, 1) ||
-        gutil_ring_put(NULL, NULL) ||
-        gutil_ring_put_front(NULL, NULL) ||
-        gutil_ring_get(NULL) ||
-        gutil_ring_data_at(NULL, 0) ||
-        gutil_ring_get_last(NULL) ||
-        gutil_ring_drop(NULL, 1) ||
-        gutil_ring_drop_last(NULL, 1) ||
-        gutil_ring_flatten(NULL, NULL)) {
-        GDEBUG("NULL test failed");
-        ret = RET_ERR;
-    }
+    g_assert(!gutil_ring_size(NULL));
+    g_assert(!gutil_ring_can_put(NULL, 1));
+    g_assert(!gutil_ring_put(NULL, NULL));
+    g_assert(!gutil_ring_put_front(NULL, NULL));
+    g_assert(!gutil_ring_get(NULL));
+    g_assert(!gutil_ring_data_at(NULL, 0));
+    g_assert(!gutil_ring_get_last(NULL));
+    g_assert(!gutil_ring_drop(NULL, 1));
+    g_assert(!gutil_ring_drop_last(NULL, 1));
+    g_assert(!gutil_ring_flatten(NULL, NULL));
 
-    gutil_ring_ref(r);
+    g_assert(gutil_ring_ref(r) == r);
     gutil_ring_unref(r);
 
-    for (i=0; i<n && ret == RET_OK; i++) {
-        if (!gutil_ring_can_put(r, 1) ||
-            !gutil_ring_put(r, GINT_TO_POINTER(i))) {
-            GDEBUG("Failed to put data");
-            ret = RET_ERR;
-        }
+    /* Put some data in */
+    for (i=0; i<n; i++) {
+        g_assert(gutil_ring_can_put(r, 1));
+        g_assert(gutil_ring_put(r, GINT_TO_POINTER(i)));
     }
 
-    if (gutil_ring_data_at(r, -1) || gutil_ring_data_at(r, n)) {
-        GDEBUG("Unexpected get with invalid index");
-        ret = RET_ERR;
+    /* Access at invalid index */
+    g_assert(!gutil_ring_data_at(r, -1));
+    g_assert(!gutil_ring_data_at(r, n));
+
+    /* Peek the data */
+    for (i=0; i<n; i++) {
+        g_assert(gutil_ring_data_at(r, i) == GINT_TO_POINTER(i));
     }
 
-    for (i=0; i<n && ret == RET_OK; i++) {
-        if (gutil_ring_data_at(r, i) != GINT_TO_POINTER(i)) {
-            GDEBUG("Data peek mismatch");
-            ret = RET_ERR;
-        }
-    }
-
-    for (i=0; i<n && ret == RET_OK; i++) {
+    /* Get the data */
+    for (i=0; i<n; i++) {
         gutil_ring_flatten(r, NULL);
         gutil_ring_compact(r);
-        if (gutil_ring_get(r) != GINT_TO_POINTER(i)) {
-            GDEBUG("Data get mismatch");
-            ret = RET_ERR;
-        }
+        g_assert(gutil_ring_get(r) == GINT_TO_POINTER(i));
     }
 
-    if (gutil_ring_get(r)) {
-        GDEBUG("Data get mismatch 2");
-        ret = RET_ERR;
-    }
+    /* There should be nothing left */
+    g_assert(!gutil_ring_get(r));
 
     gutil_ring_compact(r);
     gutil_ring_compact(r);
-
     gutil_ring_clear(r);
-    if (gutil_ring_flatten(r, &i) || i != 0) {
-        GDEBUG("Flattened data mismatch");
-        ret = RET_ERR;
-    }
+    g_assert(!gutil_ring_flatten(r, &i));
+    g_assert(!i);
 
     gutil_ring_unref(r);
-    return ret;
 }
 
 /*==========================================================================*
  * PutFront
  *==========================================================================*/
 
-int
+static
+void
 test_put_front(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int i, n = 5, ret = RET_OK;
+    int i, n = 5;
     GUtilRing* r = gutil_ring_new();
 
-    for (i=0; i<n && ret == RET_OK; i++) {
-        if (!gutil_ring_can_put(r, 1) ||
-            !gutil_ring_put_front(r, GINT_TO_POINTER(n-i-1))) {
-            GDEBUG("Failed to put data");
-            ret = RET_ERR;
-        }
+    for (i=0; i<n; i++) {
+        g_assert(gutil_ring_can_put(r, 1));
+        g_assert(gutil_ring_put_front(r, GINT_TO_POINTER(n-i-1)));
     }
 
-    for (i=0; i<n && ret == RET_OK; i++) {
+    for (i=0; i<n; i++) {
         gutil_ring_compact(r);
-        if (gutil_ring_get(r) != GINT_TO_POINTER(i)) {
-            GDEBUG("Data get mismatch");
-            ret = RET_ERR;
-        }
+        g_assert(gutil_ring_get(r) == GINT_TO_POINTER(i));
     }
 
     /* The same but take it out with get_last */
-    for (i=0; i<n && ret == RET_OK; i++) {
-        if (!gutil_ring_can_put(r, 1) ||
-            !gutil_ring_put_front(r, GINT_TO_POINTER(n-i-1))) {
-            GDEBUG("Failed to put data 2");
-            ret = RET_ERR;
-        }
+    for (i=0; i<n; i++) {
+        g_assert(gutil_ring_can_put(r, 1));
+        g_assert(gutil_ring_put_front(r, GINT_TO_POINTER(n-i-1)));
     }
 
-    for (i=0; i<n && ret == RET_OK; i++) {
+    for (i=0; i<n; i++) {
         gutil_ring_compact(r);
-        if (gutil_ring_get_last(r) != GINT_TO_POINTER(n-i-1)) {
-            GDEBUG("Data get mismatch 2");
-            ret = RET_ERR;
-        }
+        g_assert(gutil_ring_get_last(r) == GINT_TO_POINTER(n-i-1));
     }
 
-    if (gutil_ring_get_last(r)) {
-        GDEBUG("Data get mismatch 3");
-        ret = RET_ERR;
-    }
-
+    g_assert(!gutil_ring_get_last(r));
     gutil_ring_unref(r);
-    return ret;
 }
 
 /*==========================================================================*
  * Drop
  *==========================================================================*/
 
-int
+static
+void
 test_drop(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int i, n = 5, get = 3, drop = 3, ret = RET_OK;
+    int i, n = 5, get = 3, drop = 3;
     GUtilRing* r = gutil_ring_sized_new(0,n);
 
     /* [01234] */
@@ -192,11 +161,8 @@ test_drop(
     }
 
     /* ...[34] */
-    for (i=0; i<get && ret == RET_OK; i++) {
-        if (gutil_ring_get(r) != GINT_TO_POINTER(i)) {
-            GDEBUG("Data get mismatch");
-            ret = RET_ERR;
-        }
+    for (i=0; i<get; i++) {
+        g_assert(gutil_ring_get(r) == GINT_TO_POINTER(i));
     }
 
     /* 567][34 */
@@ -205,20 +171,9 @@ test_drop(
     }
 
     /* ..[67].. */
-    if (ret == RET_OK) {
-        if (gutil_ring_drop(r, drop) != drop) {
-            GDEBUG("Drop mismatch");
-            ret = RET_ERR;
-        }
-    }
-
-    if (ret == RET_OK) {
-        for (i=0; i<(n-drop) && ret == RET_OK; i++) {
-            if (gutil_ring_get(r) != GINT_TO_POINTER(get+drop+i)) {
-                GDEBUG("Data get mismatch 2");
-                ret = RET_ERR;
-            }
-        }
+    g_assert(gutil_ring_drop(r, drop) == drop);
+    for (i=0; i<(n-drop); i++) {
+        g_assert(gutil_ring_get(r) == GINT_TO_POINTER(get+drop+i));
     }
 
     /* Drop more than the size of the buffer (i.e. clear it) */
@@ -226,28 +181,24 @@ test_drop(
         gutil_ring_put(r, GINT_TO_POINTER(i));
     }
 
-    if (gutil_ring_drop(r, 0) != 0 ||
-        gutil_ring_drop(r, n+1) != n ||
-        gutil_ring_drop(r, 1) != 0 ||
-        gutil_ring_size(r) != 0) {
-        GDEBUG("Drop mismatch 2");
-        ret = RET_ERR;
-    }
+    g_assert(!gutil_ring_drop(r, 0));
+    g_assert(gutil_ring_drop(r, n+1) == n);
+    g_assert(!gutil_ring_drop(r, 1));
+    g_assert(!gutil_ring_size(r));
 
     gutil_ring_unref(r);
-    return ret;
 }
 
 /*==========================================================================*
  * DropLast
  *==========================================================================*/
 
-int
+static
+void
 test_drop_last(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int i, n = 5, get = 2, drop = 3, ret = RET_OK;
+    int i, n = 5, get = 2, drop = 3;
     GUtilRing* r = gutil_ring_sized_new(0,n);
 
     /* [01234] */
@@ -256,11 +207,8 @@ test_drop_last(
     }
 
     /* ..[234] */
-    for (i=0; i<get && ret == RET_OK; i++) {
-        if (gutil_ring_get(r) != GINT_TO_POINTER(i)) {
-            GDEBUG("Data get mismatch");
-            ret = RET_ERR;
-        }
+    for (i=0; i<get; i++) {
+        g_assert(gutil_ring_get(r) == GINT_TO_POINTER(i));
     }
 
     /* 56][234 */
@@ -269,21 +217,10 @@ test_drop_last(
     }
 
     /* ..[23]. */
-    if (ret == RET_OK) {
-        if (gutil_ring_drop_last(r, drop) != drop) {
-            GDEBUG("Drop mismatch");
-            ret = RET_ERR;
-        }
-    }
-
-    if (ret == RET_OK) {
-        gutil_ring_flatten(r, NULL);
-        for (i=0; i<(n-drop) && ret == RET_OK; i++) {
-            if (gutil_ring_get(r) != GINT_TO_POINTER(get+i)) {
-                GDEBUG("Data get mismatch 2");
-                ret = RET_ERR;
-            }
-        }
+    g_assert(gutil_ring_drop_last(r, drop) == drop);
+    gutil_ring_flatten(r, NULL);
+    for (i=0; i<(n-drop); i++) {
+        g_assert(gutil_ring_get(r) == GINT_TO_POINTER(get+i));
     }
 
     /* Drop more than the size of the buffer (i.e. clear it) */
@@ -291,201 +228,129 @@ test_drop_last(
         gutil_ring_put(r, GINT_TO_POINTER(i));
     }
 
-    if (gutil_ring_drop_last(r, 0) != 0 ||
-        gutil_ring_drop_last(r, n+1) != n ||
-        gutil_ring_drop_last(r, 1) != 0 ||
-        gutil_ring_size(r) != 0) {
-        GDEBUG("Drop mismatch 2");
-        ret = RET_ERR;
-    }
+    g_assert(!gutil_ring_drop_last(r, 0));
+    g_assert(gutil_ring_drop_last(r, n+1) == n);
+    g_assert(!gutil_ring_drop_last(r, 1));
+    g_assert(!gutil_ring_size(r));
 
     gutil_ring_unref(r);
-    return ret;
 }
 
 /*==========================================================================*
  * Limit
  *==========================================================================*/
 
-int
+static
+void
 test_limit(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int i, limit = 5, extra = 2, ret = RET_OK;
+    int i, limit = 5, extra = 2;
+    gint size;
+    gpointer* data;
     GUtilRing* r = gutil_ring_sized_new(2, limit);
 
-    if (!gutil_ring_reserve(r, limit) ||
-        gutil_ring_reserve(r, limit+1)) {
-        GDEBUG("Unexpected reserve bahavior");
-        ret = RET_ERR;
+    g_assert(gutil_ring_reserve(r, limit));
+    g_assert(!gutil_ring_reserve(r, limit+1));
+
+    for (i=0; i<limit; i++) {
+        g_assert(gutil_ring_can_put(r, 1));
+        g_assert(gutil_ring_put(r, GINT_TO_POINTER(i)));
     }
 
-    for (i=0; i<limit && ret == RET_OK; i++) {
-        if (!gutil_ring_can_put(r, 1) ||
-            !gutil_ring_put(r, GINT_TO_POINTER(i))) {
-            GDEBUG("Failed to put data");
-            ret = RET_ERR;
-        }
+    g_assert(!gutil_ring_can_put(r, 1));
+    g_assert(gutil_ring_get_last(r) == GINT_TO_POINTER(limit-1));
+    g_assert(gutil_ring_get_last(r) == GINT_TO_POINTER(limit-2));
+    g_assert(gutil_ring_put(r, GINT_TO_POINTER(limit-2)));
+    g_assert(gutil_ring_put(r, GINT_TO_POINTER(limit-1)));
+
+    for (i=0; i<extra; i++) {
+        g_assert(gutil_ring_get(r) == GINT_TO_POINTER(i));
+        g_assert(gutil_ring_can_put(r, 1));
+        g_assert(gutil_ring_put(r, GINT_TO_POINTER(i+limit)));
     }
 
-    if (gutil_ring_can_put(r, 1)) {
-        ret = RET_ERR;
-    } else {
-        if (gutil_ring_get_last(r) != GINT_TO_POINTER(limit-1) ||
-            gutil_ring_get_last(r) != GINT_TO_POINTER(limit-2) ||
-            !gutil_ring_put(r, GINT_TO_POINTER(limit-2)) ||
-            !gutil_ring_put(r, GINT_TO_POINTER(limit-1))) {
-            GDEBUG("Data get last mismatch");
-        }
+    g_assert(gutil_ring_size(r) == limit);
+    data = gutil_ring_flatten(r, &size);
+    g_assert(data);
+    g_assert(size == limit);
 
-        for (i=0; i<extra && ret == RET_OK; i++) {
-            if (gutil_ring_get(r) != GINT_TO_POINTER(i)) {
-                GDEBUG("Data get mismatch");
-                ret = RET_ERR;
-            }
-            if (!gutil_ring_can_put(r, 1) ||
-                !gutil_ring_put(r, GINT_TO_POINTER(i+limit))) {
-                GDEBUG("Failed to put additional data");
-                ret = RET_ERR;
-            }
-        }
-
-        if (gutil_ring_size(r) != limit) {
-            GDEBUG("Size check failed");
-            ret = RET_ERR;
-        } else {
-            gint size;
-            gpointer* data = gutil_ring_flatten(r, &size);
-            if (size == limit) {
-                for (i=0; i<size && ret == RET_OK; i++) {
-                    if (data[i] != GINT_TO_POINTER(i+extra)) {
-                        GDEBUG("Flattened data mismatch");
-                        ret = RET_ERR;
-                    }
-                }
-                if (gutil_ring_get_last(r) != GINT_TO_POINTER(size+extra-1)) {
-                    GDEBUG("Get last data mismatch");
-                    ret = RET_ERR;
-                } else {
-                    gutil_ring_compact(r);
-                    data = gutil_ring_flatten(r, &size);
-                    if (size == limit-1) {
-                        for (i=0; i<size && ret == RET_OK; i++) {
-                            if (data[i] != GINT_TO_POINTER(i+extra)) {
-                                GDEBUG("Flattened data mismatch");
-                                ret = RET_ERR;
-                            }
-                        }
-                        gutil_ring_clear(r);
-                    }
-                }
-            } else {
-                GDEBUG("Flattened data size check failed");
-                ret = RET_ERR;
-            }
-        }
+    for (i=0; i<size; i++) {
+        g_assert(data[i] == GINT_TO_POINTER(i+extra));
     }
 
-    if (ret == RET_OK) {
-        for (i=0; i<limit; i++) {
-            gutil_ring_put(r, GINT_TO_POINTER(i));
-        }
-        for (i=0; i<limit && ret == RET_OK; i++) {
-            if (gutil_ring_get(r) != GINT_TO_POINTER(i)) {
-                GDEBUG("Data get mismatch 2");
-                ret = RET_ERR;
-            }
-        }
+    g_assert(gutil_ring_get_last(r) == GINT_TO_POINTER(size+extra-1));
+    gutil_ring_compact(r);
+    data = gutil_ring_flatten(r, &size);
+    g_assert(data);
+    g_assert(size == limit-1);
+    for (i=0; i<size; i++) {
+        g_assert(data[i] == GINT_TO_POINTER(i+extra));
+    }
+
+    gutil_ring_clear(r);
+
+    for (i=0; i<limit; i++) {
+        gutil_ring_put(r, GINT_TO_POINTER(i));
+    }
+    
+    for (i=0; i<limit; i++) {
+        g_assert(gutil_ring_get(r) == GINT_TO_POINTER(i));
     }
 
     gutil_ring_unref(r);
-    return ret;
 }
 
 /*==========================================================================*
  * MaxSize
  *==========================================================================*/
 
-int
+static
+void
 test_max_size(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int i, ret = RET_OK;
+    int i;
     const int n = 5;
     GUtilRing* r = gutil_ring_sized_new(0, -2);
 
-    if (gutil_ring_max_size(NULL) != 0 ||
-        gutil_ring_max_size(r) != GUTIL_RING_UNLIMITED_SIZE) {
-        GDEBUG("Unexpected unlimited max size");
-        ret = RET_ERR;
-    }
+    g_assert(!gutil_ring_max_size(NULL));
+    g_assert(gutil_ring_max_size(r) == GUTIL_RING_UNLIMITED_SIZE);
 
     gutil_ring_set_max_size(NULL, n); /* This one shouldn't crash */
     gutil_ring_set_max_size(r, n);
     for (i=0; i<n; i++) {
-        if (!gutil_ring_put(r, GINT_TO_POINTER(i))) {
-            GDEBUG("Failed to put data");
-            ret = RET_ERR;
-        }
-    }
-    if (gutil_ring_put(r, GINT_TO_POINTER(i))) {
-        GDEBUG("Put unexpectedly succeeded");
-        ret = RET_ERR;
-    }
-    if (gutil_ring_size(r) != n) {
-        GDEBUG("Unexpected ring size");
-        ret = RET_ERR;
-    }
-    gutil_ring_set_max_size(r, n);
-    if (gutil_ring_size(r) != n) {
-        GDEBUG("Unexpected ring size 2");
-        ret = RET_ERR;
+        g_assert(gutil_ring_put(r, GINT_TO_POINTER(i)));
     }
 
+    /* The buffer is full, the next put should fail */
+    g_assert(!gutil_ring_put(r, GINT_TO_POINTER(i)));
+    g_assert(gutil_ring_size(r) == n);
+    gutil_ring_set_max_size(r, n);
+    g_assert(gutil_ring_size(r) == n);
+
+    /* Allow more space */
     gutil_ring_set_max_size(r, 2*n);
     for (i=0; i<n; i++) {
-        if (!gutil_ring_put(r, GINT_TO_POINTER(i+n))) {
-            GDEBUG("Failed to put data 2");
-            ret = RET_ERR;
-        }
-    }
-    if (gutil_ring_put(r, GINT_TO_POINTER(i))) {
-        GDEBUG("Put unexpectedly succeeded");
-        ret = RET_ERR;
-    }
-    if (gutil_ring_size(r) != 2*n) {
-        GDEBUG("Unexpected ring size 3");
-        ret = RET_ERR;
+        g_assert(gutil_ring_put(r, GINT_TO_POINTER(i+n)));
     }
 
+    /* The buffer is full again */
+    g_assert(!gutil_ring_put(r, GINT_TO_POINTER(i)));
+    g_assert(gutil_ring_size(r) == 2*n);
+
+    /* Shrink it */
     gutil_ring_set_max_size(r, n);
-    if (gutil_ring_size(r) != n) {
-        GDEBUG("Unexpected ring size 3");
-        ret = RET_ERR;
-    }
-
+    g_assert(gutil_ring_size(r) == n);
     for (i=0; i<n; i++) {
-        if (gutil_ring_get(r) != GINT_TO_POINTER(i+n)) {
-            GDEBUG("Data get mismatch");
-            ret = RET_ERR;
-        }
+        g_assert(gutil_ring_get(r) == GINT_TO_POINTER(i+n));
     }
+    g_assert(!gutil_ring_size(r));
 
-    if (gutil_ring_size(r)) {
-        GDEBUG("Ring is not empty");
-        ret = RET_ERR;
-    }
-
+    /* Negative == unlimited */
     gutil_ring_set_max_size(r, -2);
-    if (gutil_ring_max_size(r) != GUTIL_RING_UNLIMITED_SIZE) {
-        GDEBUG("Unexpected unlimited max size 2");
-        ret = RET_ERR;
-    }
-
+    g_assert(gutil_ring_max_size(r) == GUTIL_RING_UNLIMITED_SIZE);
     gutil_ring_unref(r);
-    return ret;
 }
 
 /*==========================================================================*
@@ -501,15 +366,15 @@ test_free_func(
     (*data)++;
 }
 
-int
+static
+void
 test_free(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
     int data[5];
     const int n = G_N_ELEMENTS(data);
     const int drop = 2;
-    int i, ret = RET_OK;
+    int i;
     GUtilRing* r = gutil_ring_new();
 
     gutil_ring_set_free_func(r, test_free_func);
@@ -522,11 +387,9 @@ test_free(
     gutil_ring_clear(r);
     gutil_ring_clear(r);
 
-    for (i=0; i<n && ret == RET_OK; i++) {
-        if (data[i] != 1) {
-            GDEBUG("Free function not called");
-            ret = RET_ERR;
-        }
+    /* Make sure that test_free_func has been called */
+    for (i=0; i<n; i++) {
+        g_assert(data[i] == 1);
     }
 
     for (i=0; i<n; i++) {
@@ -535,83 +398,62 @@ test_free(
     gutil_ring_get(r);
     gutil_ring_unref(r);
 
-    if (data[0] != 1) {
-        GDEBUG("Free function called unexpectedly");
-        ret = RET_ERR;
-    } else {
-        for (i=1; i<n; i++) {
-            if (data[i] != 2) {
-                GDEBUG("Free function not called by unref");
-                ret = RET_ERR;
-            }
+    /* test_free_func shouldn't be invoked for the element we retreived */
+    g_assert(data[0] == 1);
+    for (i=1; i<n; i++) {
+        g_assert(data[i] == 2);
+    }
+
+    r = gutil_ring_new();
+    gutil_ring_set_free_func(r, test_free_func);
+
+    memset(data, 0, sizeof(data));
+    for (i=0; i<n; i++) {
+        gutil_ring_put(r, data + i);
+    }
+
+    g_assert(gutil_ring_drop(r, drop) == drop);
+    g_assert(gutil_ring_drop_last(r, drop) == drop);
+    g_assert(gutil_ring_size(r) == (n - 2*drop));
+
+    for (i=drop; i<(n-drop); i++) {
+        g_assert(gutil_ring_get(r) == data + i);
+    }
+
+    for (i=0; i<n; i++) {
+        if (i < drop) {
+            /* Invoked by drop */
+            g_assert(data[i] == 1);
+        } else if (i >= (n-drop)) {
+            /* Invoked by drop last */
+            g_assert(data[i] == 1);
+        } else {
+            /* Not invoked for those we have retreived */
+            g_assert(data[i] == 0);
         }
     }
 
-    if (ret == RET_OK) {
-        r = gutil_ring_new();
-        gutil_ring_set_free_func(r, test_free_func);
-
-        memset(data, 0, sizeof(data));
-        for (i=0; i<n; i++) {
-            gutil_ring_put(r, data + i);
-        }
-
-        if (gutil_ring_drop(r, drop) != drop ||
-            gutil_ring_drop_last(r, drop) != drop ||
-            gutil_ring_size(r) != (n - 2*drop)) {
-            GDEBUG("Drop failed");
-            ret = RET_ERR;
-        }
-
-        for (i=drop; i<(n-drop); i++) {
-            if (gutil_ring_get(r) != data + i) {
-                GDEBUG("Unexpected get");
-                ret = RET_ERR;
-            }
-        }
-
-        for (i=0; i<n; i++) {
-            if (i < drop) {
-                if (data[i] != 1) {
-                    GDEBUG("Free function not called by drop");
-                    ret = RET_ERR;
-                }
-            } else if (i >= (n-drop)) {
-                if (data[i] != 1) {
-                    GDEBUG("Free function not called by drop last");
-                    ret = RET_ERR;
-                }
-            } else {
-                if (data[i] != 0) {
-                    GDEBUG("Free function called unexpectedly");
-                    ret = RET_ERR;
-                }
-            }
-        }
-
-        gutil_ring_unref(r);
-    }
-
-    return ret;
+    gutil_ring_unref(r);
 }
 
 /*==========================================================================*
  * Common
  *==========================================================================*/
 
-static const TestDesc all_tests[] = {
-    { "Basic", test_basic },
-    { "PutFront", test_put_front },
-    { "Drop", test_drop },
-    { "DropLast", test_drop_last },
-    { "MaxSize", test_max_size },
-    { "Limit", test_limit },
-    { "Free", test_free }
-};
+#define TEST_PREFIX "/ring/"
 
 int main(int argc, char* argv[])
 {
-    return TEST_MAIN(argc, argv, all_tests);
+    g_test_init(&argc, &argv, NULL);
+    g_test_add_func(TEST_PREFIX "basic", test_basic);
+    g_test_add_func(TEST_PREFIX "put_front", test_put_front);
+    g_test_add_func(TEST_PREFIX "drop", test_drop);
+    g_test_add_func(TEST_PREFIX "drop_last", test_drop_last);
+    g_test_add_func(TEST_PREFIX "max_size", test_max_size);
+    g_test_add_func(TEST_PREFIX "limit", test_limit);
+    g_test_add_func(TEST_PREFIX "free", test_free);
+    test_init(&test_opt, argc, argv);
+    return g_test_run();
 }
 
 /*

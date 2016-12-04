@@ -35,6 +35,8 @@
 #include "gutil_misc.h"
 #include "gutil_log.h"
 
+static TestOpt test_opt;
+
 /*==========================================================================*
  * Basic
  *==========================================================================*/
@@ -49,12 +51,10 @@ test_notify(
 }
 
 static
-int
+void
 test_basic(
-    const TestDesc* test,
-    guint flags)
+    void)
 {
-    int ret = RET_OK;
     gulong id[2];
     GObject* obj = g_object_new(G_TYPE_OBJECT, NULL);
 
@@ -68,31 +68,29 @@ test_basic(
 
     /* gutil_disconnect_handlers zeros the ids */
     gutil_disconnect_handlers(obj, id, G_N_ELEMENTS(id));
-    if (id[0] || id[1]) {
-        ret = RET_ERR;
-    }
+    g_assert(!id[0]);
+    g_assert(!id[1]);
 
     /* Second time has no effect */
     gutil_disconnect_handlers(obj, id, G_N_ELEMENTS(id));
-    if (id[0] || id[1]) {
-        ret = RET_ERR;
-    }
+    g_assert(!id[0]);
+    g_assert(!id[1]);
 
     g_object_unref(obj);
-    return ret;
 }
 
 /*==========================================================================*
  * Common
  *==========================================================================*/
 
-static const TestDesc all_tests[] = {
-    { "Basic", test_basic },
-};
+#define TEST_PREFIX "/misc/"
 
 int main(int argc, char* argv[])
 {
-    return TEST_MAIN(argc, argv, all_tests);
+    g_test_init(&argc, &argv, NULL);
+    g_test_add_func(TEST_PREFIX "basic", test_basic);
+    test_init(&test_opt, argc, argv);
+    return g_test_run();
 }
 
 /*
