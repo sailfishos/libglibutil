@@ -1,3 +1,9 @@
+libglibutil (1.0.16) unstable; urgency=low
+
+  * Switched to glib test framework
+
+ -- Slava Monich <slava.monich@jolla.com>  Mon, 05 Dec 2016 18:07:41 +0200
+
 libglibutil (1.0.15) unstable; urgency=low
 
   * Added gutil_time_notify API
