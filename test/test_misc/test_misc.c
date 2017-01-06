@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Jolla Ltd.
+ * Copyright (C) 2016-2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -33,6 +33,7 @@
 #include "test_common.h"
 
 #include "gutil_misc.h"
+#include "gutil_idlepool.h"
 #include "gutil_log.h"
 
 static TestOpt test_opt;
@@ -56,7 +57,7 @@ test_basic(
     void)
 {
     gulong id[2];
-    GObject* obj = g_object_new(G_TYPE_OBJECT, NULL);
+    GObject* obj = g_object_new(GUTIL_IDLE_POOL_TYPE, NULL);
 
     /* These have no effect */
     gutil_disconnect_handlers(NULL, id, G_N_ELEMENTS(id));
@@ -87,6 +88,9 @@ test_basic(
 
 int main(int argc, char* argv[])
 {
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
+    g_type_init();
+    G_GNUC_END_IGNORE_DEPRECATIONS;
     g_test_init(&argc, &argv, NULL);
     g_test_add_func(TEST_PREFIX "basic", test_basic);
     test_init(&test_opt, argc, argv);

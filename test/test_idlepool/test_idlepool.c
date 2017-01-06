@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Jolla Ltd.
+ * Copyright (C) 2016-2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -118,7 +118,7 @@ test_basic(
 {
     GPtrArray* array = g_ptr_array_new_with_free_func(test_basic_array_free);
     GVariant* variant = g_variant_take_ref(g_variant_new_int32(1));
-    GObject* object = g_object_new(G_TYPE_OBJECT, NULL);
+    GObject* object = g_object_new(GUTIL_IDLE_POOL_TYPE, NULL);
     TestBasic test;
 
     memset(&test, 0, sizeof(test));
@@ -181,6 +181,9 @@ test_basic(
 
 int main(int argc, char* argv[])
 {
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
+    g_type_init();
+    G_GNUC_END_IGNORE_DEPRECATIONS;
     g_test_init(&argc, &argv, NULL);
     g_test_add_func(TEST_PREFIX "basic", test_basic);
     test_init(&test_opt, argc, argv);
