@@ -1,3 +1,9 @@
+libglibutil (1.0.18) unstable; urgency=low
+
+  * Allow strings longer than 512 bytes in gutil_log_syslog
+
+ -- Slava Monich <slava.monich@jolla.com>  Sat, 18 Feb 2017 20:30:23 +0200
+
 libglibutil (1.0.17) unstable; urgency=low
 
   * Made unit tests work with glib < 2.36
