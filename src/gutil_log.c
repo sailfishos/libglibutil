@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Jolla Ltd.
+ * Copyright (C) 2014-2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -13,8 +13,8 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of the Jolla Ltd nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *   3. Neither the name of Jolla Ltd nor the names of its contributors may
+ *      be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -237,13 +237,14 @@ gutil_log_syslog(
     }
     if (name || prefix) {
         char buf[512];
-        g_vsnprintf(buf, sizeof(buf), format, va);
+        char* msg = gutil_log_format(buf, sizeof(buf), format, va);
         if (!prefix) prefix = "";
         if (name) {
-            syslog(priority, "[%s] %s%s", name, prefix, buf);
+            syslog(priority, "[%s] %s%s", name, prefix, msg);
         } else {
-            syslog(priority, "%s%s", prefix, buf);
+            syslog(priority, "%s%s", prefix, msg);
         }
+        if (msg != buf) g_free(msg);
     } else {
         vsyslog(priority, format, va);
     }
