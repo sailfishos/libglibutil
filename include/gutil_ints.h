@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Jolla Ltd.
+ * Copyright (C) 2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -30,70 +30,95 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GUTIL_INOTIFY_H
-#define GUTIL_INOTIFY_H
+#ifndef GUTIL_INTS_H
+#define GUTIL_INTS_H
 
 #include "gutil_types.h"
 
 G_BEGIN_DECLS
 
-typedef struct gutil_inotify_watch_callback GUtilInotifyWatchCallback;
+/*
+ * A read-only non-empty array of ints. NULL is the empty array.
+ * If it's not NULL then it's not empty.
+ */
 
-typedef void
-(*GUtilInotifyWatchFunc)(
-    GUtilInotifyWatch* watch,
-    guint mask,
-    guint cookie,
-    const char* name,
-    void* arg);
+GUtilInts*
+gutil_ints_new(
+    const int* data,
+    guint count);
 
-GType gutil_inotify_watch_get_type();
-#define GUTIL_INOTIFY_WATCH_TYPE (gutil_inotify_watch_get_type())
-#define GUTIL_INOTIFY_WATCH(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),\
-        GUTIL_INOTIFY_WATCH_TYPE, GUtilInotifyWatch))
+GUtilInts*
+gutil_ints_new_take(
+    int* data,
+    guint count);
 
-GUtilInotifyWatch*
-gutil_inotify_watch_new(
-    const char* path,
-    guint32 mask);
+GUtilInts*
+gutil_ints_new_static(
+    const int* data,
+    guint count);
 
-GUtilInotifyWatch*
-gutil_inotify_watch_ref(
-    GUtilInotifyWatch* watch);
+GUtilInts*
+gutil_ints_new_with_free_func(
+    const int* data,
+    guint count,
+    GDestroyNotify free_func,
+    gpointer user_data);
 
-void
-gutil_inotify_watch_unref(
-    GUtilInotifyWatch* watch);
+GUtilInts*
+gutil_ints_new_from_ints(
+    GUtilInts* ints,
+    guint offset,
+    guint count);
 
-void
-gutil_inotify_watch_destroy(
-    GUtilInotifyWatch* watch);
-
-gulong
-gutil_inotify_watch_add_handler(
-    GUtilInotifyWatch* watch,
-    GUtilInotifyWatchFunc fn,
-    void* arg);
-
-void
-gutil_inotify_watch_remove_handler(
-    GUtilInotifyWatch* watch,
-    gulong id);
-
-GUtilInotifyWatchCallback*
-gutil_inotify_watch_callback_new(
-    const char* path,
-    guint32 mask,
-    GUtilInotifyWatchFunc fn,
-    void* arg);
+GUtilInts*
+gutil_ints_ref(
+    GUtilInts* ints);
 
 void
-gutil_inotify_watch_callback_free(
-    GUtilInotifyWatchCallback* cb);
+gutil_ints_unref(
+    GUtilInts* ints);
+
+int*
+gutil_ints_unref_to_data(
+    GUtilInts* ints,
+    guint* count);
+
+const int*
+gutil_ints_get_data(
+    GUtilInts* ints,
+    guint* count);
+
+guint
+gutil_ints_get_count(
+    GUtilInts* ints);
+
+int
+gutil_ints_find(
+    GUtilInts* ints,
+    int value);
+
+gboolean
+gutil_ints_contains(
+    GUtilInts* ints,
+    int value);
+
+guint
+gutil_ints_hash(
+    gconstpointer ints);
+
+gboolean
+gutil_ints_equal(
+    gconstpointer a,
+    gconstpointer b);
+
+gint
+gutil_ints_compare(
+    gconstpointer a,
+    gconstpointer b);
 
 G_END_DECLS
 
-#endif /* GUTIL_INOTIFY_H */
+#endif /* GUTIL_INTS_H */
 
 /*
  * Local Variables:

@@ -91,6 +91,14 @@ SOURCE=.\src\gutil_idlepool.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\gutil_intarray.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\gutil_ints.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\gutil_log.c
 # End Source File
 # Begin Source File
@@ -112,6 +120,14 @@ SOURCE=.\src\gutil_strv.c
 # Begin Source File
 
 SOURCE=.\include\gutil_idlepool.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\gutil_intarray.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\gutil_ints.h
 # End Source File
 # Begin Source File
 

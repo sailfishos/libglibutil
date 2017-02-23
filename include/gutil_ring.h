@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Jolla Ltd.
+ * Copyright (C) 2016-2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -13,8 +13,8 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of the Jolla Ltd nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *   3. Neither the name of Jolla Ltd nor the names of its contributors may
+ *      be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -45,7 +45,6 @@ G_BEGIN_DECLS
  * frees the elements it removes internally in gutil_ring_clear,
  * gutil_ring_drop functions and the last gutil_ring_unref.
  */
-typedef struct gutil_ring GUtilRing;
 
 #define GUTIL_RING_UNLIMITED_SIZE (-1)
 

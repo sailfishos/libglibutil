@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Jolla Ltd.
+ * Copyright (C) 2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -30,70 +30,113 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GUTIL_INOTIFY_H
-#define GUTIL_INOTIFY_H
+#ifndef GUTIL_INTARRAY_H
+#define GUTIL_INTARRAY_H
 
 #include "gutil_types.h"
 
 G_BEGIN_DECLS
 
-typedef struct gutil_inotify_watch_callback GUtilInotifyWatchCallback;
+/*
+ * This is basically a GArray providing better type safety at compile time.
+ */
+struct gutil_int_array {
+    int* data;
+    guint count;
+};
 
-typedef void
-(*GUtilInotifyWatchFunc)(
-    GUtilInotifyWatch* watch,
-    guint mask,
-    guint cookie,
-    const char* name,
-    void* arg);
+GUtilIntArray*
+gutil_int_array_new(
+    void);
 
-GType gutil_inotify_watch_get_type();
-#define GUTIL_INOTIFY_WATCH_TYPE (gutil_inotify_watch_get_type())
-#define GUTIL_INOTIFY_WATCH(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),\
-        GUTIL_INOTIFY_WATCH_TYPE, GUtilInotifyWatch))
+GUtilIntArray*
+gutil_int_array_sized_new(
+    guint reserved_count);
 
-GUtilInotifyWatch*
-gutil_inotify_watch_new(
-    const char* path,
-    guint32 mask);
+int*
+gutil_int_array_free(
+    GUtilIntArray* array,
+    gboolean free_data);
 
-GUtilInotifyWatch*
-gutil_inotify_watch_ref(
-    GUtilInotifyWatch* watch);
+GUtilInts*
+gutil_int_array_free_to_ints(
+    GUtilIntArray* array);
 
-void
-gutil_inotify_watch_unref(
-    GUtilInotifyWatch* watch);
-
-void
-gutil_inotify_watch_destroy(
-    GUtilInotifyWatch* watch);
-
-gulong
-gutil_inotify_watch_add_handler(
-    GUtilInotifyWatch* watch,
-    GUtilInotifyWatchFunc fn,
-    void* arg);
+GUtilIntArray*
+gutil_int_array_ref(
+    GUtilIntArray* array);
 
 void
-gutil_inotify_watch_remove_handler(
-    GUtilInotifyWatch* watch,
-    gulong id);
+gutil_int_array_unref(
+    GUtilIntArray* array);
 
-GUtilInotifyWatchCallback*
-gutil_inotify_watch_callback_new(
-    const char* path,
-    guint32 mask,
-    GUtilInotifyWatchFunc fn,
-    void* arg);
+GUtilIntArray*
+gutil_int_array_append(
+    GUtilIntArray* array,
+    int val);
+
+GUtilIntArray*
+gutil_int_array_append_vals(
+    GUtilIntArray* array,
+    const int* vals,
+    guint count);
+
+GUtilIntArray*
+gutil_int_array_prepend(
+    GUtilIntArray* array,
+    int val);
+
+GUtilIntArray*
+gutil_int_array_prepend_vals(
+    GUtilIntArray* array,
+    const int* vals,
+    guint count);
+
+GUtilIntArray*
+gutil_int_array_insert(
+    GUtilIntArray* array,
+    guint pos,
+    int val);
+
+GUtilIntArray*
+gutil_int_array_insert_vals(
+    GUtilIntArray* array,
+    guint pos,
+    const int* vals,
+    guint count);
+
+GUtilIntArray*
+gutil_int_array_set_count(
+    GUtilIntArray* array,
+    guint count);
+
+GUtilIntArray*
+gutil_int_array_remove_index(
+    GUtilIntArray* array,
+    guint pos);
+
+GUtilIntArray*
+gutil_int_array_remove_index_fast(
+    GUtilIntArray* array,
+    guint pos);
+
+GUtilIntArray*
+gutil_int_array_remove_range(
+    GUtilIntArray* array,
+    guint pos,
+    guint count);
 
 void
-gutil_inotify_watch_callback_free(
-    GUtilInotifyWatchCallback* cb);
+gutil_int_array_sort_ascending(
+    GUtilIntArray* array);
+
+void
+gutil_int_array_sort_descending(
+    GUtilIntArray* array);
 
 G_END_DECLS
 
-#endif /* GUTIL_INOTIFY_H */
+#endif /* GUTIL_INTARRAY_H */
 
 /*
  * Local Variables:

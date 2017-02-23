@@ -46,6 +46,8 @@ SRC = \
   gutil_inotify.c \
   gutil_misc.c \
   gutil_idlepool.c \
+  gutil_intarray.c \
+  gutil_ints.c \
   gutil_ring.c \
   gutil_strv.c \
   gutil_timenotify.c

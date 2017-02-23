@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Jolla Ltd.
+ * Copyright (C) 2014-2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -13,8 +13,8 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of the Jolla Ltd nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *   3. Neither the name of Jolla Ltd nor the names of its contributors may
+ *      be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -38,10 +38,20 @@
 #include <string.h>
 #include <stdio.h>
 
+G_BEGIN_DECLS
+
 typedef char* GStrV;
+typedef struct gutil_idle_pool GUtilIdlePool;
+typedef struct gutil_ints GUtilInts;
+typedef struct gutil_int_array GUtilIntArray;
+typedef struct gutil_inotify_watch GUtilInotifyWatch;
+typedef struct gutil_ring GUtilRing;
+typedef struct gutil_time_notify GUtilTimeNotify;
 
 #define GLOG_MODULE_DECL(m) extern GLogModule m;
 typedef struct glog_module GLogModule;
+
+G_END_DECLS
 
 #endif /* GUTIL_TYPES_H */
 
