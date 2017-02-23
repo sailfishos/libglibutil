@@ -1,3 +1,9 @@
+libglibutil (1.0.19) unstable; urgency=low
+
+  * Added GUtilIntArray and GUtilInts
+
+ -- Slava Monich <slava.monich@jolla.com>  Thu, 23 Feb 2017 18:37:01 +0200
+
 libglibutil (1.0.18) unstable; urgency=low
 
   * Allow strings longer than 512 bytes in gutil_log_syslog
