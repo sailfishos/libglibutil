@@ -42,12 +42,13 @@ LIB = $(LIB_SONAME).$(VERSION_MINOR).$(VERSION_RELEASE)
 #
 
 SRC = \
-  gutil_log.c \
-  gutil_inotify.c \
-  gutil_misc.c \
+  gutil_history.c \
   gutil_idlepool.c \
+  gutil_inotify.c \
   gutil_intarray.c \
   gutil_ints.c \
+  gutil_log.c \
+  gutil_misc.c \
   gutil_ring.c \
   gutil_strv.c \
   gutil_timenotify.c

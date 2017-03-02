@@ -4,6 +4,7 @@
 #
 
 TESTS="\
+test_history \
 test_idlepool \
 test_inotify \
 test_intarray \

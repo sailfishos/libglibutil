@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Jolla Ltd.
+ * Copyright (C) 2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -30,31 +30,80 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GUTIL_TYPES_H
-#define GUTIL_TYPES_H
+#ifndef GUTIL_HISTORY_H
+#define GUTIL_HISTORY_H
 
-#include <glib.h>
-#include <glib-object.h>
-#include <string.h>
-#include <stdio.h>
+#include "gutil_types.h"
 
 G_BEGIN_DECLS
 
-typedef char* GStrV;
-typedef struct gutil_idle_pool GUtilIdlePool;
-typedef struct gutil_ints GUtilInts;
-typedef struct gutil_int_array GUtilIntArray;
-typedef struct gutil_int_history GUtilIntHistory;
-typedef struct gutil_inotify_watch GUtilInotifyWatch;
-typedef struct gutil_ring GUtilRing;
-typedef struct gutil_time_notify GUtilTimeNotify;
+/*
+ * A history of values. Keeps track of no more than last X values submitted
+ * within the last Y microseconds. Microsecond precision may sound like a bit
+ * of an overkill but that's what glib functions like g_get_monotonic_time
+ * return.
+ *
+ * Currently it's only useful for calculating the median but the API could
+ * be extended to provide access to the individual samples, if anyone ever
+ * needs that.
+ *
+ * Also, it's calculating median rather than the average taking into account
+ * that samples are not necessarily added to the history at uniform intervals.
+ * If someone needs the straight average, it's easy enough to add API for that
+ * too.
+ *
+ * When you call gutil_int_history_add but the time hasn't changed since the
+ * last gutil_int_history_add call, the last value is replaced (as opposed to
+ * adding a new entry).
+ */
 
-#define GLOG_MODULE_DECL(m) extern GLogModule m;
-typedef struct glog_module GLogModule;
+#define GUTIL_HISTORY_SEC ((gint64)(G_USEC_PER_SEC))
+typedef gint64 (*GUtilHistoryTimeFunc)(void);
+
+GUtilIntHistory*
+gutil_int_history_new(
+    int max_size,
+    gint64 max_interval);
+
+GUtilIntHistory*
+gutil_int_history_new_full(
+    int max_size,
+    gint64 max_interval,
+    GUtilHistoryTimeFunc time_fn);
+
+GUtilIntHistory*
+gutil_int_history_ref(
+    GUtilIntHistory* history);
+
+void
+gutil_int_history_unref(
+    GUtilIntHistory* history);
+
+guint
+gutil_int_history_size(
+    GUtilIntHistory* history);
+
+gint64
+gutil_int_history_interval(
+    GUtilIntHistory* history);
+
+void
+gutil_int_history_clear(
+    GUtilIntHistory* history);
+
+int
+gutil_int_history_add(
+    GUtilIntHistory* history,
+    int value);
+
+int
+gutil_int_history_median(
+    GUtilIntHistory* history,
+    int default_value);
 
 G_END_DECLS
 
-#endif /* GUTIL_TYPES_H */
+#endif /* GUTIL_HISTORY_H */
 
 /*
  * Local Variables:
