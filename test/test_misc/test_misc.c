@@ -13,8 +13,8 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of the Jolla Ltd nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *   3. Neither the name of Jolla Ltd nor the names of its contributors may
+ *      be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -39,7 +39,7 @@
 static TestOpt test_opt;
 
 /*==========================================================================*
- * Basic
+ * Disconnect
  *==========================================================================*/
 
 static
@@ -53,7 +53,7 @@ test_notify(
 
 static
 void
-test_basic(
+test_disconnect(
     void)
 {
     gulong id[2];
@@ -81,6 +81,51 @@ test_basic(
 }
 
 /*==========================================================================*
+ * Hex2bin
+ *==========================================================================*/
+
+static
+void
+test_hex2bin(
+    void)
+{
+    guint8 buf[4];
+    GBytes* bytes;
+    gsize size;
+    const void* data;
+    static const guint8 buf1[4] = { 0x01, 0x23, 0x45, 0x67 };
+    static const guint8 buf2[4] = { 0x89, 0xab, 0xcd, 0xef };
+    g_assert(!gutil_hex2bin(NULL, 0, NULL));
+    g_assert(!gutil_hex2bin("x", 0, NULL));
+    g_assert(!gutil_hex2bin("x", 0, buf));
+    g_assert(!gutil_hex2bin("x", -1, buf));
+    g_assert(!gutil_hex2bin("x", 1, buf));
+    g_assert(!gutil_hex2bin("xy", 2, buf));
+    g_assert(!gutil_hex2bin(" 1", 2, buf));
+    g_assert(!gutil_hex2bin("1 ", 2, buf));
+    g_assert(!gutil_hex2bin("1234FG", 6, buf));
+    g_assert(gutil_hex2bin("01234567", 8, buf));
+    g_assert(!memcmp(buf, buf1, sizeof(buf)));
+    g_assert(gutil_hex2bin("89abcdef", 8, buf));
+    g_assert(!memcmp(buf, buf2, sizeof(buf)));
+    g_assert(gutil_hex2bin("89ABCDEF", 8, buf));
+    g_assert(!memcmp(buf, buf2, sizeof(buf)));
+
+    g_assert(!gutil_hex2bytes(NULL, 0));
+    g_assert(!gutil_hex2bytes("x", 0));
+    g_assert(!gutil_hex2bytes("x", 1));
+    g_assert(!gutil_hex2bytes("x", -1));
+    g_assert(!gutil_hex2bytes("xy", -1));
+    bytes = gutil_hex2bytes("01234567", -1);
+    g_assert(bytes);
+    data = g_bytes_get_data(bytes, &size);
+    g_assert(data);
+    g_assert(size == 4);
+    g_assert(!memcmp(data, buf1, sizeof(buf1)));
+    g_bytes_unref(bytes);
+}
+
+/*==========================================================================*
  * Common
  *==========================================================================*/
 
@@ -92,7 +137,8 @@ int main(int argc, char* argv[])
     g_type_init();
     G_GNUC_END_IGNORE_DEPRECATIONS;
     g_test_init(&argc, &argv, NULL);
-    g_test_add_func(TEST_PREFIX "basic", test_basic);
+    g_test_add_func(TEST_PREFIX "disconnect", test_disconnect);
+    g_test_add_func(TEST_PREFIX "hex2bin", test_hex2bin);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }

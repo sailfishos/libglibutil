@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Jolla Ltd.
+ * Copyright (C) 2016-2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -13,8 +13,8 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of the Jolla Ltd nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *   3. Neither the name of Jolla Ltd nor the names of its contributors may
+ *      be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -32,6 +32,8 @@
 
 #include "gutil_misc.h"
 
+#include <ctype.h>
+
 void
 gutil_disconnect_handlers(
     gpointer instance,
@@ -47,6 +49,56 @@ gutil_disconnect_handlers(
             }
         }
     }
+}
+
+void*
+gutil_hex2bin(
+    const char* str,
+    gssize len,
+    void* data)
+{
+    if (str && data && len > 0 && !(len & 1)) {
+        gssize i;
+        guint8* ptr = data;
+        for (i=0; i<len; i+=2) {
+            static const guint8 hex[] = {
+                0, 1, 2, 3, 4, 5, 6, 7,     /* 0x30..0x37 */
+                8, 9, 0, 0, 0, 0, 0, 0,     /* 0x3a..0x3f */
+                0,10,11,12,13,14,15, 0,     /* 0x40..0x47 */
+                0, 0, 0, 0, 0, 0, 0, 0,     /* 0x4a..0x4f */
+                0, 0, 0, 0, 0, 0, 0, 0,     /* 0x40..0x47 */
+                0, 0, 0, 0, 0, 0, 0, 0,     /* 0x5a..0x5f */
+                0,10,11,12,13,14,15         /* 0x60..0x66 */
+            };
+            const char x1 = str[i];
+            const char x2 = str[i+1];
+            if (isxdigit(x1) && isxdigit(x2)) {
+                *ptr++ = (hex[x1-0x30] << 4) + hex[x2-0x30];
+            } else {
+                return NULL;
+            }
+        }
+        return data;
+    }
+    return NULL;
+}
+
+GBytes*
+gutil_hex2bytes(
+    const char* str,
+    gssize len)
+{
+    if (str) {
+        if (len < 0) len = strlen(str);
+        if (len > 0 && !(len & 1)) {
+            void* data = g_malloc(len/2);
+            if (gutil_hex2bin(str, len, data)) {
+                return g_bytes_new_take(data, len/2);
+            }
+            g_free(data);
+        }
+    }
+    return NULL;
 }
 
 /*
