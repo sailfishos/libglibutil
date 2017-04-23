@@ -1,3 +1,9 @@
+libglibutil (1.0.22) unstable; urgency=low
+
+  * Added GUtilIdleQueue
+
+ -- Slava Monich <slava.monich@jolla.com>  Sun, 23 Apr 2017 18:07:46 +0300
+
 libglibutil (1.0.21) unstable; urgency=low
 
   * Added gutil_hex2bin and gutil_hex2bytes functions
