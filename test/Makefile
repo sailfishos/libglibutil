@@ -4,6 +4,7 @@ all:
 %:
 	@$(MAKE) -C test_history $*
 	@$(MAKE) -C test_idlepool $*
+	@$(MAKE) -C test_idlequeue $*
 	@$(MAKE) -C test_inotify $*
 	@$(MAKE) -C test_intarray $*
 	@$(MAKE) -C test_ints $*

@@ -44,6 +44,7 @@ LIB = $(LIB_SONAME).$(VERSION_MINOR).$(VERSION_RELEASE)
 SRC = \
   gutil_history.c \
   gutil_idlepool.c \
+  gutil_idlequeue.c \
   gutil_inotify.c \
   gutil_intarray.c \
   gutil_ints.c \

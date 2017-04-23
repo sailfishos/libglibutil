@@ -6,6 +6,7 @@
 TESTS="\
 test_history \
 test_idlepool \
+test_idlequeue \
 test_inotify \
 test_intarray \
 test_ints \
@@ -44,4 +45,4 @@ GLIBUTIL_COV="$COV_DIR/libglibutil.gcov"
 rm -f "$FULL_COV" "$GLIBUTIL_COV"
 lcov $LCOV_OPT -c -d "$LD_LIBRARY_PATH" -b "$BASE_DIR" -o "$FULL_COV" || exit 1
 lcov $LCOV_OPT -e "$FULL_COV" "$BASE_DIR/src/*" -o "$GLIBUTIL_COV" || exit 1
-genhtml $GENHTML_OPT "$GLIBUTIL_COV" --output-directory "$COV_DIR/results" || exit 1
+genhtml $GENHTML_OPT -t libglibutil "$GLIBUTIL_COV" --output-directory "$COV_DIR/results" || exit 1

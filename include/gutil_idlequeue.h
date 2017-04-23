@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Jolla Ltd.
+ * Copyright (C) 2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -30,32 +30,85 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GUTIL_TYPES_H
-#define GUTIL_TYPES_H
+#ifndef GUTIL_IDLEQUEUE_H
+#define GUTIL_IDLEQUEUE_H
 
-#include <glib.h>
-#include <glib-object.h>
-#include <string.h>
-#include <stdio.h>
+#include "gutil_types.h"
 
 G_BEGIN_DECLS
 
-typedef char* GStrV;
-typedef struct gutil_idle_pool GUtilIdlePool;
-typedef struct gutil_idle_queue GUtilIdleQueue;
-typedef struct gutil_ints GUtilInts;
-typedef struct gutil_int_array GUtilIntArray;
-typedef struct gutil_int_history GUtilIntHistory;
-typedef struct gutil_inotify_watch GUtilInotifyWatch;
-typedef struct gutil_ring GUtilRing;
-typedef struct gutil_time_notify GUtilTimeNotify;
+/*
+ * GUtilIdleQueue allows to queue idle callbacks, tag them, cancel
+ * individual callbacks or all of them.
+ */
 
-#define GLOG_MODULE_DECL(m) extern GLogModule m;
-typedef struct glog_module GLogModule;
+typedef gsize GUtilIdleQueueTag;
+
+typedef
+void
+(*GUtilIdleFunc)(
+    gpointer data);
+
+GUtilIdleQueue*
+gutil_idle_queue_new(void);
+
+void
+gutil_idle_queue_free(
+    GUtilIdleQueue* queue);
+
+GUtilIdleQueue*
+gutil_idle_queue_ref(
+    GUtilIdleQueue* queue);
+
+void
+gutil_idle_queue_unref(
+    GUtilIdleQueue* queue);
+
+void
+gutil_idle_queue_add(
+    GUtilIdleQueue* queue,
+    GUtilIdleFunc run,
+    gpointer data);
+
+void
+gutil_idle_queue_add_full(
+    GUtilIdleQueue* queue,
+    GUtilIdleFunc run,
+    gpointer data,
+    GFreeFunc free);
+
+void
+gutil_idle_queue_add_tag(
+    GUtilIdleQueue* queue,
+    GUtilIdleQueueTag tag,
+    GUtilIdleFunc run,
+    gpointer data);
+
+void
+gutil_idle_queue_add_tag_full(
+    GUtilIdleQueue* queue,
+    GUtilIdleQueueTag tag,
+    GUtilIdleFunc run,
+    gpointer data,
+    GFreeFunc free);
+
+gboolean
+gutil_idle_queue_contains_tag(
+    GUtilIdleQueue* queue,
+    GUtilIdleQueueTag tag);
+
+gboolean
+gutil_idle_queue_cancel_tag(
+    GUtilIdleQueue* queue,
+    GUtilIdleQueueTag tag);
+
+void
+gutil_idle_queue_cancel_all(
+    GUtilIdleQueue* queue);
 
 G_END_DECLS
 
-#endif /* GUTIL_TYPES_H */
+#endif /* GUTIL_IDLEQUEUE_H */
 
 /*
  * Local Variables:

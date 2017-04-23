@@ -95,6 +95,10 @@ SOURCE=.\src\gutil_idlepool.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\gutil_idlequeue.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\gutil_intarray.c
 # End Source File
 # Begin Source File
@@ -128,6 +132,10 @@ SOURCE=.\include\gutil_history.h
 # Begin Source File
 
 SOURCE=.\include\gutil_idlepool.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\gutil_idlequeue.h
 # End Source File
 # Begin Source File
 
