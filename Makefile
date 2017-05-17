@@ -137,9 +137,9 @@ RELEASE_LIB = $(RELEASE_BUILD_DIR)/$(LIB)
 DEBUG_LINK = $(DEBUG_BUILD_DIR)/$(LIB_SYMLINK1)
 RELEASE_LINK = $(RELEASE_BUILD_DIR)/$(LIB_SYMLINK1)
 
-debug: $(DEBUG_LIB) $(DEBUG_LINK)
+debug: $(DEBUG_LIB)
 
-release: $(RELEASE_LIB) $(RELEASE_LINK)
+release: $(RELEASE_LIB)
 
 pkgconfig: $(PKGCONFIG)
 
@@ -190,18 +190,14 @@ $(RELEASE_BUILD_DIR)/%.o : $(SRC_DIR)/%.c
 
 $(DEBUG_LIB): $(DEBUG_OBJS)
 	$(LD) $(DEBUG_OBJS) $(DEBUG_LDFLAGS) -o $@
+	ln -sf $(LIB) $(DEBUG_LINK)
 
 $(RELEASE_LIB): $(RELEASE_OBJS)
 	$(LD) $(RELEASE_OBJS) $(RELEASE_LDFLAGS) -o $@
+	ln -sf $(LIB) $(RELEASE_LINK)
 ifeq ($(KEEP_SYMBOLS),0)
 	strip $@
 endif
-
-$(DEBUG_LINK):
-	ln -sf $(LIB) $@
-
-$(RELEASE_LINK):
-	ln -sf $(LIB) $@
 
 $(PKGCONFIG): $(LIB_NAME).pc.in
 	sed -e 's/\[version\]/'$(PCVERSION)/g $< > $@
