@@ -1,3 +1,18 @@
+libglibutil (1.0.23) unstable; urgency=low
+
+  * Added a few more GUtilIntArray functions
+
+    gutil_int_array_new_from_vals
+    gutil_int_array_new_from_value
+    gutil_int_array_find
+    gutil_int_array_contains
+    gutil_int_array_remove
+    gutil_int_array_remove_fast
+    gutil_int_array_remove_all
+    gutil_int_array_remove_all_fast
+
+ -- Slava Monich <slava.monich@jolla.com>  Mon, 05 Jun 2017 19:01:12 +0300
+
 libglibutil (1.0.22) unstable; urgency=low
 
   * Added GUtilIdleQueue
