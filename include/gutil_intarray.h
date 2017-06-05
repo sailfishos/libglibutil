@@ -53,6 +53,15 @@ GUtilIntArray*
 gutil_int_array_sized_new(
     guint reserved_count);
 
+GUtilIntArray*
+gutil_int_array_new_from_vals(
+    const int* vals,
+    guint count);
+
+GUtilIntArray*
+gutil_int_array_new_from_value(
+    int value);
+
 int*
 gutil_int_array_free(
     GUtilIntArray* array,
@@ -109,6 +118,36 @@ GUtilIntArray*
 gutil_int_array_set_count(
     GUtilIntArray* array,
     guint count);
+
+int
+gutil_int_array_find(
+    GUtilIntArray* array,
+    int value);
+
+gboolean
+gutil_int_array_contains(
+    GUtilIntArray* array,
+    int value);
+
+gboolean
+gutil_int_array_remove(
+    GUtilIntArray* array,
+    int value);
+
+gboolean
+gutil_int_array_remove_fast(
+    GUtilIntArray* array,
+    int value);
+
+guint
+gutil_int_array_remove_all(
+    GUtilIntArray* array,
+    int value);
+
+guint
+gutil_int_array_remove_all_fast(
+    GUtilIntArray* array,
+    int value);
 
 GUtilIntArray*
 gutil_int_array_remove_index(

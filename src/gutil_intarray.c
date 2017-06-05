@@ -50,6 +50,23 @@ gutil_int_array_sized_new(
         reserved * ELEMENT_SIZE);
 }
 
+GUtilIntArray*
+gutil_int_array_new_from_vals(
+    const int* vals,
+    guint count)
+{
+    GUtilIntArray* array = gutil_int_array_sized_new(count);
+    gutil_int_array_append_vals(array, vals, count);
+    return array;
+}
+
+GUtilIntArray*
+gutil_int_array_new_from_value(
+    int value)
+{
+    return gutil_int_array_new_from_vals(&value, 1);
+}
+
 int*
 gutil_int_array_free(
     GUtilIntArray* array,
@@ -174,13 +191,83 @@ gutil_int_array_set_count(
     return array;
 }
 
+int
+gutil_int_array_find(
+    GUtilIntArray* array,
+    int value)
+{
+    if (array) {
+        guint i;
+        for (i = 0; i < array->count; i++) {
+            if (array->data[i] == value) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+gboolean
+gutil_int_array_contains(
+    GUtilIntArray* array,
+    int value)
+{
+    return gutil_int_array_find(array, value) >= 0;
+}
+
+gboolean
+gutil_int_array_remove(
+    GUtilIntArray* array,
+    int value)
+{
+    int pos = gutil_int_array_find(array, value);
+    if (pos >= 0) {
+        g_array_remove_index((GArray*)array, pos);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+gboolean
+gutil_int_array_remove_fast(
+    GUtilIntArray* array,
+    int value)
+{
+    int pos = gutil_int_array_find(array, value);
+    if (pos >= 0) {
+        g_array_remove_index_fast((GArray*)array, pos);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+guint
+gutil_int_array_remove_all(
+    GUtilIntArray* array,
+    int value)
+{
+    guint n;
+    for (n = 0; gutil_int_array_remove(array, value); n++);
+    return n;
+}
+
+guint
+gutil_int_array_remove_all_fast(
+    GUtilIntArray* array,
+    int value)
+{
+    guint n;
+    for (n = 0; gutil_int_array_remove_fast(array, value); n++);
+    return n;
+}
+
 GUtilIntArray*
 gutil_int_array_remove_index(
     GUtilIntArray* array,
     guint pos)
 {
     if (array && pos < array->count) {
-        g_array_remove_index ((GArray*)array, pos);
+        g_array_remove_index((GArray*)array, pos);
     }
     return array;
 }
