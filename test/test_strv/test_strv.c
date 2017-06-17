@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Jolla Ltd.
+ * Copyright (C) 2015-2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -13,8 +13,8 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of the Jolla Ltd nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *   3. Neither the name of Jolla Ltd nor the names of its contributors may
+ *      be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -55,6 +55,7 @@ test_basic(
     g_assert(!gutil_strv_at(sv, 2));
     g_assert(!gutil_strv_at(sv, 3));
     g_assert(!gutil_strv_at(NULL, 0));
+    g_assert(!gutil_strv_strip(NULL));
 
     g_strfreev(sv);
 }
@@ -163,6 +164,23 @@ test_sort(
 }
 
 /*==========================================================================*
+ * Strip
+ *==========================================================================*/
+
+static
+void
+test_strip(
+    void)
+{
+    char** in = g_strsplit(" a,b , c ,", ",", 0);
+    char** expect = g_strsplit("a,b,c,", ",", 0);
+    g_assert(gutil_strv_strip(in) == in);
+    g_assert(gutil_strv_equal(in, expect));
+    g_strfreev(in);
+    g_strfreev(expect);
+}
+
+/*==========================================================================*
  * Common
  *==========================================================================*/
 
@@ -176,6 +194,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_PREFIX "find", test_find);
     g_test_add_func(TEST_PREFIX "remove", test_remove);
     g_test_add_func(TEST_PREFIX "sort", test_sort);
+    g_test_add_func(TEST_PREFIX "strip", test_strip);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }

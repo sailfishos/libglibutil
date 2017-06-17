@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Jolla Ltd.
+ * Copyright (C) 2014-2017 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -13,8 +13,8 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of the Jolla Ltd nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *   3. Neither the name of Jolla Ltd nor the names of its contributors may
+ *      be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -198,6 +198,22 @@ gutil_strv_sort(
         qsort(sv, len, sizeof(char*), ascending ?
               gutil_strv_sort_ascending :
               gutil_strv_sort_descending);
+    }
+    return sv;
+}
+
+/**
+ * Removes leading and trailing whitespaces from all strings in the vector.
+ */
+GStrV*
+gutil_strv_strip(
+    GStrV* sv)
+{
+    if (sv) {
+        GStrV* ptr;
+        for (ptr = sv; *ptr; ptr++) {
+            *ptr = g_strstrip(*ptr);
+        }
     }
     return sv;
 }
