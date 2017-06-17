@@ -1,3 +1,9 @@
+libglibutil (1.0.24) unstable; urgency=low
+
+  * Added gutil_strv_strip function
+
+ -- Slava Monich <slava.monich@jolla.com>  Sun, 18 Jun 2017 00:27:35 +0300
+
 libglibutil (1.0.23) unstable; urgency=low
 
   * Added a few more GUtilIntArray functions
