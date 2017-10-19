@@ -363,10 +363,10 @@ gutil_log_enabled_r(
     const GLogModule* module,
     int level)
 {
-    if (module && module->level == GLOG_LEVEL_INHERIT && module->parent) {
+    if (module->level == GLOG_LEVEL_INHERIT && module->parent) {
         return gutil_log_enabled_r(module->parent, level);
     } else {
-        const int max_level = (module && module->level == GLOG_LEVEL_INHERIT) ?
+        const int max_level = (module->level == GLOG_LEVEL_INHERIT) ?
             gutil_log_default.level : module->level;
         return (level > GLOG_LEVEL_NONE && level <= max_level) ||
                (level == GLOG_LEVEL_ALWAYS);
@@ -379,7 +379,8 @@ gutil_log_enabled(
     int level)
 {
     if (level != GLOG_LEVEL_NONE && gutil_log_func2) {
-        return gutil_log_enabled_r(module, level);
+        return gutil_log_enabled_r(module ? module : &gutil_log_default,
+            level);
     }
     return FALSE;
 }
