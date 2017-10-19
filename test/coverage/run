@@ -10,6 +10,7 @@ test_idlequeue \
 test_inotify \
 test_intarray \
 test_ints \
+test_log \
 test_misc \
 test_ring \
 test_strv"
