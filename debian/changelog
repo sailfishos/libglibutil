@@ -1,3 +1,10 @@
+libglibutil (1.0.25) unstable; urgency=low
+
+  * Allow NULL module in gutil_log_enabled
+  * Added test_log
+
+ -- Slava Monich <slava.monich@jolla.com>  Thu, 19 Oct 2017 19:51:05 +0300
+
 libglibutil (1.0.24) unstable; urgency=low
 
   * Added gutil_strv_strip function
