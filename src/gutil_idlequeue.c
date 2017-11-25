@@ -37,58 +37,83 @@ typedef struct gutil_idle_queue_item GUtilIdleQueueItem;
 
 struct gutil_idle_queue_item {
     GUtilIdleQueueItem* next;
-    GUtilIdleQueue* queue;
     GUtilIdleQueueTag tag;
     gpointer data;
     GUtilIdleFunc run;
     GFreeFunc destroy;
-    guint source_id;
+    gboolean completed;
 };
 
 struct gutil_idle_queue {
     gint ref_count;
+    guint source_id;
     GUtilIdleQueueItem* first;
     GUtilIdleQueueItem* last;
 };
 
 static
-gboolean
-gutil_idle_queue_item_run(
-    gpointer data)
-{
-    GUtilIdleQueueItem* item = data;
-    GUtilIdleQueue* q = item->queue;
-    /* We assume that items are executed in the same order in which they
-     * were added to the queue */
-    GASSERT(q->first == item);
-    GASSERT(item->source_id);
-    /* Remove it from the list */
-    q->first = item->next;
-    if (!q->first) {
-        q->last = NULL;
-    }
-    item->next = NULL;
-    item->source_id = 0;
-    item->queue = NULL;
-    /* Invoke the external callback */
-    if (item->run) {
-        item->run(item->data);
-    }
-    return G_SOURCE_REMOVE;
-}
-
-static
 void
 gutil_idle_queue_item_destroy(
-    gpointer data)
+    GUtilIdleQueueItem* item)
 {
-    GUtilIdleQueueItem* item = data;
-    GASSERT(!item->source_id);
-    GASSERT(!item->queue);
+    GASSERT(item->completed);
     if (item->destroy) {
         item->destroy(item->data);
     }
     g_slice_free(GUtilIdleQueueItem, item);
+}
+
+static
+gboolean
+gutil_idle_queue_run(
+    gpointer data)
+{
+    GUtilIdleQueue* q = data;
+    GUtilIdleQueueItem* item;
+    GUtilIdleQueueItem* done = NULL;
+
+    /*
+     * Mark all currently existing items as as completed. Callbacks
+     * that we are about to invoke may add more items, those we are
+     * not supposed to run until the next idle loop. Also, note that
+     * callbacks may cancel some of the completed items, that's why
+     * we can't remove them from the list just yet.
+     */
+    for (item = q->first; item; item = item->next) {
+        item->completed = TRUE;
+    }
+
+    while ((item = q->first) && item->completed) {
+        /* Remove this one from the list */
+        q->first = item->next;
+        if (!q->first) {
+            q->last = NULL;
+        }
+
+        /* Place it to the "done" list */
+        item->next = done;
+        done = item;
+
+        /* Invoke the callbacks */
+        if (item->run) {
+            item->run(item->data);
+        }
+
+        if (item->destroy) {
+            item->destroy(item->data);
+        }
+    }
+
+    /* Free the completed items */
+    g_slice_free_chain(GUtilIdleQueueItem, done, next);
+
+    if (q->first) {
+        /* New callbacks have been added */
+        return G_SOURCE_CONTINUE;
+    } else {
+        q->source_id = 0;
+        return G_SOURCE_REMOVE;
+    }
 }
 
 GUtilIdleQueue*
@@ -172,7 +197,6 @@ gutil_idle_queue_add_tag_full(
         GUtilIdleQueueItem* item = g_slice_new0(GUtilIdleQueueItem);
 
         /* Fill the item */
-        item->queue = q;
         item->tag = tag;
         item->run = run;
         item->destroy = destroy;
@@ -188,9 +212,10 @@ gutil_idle_queue_add_tag_full(
         }
         q->last = item;
 
-        /* Schedule the callback */
-        item->source_id = g_idle_add_full(G_PRIORITY_DEFAULT_IDLE,
-            gutil_idle_queue_item_run, item, gutil_idle_queue_item_destroy);
+        /* Schedule the callback if necessary */
+        if (!q->source_id) {
+            q->source_id = g_idle_add(gutil_idle_queue_run, q);
+        }
     } else if (destroy) {
         destroy(data);
     }
@@ -212,19 +237,17 @@ gutil_idle_queue_contains_tag(
     return FALSE;
 }
 
+static
 void
 gutil_idle_queue_cancel_first(
     GUtilIdleQueue* q)
 {
     GUtilIdleQueueItem* item = q->first;
-    guint source_id = item->source_id;
     q->first = item->next;
     if (!q->first) {
         q->last = NULL;
     }
-    item->queue = NULL;
-    item->source_id = 0;
-    g_source_remove(source_id);
+    gutil_idle_queue_item_destroy(item);
 }
 
 gboolean
@@ -235,13 +258,18 @@ gutil_idle_queue_cancel_tag(
     if (G_LIKELY(q) && q->first) {
         GUtilIdleQueueItem* item = q->first;
         if (item->tag == tag) {
+            item->completed = TRUE;
             gutil_idle_queue_cancel_first(q);
+            GASSERT(q->source_id);
+            if (!q->first) {
+                g_source_remove(q->source_id);
+                q->source_id = 0;
+            }
             return TRUE;
         } else {
             GUtilIdleQueueItem* prev = item;
             for (item = item->next; item; prev = item, item = item->next) {
                 if (item->tag == tag) {
-                    guint source_id = item->source_id;
                     if (item->next) {
                         prev->next = item->next;
                     } else {
@@ -249,9 +277,8 @@ gutil_idle_queue_cancel_tag(
                         prev->next = NULL;
                         q->last = prev;
                     }
-                    item->queue = NULL;
-                    item->source_id = 0;
-                    g_source_remove(source_id);
+                    item->completed = TRUE;
+                    gutil_idle_queue_item_destroy(item);
                     return TRUE;
                 }
             }
@@ -265,8 +292,16 @@ gutil_idle_queue_cancel_all(
     GUtilIdleQueue* q)
 {
     if (G_LIKELY(q)) {
-        while (q->first) {
+        GUtilIdleQueueItem* item;
+        for (item = q->first; item; item = item->next) {
+            item->completed = TRUE;
+        }
+        while (q->first && q->first->completed) {
             gutil_idle_queue_cancel_first(q);
+        }
+        if (!q->first && q->source_id) {
+            g_source_remove(q->source_id);
+            q->source_id = 0;
         }
     }
 }

@@ -40,6 +40,14 @@
 static TestOpt test_opt;
 
 static
+void
+test_idlequeue_noooo(
+    gpointer param)
+{
+    g_assert(!"NOOO!!!");
+}
+
+static
 gboolean
 test_idlequeue_timeout(
     gpointer param)
@@ -129,6 +137,51 @@ test_idlequeue_basic(
     gutil_idle_queue_unref(q);
     g_main_loop_unref(loop);
 }
+/*==========================================================================*
+ * Add
+ *==========================================================================*/
+
+typedef struct test_idlequeue_add_data {
+    GUtilIdleQueue* q;
+    GMainLoop* loop;
+} TestAdd;
+
+static
+void
+test_idlequeue_add_cb(
+    gpointer data)
+{
+    /* Adding new item from the callback */
+    TestAdd* test = data;
+    gutil_idle_queue_add(test->q, test_idlequeue_loop_quit, test->loop);
+}
+
+static
+void
+test_idlequeue_add(
+    void)
+{
+    guint timeout_id = 0;
+    TestAdd test;
+
+    test.q = gutil_idle_queue_new();
+    test.loop = g_main_loop_new(NULL, TRUE);
+
+    if (!(test_opt.flags & TEST_FLAG_DEBUG)) {
+        timeout_id = g_timeout_add_seconds(TEST_TIMEOUT,
+            test_idlequeue_timeout, NULL);
+    }
+
+    gutil_idle_queue_add(test.q, test_idlequeue_add_cb, &test);
+    g_main_loop_run(test.loop);
+
+    if (timeout_id) {
+        g_source_remove(timeout_id);
+    }
+
+    gutil_idle_queue_unref(test.q);
+    g_main_loop_unref(test.loop);
+}
 
 /*==========================================================================*
  * Cancel
@@ -143,6 +196,7 @@ test_idlequeue_cancel(
     GUtilIdleQueue* q = gutil_idle_queue_new();
 
     /* Destroying the queue cancels the callbacks */
+    gutil_idle_queue_add(q, test_idlequeue_int_inc, &count);
     gutil_idle_queue_add_full(q, NULL, &count, test_idlequeue_int_inc);
     gutil_idle_queue_add_full(q, NULL, &count, test_idlequeue_int_inc);
     gutil_idle_queue_unref(q);
@@ -171,6 +225,46 @@ test_idlequeue_cancel(
 }
 
 /*==========================================================================*
+ * CancelAll
+ *==========================================================================*/
+
+static
+void
+test_idlequeue_cancel_all_submit_new(
+    gpointer q)
+{
+    /* Adding new item from the destroy callback */
+    gutil_idle_queue_add_tag(q, 42, test_idlequeue_noooo, NULL);
+}
+
+static
+void
+test_idlequeue_cancel_all(
+    void)
+{
+    int count = 0;
+    GUtilIdleQueue* q = gutil_idle_queue_new();
+
+    /* Add new item from the destroy callback */
+    gutil_idle_queue_add(q, test_idlequeue_int_inc, &count);
+    gutil_idle_queue_add_tag_full(q, 1, NULL, &count, test_idlequeue_int_inc);
+    gutil_idle_queue_add_tag_full(q, 2, NULL, q,
+        test_idlequeue_cancel_all_submit_new);
+    gutil_idle_queue_cancel_all(q);
+    g_assert(count == 1);
+
+    /* We should still have 42 in there */
+    g_assert(!gutil_idle_queue_contains_tag(q, 1));
+    g_assert(!gutil_idle_queue_contains_tag(q, 2));
+    g_assert(gutil_idle_queue_contains_tag(q, 42));
+    gutil_idle_queue_cancel_all(q);
+
+    /* Now it has to be really empty */
+    g_assert(!gutil_idle_queue_contains_tag(q, 42));
+    gutil_idle_queue_free(q);
+}
+
+/*==========================================================================*
  * Common
  *==========================================================================*/
 
@@ -184,7 +278,9 @@ int main(int argc, char* argv[])
     g_test_init(&argc, &argv, NULL);
     g_test_add_func(TEST_PREFIX "null", test_idlequeue_null);
     g_test_add_func(TEST_PREFIX "basic", test_idlequeue_basic);
+    g_test_add_func(TEST_PREFIX "add", test_idlequeue_add);
     g_test_add_func(TEST_PREFIX "cancel", test_idlequeue_cancel);
+    g_test_add_func(TEST_PREFIX "cancel_all", test_idlequeue_cancel_all);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }
