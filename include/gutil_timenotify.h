@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Jolla Ltd.
+ * Copyright (C) 2016-2018 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -41,11 +41,6 @@ typedef void
 (*GUtilTimeNotifyFunc)(
     GUtilTimeNotify* notify,
     void* arg);
-
-GType gutil_time_notify_get_type();
-#define GUTIL_TIME_NOTIFY_TYPE (gutil_time_notify_get_type())
-#define GUTIL_TIME_NOTIFY(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),\
-        GUTIL_TIME_NOTIFY_TYPE, GUtilTimeNotify))
 
 GUtilTimeNotify*
 gutil_time_notify_new(

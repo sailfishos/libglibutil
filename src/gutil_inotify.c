@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Jolla Ltd.
+ * Copyright (C) 2014-2018 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -13,8 +13,8 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of the Jolla Ltd nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *   3. Neither the name of Jolla Ltd nor the names of its contributors may
+ *      be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -32,6 +32,8 @@
 
 #include <gutil_inotify.h>
 #include <gutil_log.h>
+
+#include <glib-object.h>
 
 #include <sys/inotify.h>
 #include <unistd.h>
@@ -73,6 +75,9 @@ enum gutil_inotify_watch_signal {
 static guint gutil_inotify_watch_signals[SIGNAL_COUNT] = { 0 };
 
 G_DEFINE_TYPE(GUtilInotifyWatch, gutil_inotify_watch, G_TYPE_OBJECT)
+#define GUTIL_INOTIFY_WATCH_TYPE (gutil_inotify_watch_get_type())
+#define GUTIL_INOTIFY_WATCH(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),\
+        GUTIL_INOTIFY_WATCH_TYPE, GUtilInotifyWatch))
 
 /*==========================================================================*
  * GUtilInotify

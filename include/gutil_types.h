@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Jolla Ltd.
+ * Copyright (C) 2014-2018 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -34,7 +34,6 @@
 #define GUTIL_TYPES_H
 
 #include <glib.h>
-#include <glib-object.h>
 #include <string.h>
 #include <stdio.h>
 

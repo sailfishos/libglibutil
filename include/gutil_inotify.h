@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Jolla Ltd.
+ * Copyright (C) 2014-2018 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -46,11 +46,6 @@ typedef void
     guint cookie,
     const char* name,
     void* arg);
-
-GType gutil_inotify_watch_get_type();
-#define GUTIL_INOTIFY_WATCH_TYPE (gutil_inotify_watch_get_type())
-#define GUTIL_INOTIFY_WATCH(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),\
-        GUTIL_INOTIFY_WATCH_TYPE, GUtilInotifyWatch))
 
 GUtilInotifyWatch*
 gutil_inotify_watch_new(

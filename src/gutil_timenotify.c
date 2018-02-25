@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Jolla Ltd.
+ * Copyright (C) 2016-2018 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -13,8 +13,8 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of the Jolla Ltd nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *   3. Neither the name of Jolla Ltd nor the names of its contributors may
+ *      be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -32,6 +32,8 @@
 
 #include "gutil_timenotify.h"
 #include <gutil_log.h>
+
+#include <glib-object.h>
 
 #include <time.h>
 #include <errno.h>
@@ -61,7 +63,9 @@ static guint gutil_time_notify_signals[SIGNAL_COUNT] = { 0 };
 
 typedef GObjectClass GUtilTimeNotifyClass;
 G_DEFINE_TYPE(GUtilTimeNotify, gutil_time_notify, G_TYPE_OBJECT)
-#define PARENT_CLASS gutil_time_notify_parent_class
+#define GUTIL_TIME_NOTIFY_TYPE (gutil_time_notify_get_type())
+#define GUTIL_TIME_NOTIFY(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),\
+        GUTIL_TIME_NOTIFY_TYPE, GUtilTimeNotify))
 
 GUtilTimeNotify*
 gutil_time_notify_new()
@@ -187,7 +191,7 @@ gutil_time_notify_finalize(
         g_io_channel_shutdown(self->io_channel, FALSE, NULL);
         g_io_channel_unref(self->io_channel);
     }
-    G_OBJECT_CLASS(PARENT_CLASS)->finalize(object);
+    G_OBJECT_CLASS(gutil_time_notify_parent_class)->finalize(object);
 }
 
 static
