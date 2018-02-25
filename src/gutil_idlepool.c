@@ -48,6 +48,7 @@ struct gutil_idle_pool {
     guint idle_id;
     GUtilIdlePoolItem* first;
     GUtilIdlePoolItem* last;
+    GUtilIdlePool** shared;
 };
 
 GUtilIdlePool*
@@ -56,6 +57,29 @@ gutil_idle_pool_new()
     GUtilIdlePool* self = g_slice_new0(GUtilIdlePool);
     self->ref_count = 1;
     return self;
+}
+
+GUtilIdlePool*
+gutil_idle_pool_get(
+    GUtilIdlePool** shared)
+{
+    if (shared) {
+        if (*shared) {
+            /* The object already exists */
+            return *shared;
+        } else {
+            GUtilIdlePool* pool = gutil_idle_pool_new();
+            pool->shared = shared;
+            /* New shared object will destroy itself if the caller
+             * doesn't reference it. */
+            gutil_idle_pool_add(pool, pool, (GDestroyNotify)
+                gutil_idle_pool_unref);
+            *shared = pool;
+            return pool;
+        }
+    } else {
+        return gutil_idle_pool_new();
+    }
 }
 
 GUtilIdlePool*
@@ -76,6 +100,8 @@ gutil_idle_pool_unref(
     if (G_LIKELY(self)) {
         GASSERT(self->ref_count > 0);
         if (g_atomic_int_dec_and_test(&self->ref_count)) {
+            /* Clear pointer to the shared instance */
+            if (self->shared) *(self->shared) = NULL;
             gutil_idle_pool_drain(self);
             g_slice_free(GUtilIdlePool, self);
         }

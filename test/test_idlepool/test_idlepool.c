@@ -39,26 +39,32 @@
 
 static TestOpt test_opt;
 
+static
+gboolean
+test_timeout(
+    gpointer loop)
+{
+    g_assert(!"TIMEOUT");
+    return G_SOURCE_REMOVE;
+}
+
+static
+void
+test_done(
+    gpointer loop)
+{
+    g_main_loop_quit(loop);
+}
+
 /*==========================================================================*
  * Basic
  *==========================================================================*/
 
 typedef struct test_basic {
-    GMainLoop* loop;
     GUtilIdlePool* pool;
-    guint timeout_id;
     gboolean array_free_count;
     gboolean ok;
 } TestBasic;
-
-static
-void
-test_basic_done(
-    gpointer param)
-{
-    TestBasic* test = param;
-    g_main_loop_quit(test->loop);
-}
 
 static
 void
@@ -100,18 +106,6 @@ test_basic_add_during_drain(
 }
 
 static
-gboolean
-test_basic_timeout(
-    gpointer param)
-{
-    TestBasic* test = param;
-    GERR("TIMEOUT");
-    test->timeout_id = 0;
-    g_main_loop_quit(test->loop);
-    return G_SOURCE_REMOVE;
-}
-
-static
 void
 test_basic(
     void)
@@ -119,15 +113,14 @@ test_basic(
     GPtrArray* array = g_ptr_array_new_with_free_func(test_basic_array_free);
     GVariant* variant = g_variant_take_ref(g_variant_new_int32(1));
     GObject* object = g_object_new(TEST_OBJECT_TYPE, NULL);
+    GMainLoop* loop = g_main_loop_new(NULL, TRUE);
     TestBasic test;
 
     memset(&test, 0, sizeof(test));
-    test.loop = g_main_loop_new(NULL, TRUE);
     test.pool = gutil_idle_pool_new();
 
     if (!(test_opt.flags & TEST_FLAG_DEBUG)) {
-        test.timeout_id = g_timeout_add_seconds(TEST_TIMEOUT,
-            test_basic_timeout, &test);
+        g_timeout_add_seconds(TEST_TIMEOUT, test_timeout, loop);
     }
 
     /* These have no effect, just testing NULL-telerance */
@@ -159,19 +152,44 @@ test_basic(
     g_object_unref(object);
     gutil_idle_pool_ref(test.pool);
     gutil_idle_pool_add(test.pool, &test, test_basic_unref_pool);
-    gutil_idle_pool_add(test.pool, &test, test_basic_done);
-    g_main_loop_run(test.loop);
+    gutil_idle_pool_add(test.pool, loop, test_done);
+    g_main_loop_run(loop);
     gutil_idle_pool_add(test.pool, &test, test_basic_add_during_drain);
     gutil_idle_pool_unref(test.pool);
 
     g_assert(test.ok);
     g_assert(!test_object_count);
+    g_main_loop_unref(loop);
+}
+
+/*==========================================================================*
+ * Shared
+ *==========================================================================*/
+
+static
+void
+test_shared(
+    void)
+{
+    GUtilIdlePool* shared = NULL;
+    GUtilIdlePool* pool = gutil_idle_pool_get(&shared);
+    GUtilIdlePool* pool2 = gutil_idle_pool_get(NULL);
+    GMainLoop* loop = g_main_loop_new(NULL, TRUE);
+
+    g_assert(shared == pool);
+    g_assert(gutil_idle_pool_get(&shared) == pool);
+    g_assert(pool2 != pool);
+
     if (!(test_opt.flags & TEST_FLAG_DEBUG)) {
-        g_assert(test.timeout_id);
-        g_source_remove(test.timeout_id);
+        g_timeout_add_seconds(TEST_TIMEOUT, test_timeout, loop);
     }
 
-    g_main_loop_unref(test.loop);
+    /* The pool invokes the callback and destroys itself */
+    gutil_idle_pool_add(pool, loop, test_done);
+    g_main_loop_run(loop);
+    g_assert(!shared);
+    gutil_idle_pool_unref(pool2);
+    g_main_loop_unref(loop);
 }
 
 /*==========================================================================*
@@ -187,6 +205,7 @@ int main(int argc, char* argv[])
     G_GNUC_END_IGNORE_DEPRECATIONS;
     g_test_init(&argc, &argv, NULL);
     g_test_add_func(TEST_PREFIX "basic", test_basic);
+    g_test_add_func(TEST_PREFIX "shared", test_shared);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }

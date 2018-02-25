@@ -61,6 +61,10 @@ GUtilIdlePool*
 gutil_idle_pool_new(void);
 
 GUtilIdlePool*
+gutil_idle_pool_get(
+    GUtilIdlePool** shared);
+
+GUtilIdlePool*
 gutil_idle_pool_ref(
     GUtilIdlePool* pool);
 
