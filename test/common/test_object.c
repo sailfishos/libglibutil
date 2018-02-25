@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2018 Jolla Ltd.
+ * Copyright (C) 2018 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -30,87 +30,42 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GUTIL_IDLEPOOL_H
-#define GUTIL_IDLEPOOL_H
+#include "test_common.h"
 
-#include "gutil_types.h"
+#include <gutil_log.h>
 
-G_BEGIN_DECLS
+typedef GObject TestObject;
+typedef GObjectClass TestObjectClass;
 
-/*
- * This is a glib equivalent of NSAutoreleasePool. Its purpose is to
- * temporarily hold a reference, until the next idle callback or until
- * the pool is drained manually with gutil_idle_pool_drain().
- *
- * Note that the following functions don't add references, they hold
- * the references which you have created:
- *
- * gutil_idle_pool_add_object()
- * gutil_idle_pool_add_variant()
- * gutil_idle_pool_add_ptr_array()
- *
- * The following functions, however, do add the reference and hold it
- * until the pool is drained:
- *
- * gutil_idle_pool_add_object_ref()
- * gutil_idle_pool_add_variant_ref()
- * gutil_idle_pool_add_ptr_array_ref()
- */
+G_DEFINE_TYPE(TestObject, test_object, G_TYPE_OBJECT)
 
-GUtilIdlePool*
-gutil_idle_pool_new(void);
+gint test_object_count = 0;
 
-GUtilIdlePool*
-gutil_idle_pool_ref(
-    GUtilIdlePool* pool);
-
+static
 void
-gutil_idle_pool_unref(
-    GUtilIdlePool* pool);
+test_object_init(
+    TestObject* self)
+{
+    g_atomic_int_inc(&test_object_count);
+}
 
+static
 void
-gutil_idle_pool_drain(
-    GUtilIdlePool* pool);
+test_object_finalize(
+    GObject* object)
+{
+    GASSERT(test_object_count > 0);
+    g_atomic_int_add(&test_object_count, -1);
+    G_OBJECT_CLASS(test_object_parent_class)->finalize(object);
+}
 
+static
 void
-gutil_idle_pool_add(
-    GUtilIdlePool* pool,
-    gpointer pointer,
-    GDestroyNotify destroy);
-
-void
-gutil_idle_pool_add_object(
-    GUtilIdlePool* pool,
-    gpointer object);
-
-void
-gutil_idle_pool_add_variant(
-    GUtilIdlePool* pool,
-    GVariant* variant);
-
-void
-gutil_idle_pool_add_ptr_array(
-    GUtilIdlePool* pool,
-    GPtrArray* array);
-
-void
-gutil_idle_pool_add_object_ref(
-    GUtilIdlePool* pool,
-    gpointer object);
-
-void
-gutil_idle_pool_add_variant_ref(
-    GUtilIdlePool* pool,
-    GVariant* variant);
-
-void
-gutil_idle_pool_add_ptr_array_ref(
-    GUtilIdlePool* pool,
-    GPtrArray* array);
-
-G_END_DECLS
-
-#endif /* GUTIL_IDLEPOOL_H */
+test_object_class_init(
+    TestObjectClass* klass)
+{
+    klass->finalize = test_object_finalize;
+}
 
 /*
  * Local Variables:

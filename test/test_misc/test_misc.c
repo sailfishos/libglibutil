@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Jolla Ltd.
+ * Copyright (C) 2016-2018 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -57,7 +57,7 @@ test_disconnect(
     void)
 {
     gulong id[2];
-    GObject* obj = g_object_new(GUTIL_IDLE_POOL_TYPE, NULL);
+    GObject* obj = g_object_new(TEST_OBJECT_TYPE, NULL);
 
     /* These have no effect */
     gutil_disconnect_handlers(NULL, id, G_N_ELEMENTS(id));

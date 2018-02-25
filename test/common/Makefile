@@ -11,7 +11,7 @@ ${error EXE not defined}
 endif
 
 SRC ?= $(EXE).c
-COMMON_SRC ?= test_main.c
+COMMON_SRC ?= test_main.c test_object.c
 
 #
 # Required packages

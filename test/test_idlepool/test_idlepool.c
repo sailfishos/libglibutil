@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Jolla Ltd.
+ * Copyright (C) 2016-2018 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -13,8 +13,8 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of the Jolla Ltd nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *   3. Neither the name of Jolla Ltd nor the names of its contributors may
+ *      be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -118,7 +118,7 @@ test_basic(
 {
     GPtrArray* array = g_ptr_array_new_with_free_func(test_basic_array_free);
     GVariant* variant = g_variant_take_ref(g_variant_new_int32(1));
-    GObject* object = g_object_new(GUTIL_IDLE_POOL_TYPE, NULL);
+    GObject* object = g_object_new(TEST_OBJECT_TYPE, NULL);
     TestBasic test;
 
     memset(&test, 0, sizeof(test));
@@ -165,6 +165,7 @@ test_basic(
     gutil_idle_pool_unref(test.pool);
 
     g_assert(test.ok);
+    g_assert(!test_object_count);
     if (!(test_opt.flags & TEST_FLAG_DEBUG)) {
         g_assert(test.timeout_id);
         g_source_remove(test.timeout_id);

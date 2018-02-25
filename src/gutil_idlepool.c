@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Jolla Ltd.
+ * Copyright (C) 2016-2018 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -13,8 +13,8 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of the Jolla Ltd nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
+ *   3. Neither the name of Jolla Ltd nor the names of its contributors may
+ *      be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -33,6 +33,8 @@
 #include <gutil_idlepool.h>
 #include <gutil_log.h>
 
+#include <glib-object.h>
+
 typedef struct gutil_idle_pool_item GUtilIdlePoolItem;
 
 struct gutil_idle_pool_item {
@@ -42,19 +44,18 @@ struct gutil_idle_pool_item {
 };
 
 struct gutil_idle_pool {
-    GObject object;
+    gint ref_count;
     guint idle_id;
     GUtilIdlePoolItem* first;
     GUtilIdlePoolItem* last;
 };
 
-typedef GObjectClass GUtilIdlePoolClass;
-G_DEFINE_TYPE(GUtilIdlePool, gutil_idle_pool, G_TYPE_OBJECT)
-
 GUtilIdlePool*
 gutil_idle_pool_new()
 {
-    return g_object_new(GUTIL_IDLE_POOL_TYPE, NULL);
+    GUtilIdlePool* self = g_slice_new0(GUtilIdlePool);
+    self->ref_count = 1;
+    return self;
 }
 
 GUtilIdlePool*
@@ -62,7 +63,8 @@ gutil_idle_pool_ref(
     GUtilIdlePool* self)
 {
     if (G_LIKELY(self)) {
-        g_object_ref(GUTIL_IDLE_POOL(self));
+        GASSERT(self->ref_count > 0);
+        g_atomic_int_inc(&self->ref_count);
     }
     return self;
 }
@@ -72,7 +74,11 @@ gutil_idle_pool_unref(
     GUtilIdlePool* self)
 {
     if (G_LIKELY(self)) {
-        g_object_unref(GUTIL_IDLE_POOL(self));
+        GASSERT(self->ref_count > 0);
+        if (g_atomic_int_dec_and_test(&self->ref_count)) {
+            gutil_idle_pool_drain(self);
+            g_slice_free(GUtilIdlePool, self);
+        }
     }
 }
 
@@ -194,30 +200,6 @@ gutil_idle_pool_add_ptr_array_ref(
     if (G_LIKELY(self) && G_LIKELY(array)) {
         gutil_idle_pool_add_ptr_array(self, g_ptr_array_ref(array));
     }
-}
-
-static
-void
-gutil_idle_pool_dispose(
-    GObject* object)
-{
-    GUtilIdlePool* self = GUTIL_IDLE_POOL(object);
-    gutil_idle_pool_drain(self);
-    G_OBJECT_CLASS(gutil_idle_pool_parent_class)->dispose(object);
-}
-
-static
-void
-gutil_idle_pool_init(
-    GUtilIdlePool* self)
-{
-}
-
-static
-void gutil_idle_pool_class_init(
-    GUtilIdlePoolClass* klass)
-{
-    G_OBJECT_CLASS(klass)->dispose = gutil_idle_pool_dispose;
 }
 
 /*
