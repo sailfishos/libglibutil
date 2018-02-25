@@ -1,3 +1,9 @@
+libglibutil (1.0.28) unstable; urgency=low
+
+  * Added gutil_idle_pool_get function
+
+ -- Slava Monich <slava.monich@jolla.com>  Sun, 25 Feb 2018 19:58:21 +0200
+
 libglibutil (1.0.27) unstable; urgency=low
 
   * GUtilIdlePool is not a GObject anymore
