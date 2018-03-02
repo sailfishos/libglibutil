@@ -125,6 +125,7 @@ ifneq ($(strip $(DEPS)),)
 endif
 endif
 
+$(PKGCONFIG): | $(BUILD_DIR)
 $(DEBUG_OBJS) $(DEBUG_LIB): | $(DEBUG_BUILD_DIR)
 $(RELEASE_OBJS) $(RELEASE_LIB): | $(RELEASE_BUILD_DIR)
 
@@ -173,7 +174,7 @@ clean:
 test:
 	make -C test test
 
-$(GEN_DIR):
+$(BUILD_DIR):
 	mkdir -p $@
 
 $(DEBUG_BUILD_DIR):
