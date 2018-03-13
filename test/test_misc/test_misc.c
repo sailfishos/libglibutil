@@ -126,6 +126,38 @@ test_hex2bin(
 }
 
 /*==========================================================================*
+ * Hexdump
+ *==========================================================================*/
+
+static
+void
+test_hexdump(
+    void)
+{
+    char buf[GUTIL_HEXDUMP_BUFSIZE];
+    static const guchar data[] = {
+        0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+        0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f, 0x00
+    };
+
+    g_assert(gutil_hexdump(buf, data, sizeof(data)) == GUTIL_HEXDUMP_MAXBYTES);
+    g_assert(strlen(buf) == GUTIL_HEXDUMP_BUFSIZE - 1);
+    GDEBUG("%s", buf);
+    g_assert(!strcmp(buf,
+        "30 31 32 33 34 35 36 37  "
+        "38 39 3a 3b 3c 3d 3e 3f    "
+        "01234567 89:;<=>?"));
+
+    g_assert(gutil_hexdump(buf, data + GUTIL_HEXDUMP_MAXBYTES, 1) == 1);
+    g_assert(strlen(buf) == 53);
+    GDEBUG("%s", buf);
+    g_assert(!strcmp(buf,
+        "00                       "
+        "                           "
+        "."));
+}
+
+/*==========================================================================*
  * Common
  *==========================================================================*/
 
@@ -137,8 +169,14 @@ int main(int argc, char* argv[])
     g_type_init();
     G_GNUC_END_IGNORE_DEPRECATIONS;
     g_test_init(&argc, &argv, NULL);
+
+    gutil_log_timestamp = FALSE;
+    gutil_log_default.level = g_test_verbose() ?
+        GLOG_LEVEL_VERBOSE : GLOG_LEVEL_NONE;
+
     g_test_add_func(TEST_PREFIX "disconnect", test_disconnect);
     g_test_add_func(TEST_PREFIX "hex2bin", test_hex2bin);
+    g_test_add_func(TEST_PREFIX "hexdump", test_hexdump);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }
