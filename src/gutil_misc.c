@@ -103,6 +103,54 @@ gutil_hex2bytes(
     return NULL;
 }
 
+/**
+ * The caller makes sure that the destination buffer has at least
+ * GUTIL_HEXDUMP_BUFSIZE bytes available. Returns the number of
+ * bytes actually dumped (no more than GUTIL_HEXDUMP_MAXBYTES).
+ *
+ * Since 1.0.29
+ */
+guint
+gutil_hexdump(
+    char* buf,
+    const void* data,
+    guint len)
+{
+    static const char hex[] = "0123456789abcdef";
+    const guint bytes_dumped = MIN(len, GUTIL_HEXDUMP_MAXBYTES);
+    const guchar* bytes = data;
+    char* ptr = buf;
+    guint i;
+
+    for (i=0; i<GUTIL_HEXDUMP_MAXBYTES; i++) {
+        if (i > 0) {
+            *ptr++ = ' ';
+            if (i == 8) *ptr++ = ' ';
+        }
+        if (i < len) {
+            const guchar b = bytes[i];
+            *ptr++ = hex[(b >> 4) & 0xf];
+            *ptr++ = hex[b & 0xf];
+        } else {
+            *ptr++ = ' ';
+            *ptr++ = ' ';
+        }
+    }
+
+    *ptr++ = ' ';
+    *ptr++ = ' ';
+    *ptr++ = ' ';
+    *ptr++ = ' ';
+    for (i=0; i<bytes_dumped; i++) {
+        const char c = bytes[i];
+        if (i == 8) *ptr++ = ' ';
+        *ptr++ = isprint(c) ? c : '.';
+    }
+
+    *ptr++ = 0;
+    return bytes_dumped;
+}
+
 /*
  * Local Variables:
  * mode: C

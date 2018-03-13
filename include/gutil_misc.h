@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Jolla Ltd.
+ * Copyright (C) 2016-2018 Jolla Ltd.
  * Contact: Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -53,6 +53,15 @@ GBytes*
 gutil_hex2bytes(
     const char* str,
     gssize len);
+
+#define GUTIL_HEXDUMP_BUFSIZE  (70)
+#define GUTIL_HEXDUMP_MAXBYTES (16)
+
+guint
+gutil_hexdump(
+    char* buf,
+    const void* data,
+    guint len); /* since 1.0.29 */
 
 G_END_DECLS
 
