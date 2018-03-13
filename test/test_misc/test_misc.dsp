@@ -93,6 +93,10 @@ SOURCE=..\common\test_main.c
 
 SOURCE=.\test_misc.c
 # End Source File
+# Begin Source File
+
+SOURCE=..\common\test_object.c
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
