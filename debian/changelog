@@ -1,3 +1,10 @@
+libglibutil (1.0.29) unstable; urgency=low
+
+  * Added gutil_hexdump function
+  * Fixed dependencies for pkgconfig target
+
+ -- Slava Monich <slava.monich@jolla.com>  Tue, 13 Mar 2018 19:28:46 +0300
+
 libglibutil (1.0.28) unstable; urgency=low
 
   * Added gutil_idle_pool_get function
