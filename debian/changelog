@@ -1,3 +1,9 @@
+libglibutil (1.0.30) unstable; urgency=low
+
+  * Added gutil_parse_int function
+
+ -- Slava Monich <slava.monich@jolla.com>  Fri, 20 Jul 2018 00:06:40 +0300
+
 libglibutil (1.0.29) unstable; urgency=low
 
   * Added gutil_hexdump function
