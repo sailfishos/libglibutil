@@ -158,6 +158,34 @@ test_hexdump(
 }
 
 /*==========================================================================*
+ * ParseInt
+ *==========================================================================*/
+
+static
+void
+test_parse_int(
+    void)
+{
+    int value;
+
+    g_assert(!gutil_parse_int(NULL, 0, NULL));
+    g_assert(!gutil_parse_int("", 0, NULL));
+    g_assert(!gutil_parse_int("garbage", 0, NULL));
+    g_assert(!gutil_parse_int("0 trailing garbage", 0, NULL));
+    g_assert(gutil_parse_int("0", 0, NULL));
+    g_assert(gutil_parse_int("0", 0, &value));
+    g_assert(value == 0);
+    g_assert(!gutil_parse_int("0x10000000000000000", 0, &value));
+    g_assert(!gutil_parse_int("-2147483649", 0, &value));
+    g_assert(!gutil_parse_int("4294967295", 0, &value));
+    g_assert(gutil_parse_int(" 0x7fffffff ", 0, &value));
+    g_assert(value == 0x7fffffff);
+    g_assert(gutil_parse_int(" 7fffffff ", 16, &value));
+    g_assert(value == 0x7fffffff);
+    g_assert(!gutil_parse_int("0xffffffff", 0, &value));
+}
+
+/*==========================================================================*
  * Common
  *==========================================================================*/
 
@@ -177,6 +205,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_PREFIX "disconnect", test_disconnect);
     g_test_add_func(TEST_PREFIX "hex2bin", test_hex2bin);
     g_test_add_func(TEST_PREFIX "hexdump", test_hexdump);
+    g_test_add_func(TEST_PREFIX "parse_int", test_parse_int);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }
