@@ -54,6 +54,7 @@ gutil_hex2bytes(
     const char* str,
     gssize len);
 
+/* since 1.0.29 */
 #define GUTIL_HEXDUMP_BUFSIZE  (70)
 #define GUTIL_HEXDUMP_MAXBYTES (16)
 
@@ -61,7 +62,14 @@ guint
 gutil_hexdump(
     char* buf,
     const void* data,
-    guint len); /* since 1.0.29 */
+    guint len);
+
+/* since 1.0.30 */
+gboolean
+gutil_parse_int(
+    const char* str,
+    int base,
+    int* value);
 
 G_END_DECLS
 

@@ -35,6 +35,8 @@
 #include <glib-object.h>
 
 #include <ctype.h>
+#include <limits.h>
+#include <errno.h>
 
 void
 gutil_disconnect_handlers(
@@ -149,6 +151,31 @@ gutil_hexdump(
 
     *ptr++ = 0;
     return bytes_dumped;
+}
+
+/* Since 1.0.30 */
+gboolean
+gutil_parse_int(
+    const char* str,
+    int base,
+    int* value)
+{
+    gboolean ok = FALSE;
+
+    if (str && str[0]) {
+        char* str2 = g_strstrip(g_strdup(str));
+        char* end = str2;
+        gint64 l;
+
+        errno = 0;
+        l = g_ascii_strtoll(str2, &end, base);
+        ok = !*end && errno != ERANGE && l >= INT_MIN && l <= INT_MAX;
+        if (ok && value) {
+            *value = (int)l;
+        }
+        g_free(str2);
+    }
+    return ok;
 }
 
 /*
