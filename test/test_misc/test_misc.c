@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016-2018 Jolla Ltd.
- * Contact: Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2016-2018 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -13,9 +13,9 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of Jolla Ltd nor the names of its contributors may
- *      be used to endorse or promote products derived from this software
- *      without specific prior written permission.
+ *   3. Neither the names of the copyright holders nor the names of its
+ *      contributors may be used to endorse or promote products derived from
+ *      this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -186,6 +186,87 @@ test_parse_int(
 }
 
 /*==========================================================================*
+ * DataEqual
+ *==========================================================================*/
+
+static
+void
+test_data_equal(
+    void)
+{
+    static const guint8 val_123[] = { '1', '2', '3' };
+    static const guint8 val_1234[] = { '1', '2', '3', '4' };
+    static const guint8 val_321[] = { '3', '2', '1' };
+
+    GUtilData data_123, data_123a, data_1234, data_321;
+
+    TEST_INIT_DATA(data_123, val_123);
+    TEST_INIT_DATA(data_123a, val_123);
+    TEST_INIT_DATA(data_1234, val_1234);
+    TEST_INIT_DATA(data_321, val_321);
+
+    g_assert(gutil_data_equal(NULL, NULL));
+    g_assert(gutil_data_equal(&data_123, &data_123));
+    g_assert(gutil_data_equal(&data_123, &data_123a));
+    g_assert(!gutil_data_equal(&data_123, &data_1234));
+    g_assert(!gutil_data_equal(&data_123, &data_321));
+    g_assert(!gutil_data_equal(&data_123, NULL));
+    g_assert(!gutil_data_equal(NULL, &data_123));
+}
+
+/*==========================================================================*
+ * DataFromBytes
+ *==========================================================================*/
+
+static
+void
+test_data_from_bytes(
+    void)
+{
+    static const guint8 val_123[] = { '1', '2', '3' };
+    GBytes* bytes_123 = g_bytes_new_static(val_123, sizeof(val_123));
+    GUtilData data_123, data;
+
+    TEST_INIT_DATA(data_123, val_123);
+    TEST_INIT_DATA(data, val_123);
+
+    g_assert(!gutil_data_from_bytes(NULL, NULL));
+
+    g_assert(gutil_data_from_bytes(&data, NULL) == &data);
+    g_assert(!data.bytes);
+    g_assert(!data.size);
+
+    g_assert(gutil_data_from_bytes(&data, bytes_123) == &data);
+    g_assert(gutil_data_equal(&data_123, &data));
+    g_bytes_unref(bytes_123);
+}
+
+/*==========================================================================*
+ * DataFromString
+ *==========================================================================*/
+
+static
+void
+test_data_from_string(
+    void)
+{
+    static const guint8 val_123[] = { '1', '2', '3' };
+    GUtilData data_123, data;
+
+    TEST_INIT_DATA(data_123, val_123);
+    TEST_INIT_DATA(data, val_123);
+
+    g_assert(!gutil_data_from_string(NULL, NULL));
+
+    g_assert(gutil_data_from_string(&data, NULL) == &data);
+    g_assert(!data.bytes);
+    g_assert(!data.size);
+
+    g_assert(gutil_data_from_string(&data, "123") == &data);
+    g_assert(gutil_data_equal(&data_123, &data));
+}
+
+/*==========================================================================*
  * Common
  *==========================================================================*/
 
@@ -206,6 +287,9 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_PREFIX "hex2bin", test_hex2bin);
     g_test_add_func(TEST_PREFIX "hexdump", test_hexdump);
     g_test_add_func(TEST_PREFIX "parse_int", test_parse_int);
+    g_test_add_func(TEST_PREFIX "data_equal", test_data_equal);
+    g_test_add_func(TEST_PREFIX "data_from_bytes", test_data_from_bytes);
+    g_test_add_func(TEST_PREFIX "data_from_string", test_data_from_string);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }
