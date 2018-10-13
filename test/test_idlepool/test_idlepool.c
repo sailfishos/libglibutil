@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016-2018 Jolla Ltd.
- * Contact: Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2016-2018 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -13,9 +13,9 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of Jolla Ltd nor the names of its contributors may
- *      be used to endorse or promote products derived from this software
- *      without specific prior written permission.
+ *   3. Neither the names of the copyright holders nor the names of its
+ *      contributors may be used to endorse or promote products derived from
+ *      this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -33,6 +33,7 @@
 #include "test_common.h"
 
 #include "gutil_idlepool.h"
+#include "gutil_strv.h"
 #include "gutil_log.h"
 
 #define TEST_TIMEOUT (10) /* seconds */
@@ -114,6 +115,7 @@ test_basic(
     GVariant* variant = g_variant_take_ref(g_variant_new_int32(1));
     GObject* object = g_object_new(TEST_OBJECT_TYPE, NULL);
     GMainLoop* loop = g_main_loop_new(NULL, TRUE);
+    GStrV* strv = gutil_strv_add(NULL, "foo");
     TestBasic test;
 
     memset(&test, 0, sizeof(test));
@@ -125,6 +127,8 @@ test_basic(
 
     /* These have no effect, just testing NULL-telerance */
     gutil_idle_pool_unref(gutil_idle_pool_new());
+    gutil_idle_pool_add_strv(NULL, NULL);
+    gutil_idle_pool_add_strv(NULL, strv);
     gutil_idle_pool_add_ptr_array(NULL, array);
     gutil_idle_pool_add_ptr_array(test.pool, NULL);
     gutil_idle_pool_add_ptr_array_ref(NULL, array);
@@ -143,6 +147,7 @@ test_basic(
     gutil_idle_pool_unref(NULL);
     gutil_idle_pool_drain(NULL);
 
+    gutil_idle_pool_add_strv(test.pool, strv);
     g_ptr_array_add(array, &test);
     gutil_idle_pool_add_ptr_array_ref(test.pool, array);
     g_ptr_array_unref(array);
