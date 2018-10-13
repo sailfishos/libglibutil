@@ -1,3 +1,13 @@
+libglibutil (1.0.31) unstable; urgency=low
+
+  * Added GUtilData type and functions to work with it:
+
+    gutil_data_equal
+    gutil_data_from_string
+    gutil_data_from_bytes
+
+ -- Slava Monich <slava.monich@jolla.com>  Sat, 13 Oct 2018 13:17:45 +0300
+
 libglibutil (1.0.30) unstable; urgency=low
 
   * Added gutil_parse_int function
