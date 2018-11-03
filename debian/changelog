@@ -1,3 +1,9 @@
+libglibutil (1.0.33) unstable; urgency=low
+
+  * Added GLOG_FLAG_DISABLE flag
+
+ -- Slava Monich <slava.monich@jolla.com>  Sat, 03 Nov 2018 11:47:25 +0300
+
 libglibutil (1.0.32) unstable; urgency=low
 
   * Added gutil_idle_pool_add_strv function
