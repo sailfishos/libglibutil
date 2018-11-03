@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2017 Jolla Ltd.
- * Contact: Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2017-2018 Jolla Ltd.
+ * Copyright (C) 2017-2018 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -13,9 +13,9 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of Jolla Ltd nor the names of its contributors may
- *      be used to endorse or promote products derived from this software
- *      without specific prior written permission.
+ *   3. Neither the names of the copyright holders nor the names of its
+ *      contributors may be used to endorse or promote products derived from
+ *      this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -92,6 +92,12 @@ test_log_basic(
     g_assert(test_log_basic_buf->len);
     g_string_set_size(test_log_basic_buf, 0);
 
+    /* Test GLOG_FLAG_DISABLE */
+    module.flags |= GLOG_FLAG_DISABLE;
+    gutil_log(&module, GLOG_LEVEL_ALWAYS, "Always!");
+    g_assert(!test_log_basic_buf->len);
+    module.flags &= ~GLOG_FLAG_DISABLE;
+
     /* Without log functions these calls have no effect */
     gutil_log_func = NULL;
     gutil_log(NULL, GLOG_LEVEL_ALWAYS, "Always!");
@@ -126,6 +132,9 @@ test_log_enabled(
     gutil_log_default.level = GLOG_LEVEL_INFO;
     g_assert(gutil_log_enabled(&gutil_log_default, GLOG_LEVEL_ALWAYS));
     g_assert(gutil_log_enabled(&gutil_log_default, GLOG_LEVEL_INFO));
+    gutil_log_default.flags |= GLOG_FLAG_DISABLE;
+    g_assert(!gutil_log_enabled(&gutil_log_default, GLOG_LEVEL_INFO));
+    gutil_log_default.flags &= ~GLOG_FLAG_DISABLE;
     g_assert(!gutil_log_enabled(&gutil_log_default, GLOG_LEVEL_DEBUG));
 
     /* It makes no sense to have default as INHERIT so it's treated as NONE */

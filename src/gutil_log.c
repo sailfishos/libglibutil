@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2017 Jolla Ltd.
- * Contact: Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2018 Jolla Ltd.
+ * Copyright (C) 2014-2018 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -13,9 +13,9 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of Jolla Ltd nor the names of its contributors may
- *      be used to endorse or promote products derived from this software
- *      without specific prior written permission.
+ *   3. Neither the names of the copyright holders nor the names of its
+ *      contributors may be used to endorse or promote products derived from
+ *      this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -302,17 +302,20 @@ gutil_logv_r(
     const char* format,
     va_list va)
 {
-    if (check && check->level == GLOG_LEVEL_INHERIT && check->parent) {
-        gutil_logv_r(module, check->parent, level, format, va);
-    } else {
-        const int max_level = (check && check->level != GLOG_LEVEL_INHERIT) ?
-            check->level : gutil_log_default.level;
-        if ((level > GLOG_LEVEL_NONE && level <= max_level) ||
-            (level == GLOG_LEVEL_ALWAYS)) {
-            GLogProc2 log = gutil_log_func2;
-            if (G_LIKELY(log)) {
-                if (!module) module = &gutil_log_default;
-                log(module, level, format, va);
+    if (!check || !(check->flags & GLOG_FLAG_DISABLE)) {
+        if (check && check->level == GLOG_LEVEL_INHERIT && check->parent) {
+            gutil_logv_r(module, check->parent, level, format, va);
+        } else {
+            const int max_level =
+                (check && check->level != GLOG_LEVEL_INHERIT) ?
+                check->level : gutil_log_default.level;
+            if ((level > GLOG_LEVEL_NONE && level <= max_level) ||
+                (level == GLOG_LEVEL_ALWAYS)) {
+                GLogProc2 log = gutil_log_func2;
+                if (G_LIKELY(log)) {
+                    if (!module) module = &gutil_log_default;
+                    log(module, level, format, va);
+                }
             }
         }
     }
@@ -363,7 +366,9 @@ gutil_log_enabled_r(
     const GLogModule* module,
     int level)
 {
-    if (module->level == GLOG_LEVEL_INHERIT && module->parent) {
+    if (module->flags & GLOG_FLAG_DISABLE) {
+        return FALSE;
+    } else if (module->level == GLOG_LEVEL_INHERIT && module->parent) {
         return gutil_log_enabled_r(module->parent, level);
     } else {
         const int max_level = (module->level == GLOG_LEVEL_INHERIT) ?
