@@ -48,6 +48,7 @@ G_BEGIN_DECLS
  * gutil_idle_pool_add_object()
  * gutil_idle_pool_add_variant()
  * gutil_idle_pool_add_ptr_array()
+ * gutil_idle_pool_add_bytes()
  *
  * The following functions, however, do add the reference and hold it
  * until the pool is drained:
@@ -55,6 +56,7 @@ G_BEGIN_DECLS
  * gutil_idle_pool_add_object_ref()
  * gutil_idle_pool_add_variant_ref()
  * gutil_idle_pool_add_ptr_array_ref()
+ * gutil_idle_pool_add_bytes_ref()
  */
 
 GUtilIdlePool*
@@ -71,6 +73,10 @@ gutil_idle_pool_ref(
 void
 gutil_idle_pool_unref(
     GUtilIdlePool* pool);
+
+void
+gutil_idle_pool_destroy(
+    GUtilIdlePool* pool); /* Since 1.0.34 */
 
 void
 gutil_idle_pool_drain(
@@ -103,6 +109,11 @@ gutil_idle_pool_add_ptr_array(
     GPtrArray* array);
 
 void
+gutil_idle_pool_add_bytes(
+    GUtilIdlePool* pool,
+    GBytes* bytes); /* Since 1.0.34 */
+
+void
 gutil_idle_pool_add_object_ref(
     GUtilIdlePool* pool,
     gpointer object);
@@ -116,6 +127,11 @@ void
 gutil_idle_pool_add_ptr_array_ref(
     GUtilIdlePool* pool,
     GPtrArray* array);
+
+void
+gutil_idle_pool_add_bytes_ref(
+    GUtilIdlePool* pool,
+    GBytes* bytes); /* Since 1.0.34 */
 
 G_END_DECLS
 

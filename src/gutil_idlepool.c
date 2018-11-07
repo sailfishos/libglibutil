@@ -55,7 +55,7 @@ GUtilIdlePool*
 gutil_idle_pool_new()
 {
     GUtilIdlePool* self = g_slice_new0(GUtilIdlePool);
-    self->ref_count = 1;
+    g_atomic_int_set(&self->ref_count, 1);
     return self;
 }
 
@@ -106,6 +106,14 @@ gutil_idle_pool_unref(
             g_slice_free(GUtilIdlePool, self);
         }
     }
+}
+
+void
+gutil_idle_pool_destroy(
+    GUtilIdlePool* self) /* Since 1.0.34 */
+{
+    gutil_idle_pool_drain(self);
+    gutil_idle_pool_unref(self);
 }
 
 void
@@ -209,6 +217,16 @@ gutil_idle_pool_add_ptr_array(
 }
 
 void
+gutil_idle_pool_add_bytes(
+    GUtilIdlePool* self,
+    GBytes* bytes) /* Since 1.0.34 */
+{
+    if (G_LIKELY(bytes)) {
+        gutil_idle_pool_add(self, bytes, (GDestroyNotify)g_bytes_unref);
+    }
+}
+
+void
 gutil_idle_pool_add_object_ref(
     GUtilIdlePool* self,
     gpointer object)
@@ -235,6 +253,16 @@ gutil_idle_pool_add_ptr_array_ref(
 {
     if (G_LIKELY(self) && G_LIKELY(array)) {
         gutil_idle_pool_add_ptr_array(self, g_ptr_array_ref(array));
+    }
+}
+
+void
+gutil_idle_pool_add_bytes_ref(
+    GUtilIdlePool* self,
+    GBytes* bytes) /* Since 1.0.34 */
+{
+    if (G_LIKELY(self) && G_LIKELY(bytes)) {
+        gutil_idle_pool_add_bytes(self, g_bytes_ref(bytes));
     }
 }
 
