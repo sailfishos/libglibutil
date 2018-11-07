@@ -1,3 +1,13 @@
+libglibutil (1.0.34) unstable; urgency=low
+
+  * Added a few more GUtilIdlePool functions:
+
+    gutil_data_equal
+    gutil_data_from_string
+    gutil_data_from_bytes
+
+ -- Slava Monich <slava.monich@jolla.com>  Wed, 07 Nov 2018 17:57:52 +0300
+
 libglibutil (1.0.33) unstable; urgency=low
 
   * Added GLOG_FLAG_DISABLE flag
