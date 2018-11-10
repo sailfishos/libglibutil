@@ -2,9 +2,9 @@ libglibutil (1.0.34) unstable; urgency=low
 
   * Added a few more GUtilIdlePool functions:
 
-    gutil_data_equal
-    gutil_data_from_string
-    gutil_data_from_bytes
+    gutil_idle_pool_destroy
+    gutil_idle_pool_add_bytes
+    gutil_idle_pool_add_bytes_ref
 
  -- Slava Monich <slava.monich@jolla.com>  Wed, 07 Nov 2018 17:57:52 +0300
 
