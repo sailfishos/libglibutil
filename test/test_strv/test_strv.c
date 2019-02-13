@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2015-2017 Jolla Ltd.
- * Contact: Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2015-2019 Jolla Ltd.
+ * Copyright (C) 2015-2019 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -13,9 +13,9 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of Jolla Ltd nor the names of its contributors may
- *      be used to endorse or promote products derived from this software
- *      without specific prior written permission.
+ *   3. Neither the names of the copyright holders nor the names of its
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -58,6 +58,29 @@ test_basic(
     g_assert(!gutil_strv_strip(NULL));
 
     g_strfreev(sv);
+}
+
+/*==========================================================================*
+ * Last
+ *==========================================================================*/
+
+static
+void
+test_last(
+    void)
+{
+    char** empty = g_new0(char*, 1);
+    char** a = g_strsplit("a", ",", 0);
+    char** ab = g_strsplit("a,b", ",", 0);
+
+    g_assert(!gutil_strv_last(NULL));
+    g_assert(!gutil_strv_last(empty));
+    g_assert(!g_strcmp0(gutil_strv_last(a), "a"));
+    g_assert(!g_strcmp0(gutil_strv_last(ab), "b"));
+
+    g_strfreev(empty);
+    g_strfreev(a);
+    g_strfreev(ab);
 }
 
 /*==========================================================================*
@@ -190,6 +213,7 @@ int main(int argc, char* argv[])
 {
     g_test_init(&argc, &argv, NULL);
     g_test_add_func(TEST_PREFIX "basic", test_basic);
+    g_test_add_func(TEST_PREFIX "last", test_last);
     g_test_add_func(TEST_PREFIX "equal", test_equal);
     g_test_add_func(TEST_PREFIX "find", test_find);
     g_test_add_func(TEST_PREFIX "remove", test_remove);
