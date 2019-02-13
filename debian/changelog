@@ -1,3 +1,9 @@
+libglibutil (1.0.35) unstable; urgency=low
+
+  * Added gutil_strv_last() function
+
+ -- Slava Monich <slava.monich@jolla.com>  Wed, 13 Feb 2019 19:56:31 +0300
+
 libglibutil (1.0.34) unstable; urgency=low
 
   * Added a few more GUtilIdlePool functions:
