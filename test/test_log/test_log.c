@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2017-2018 Jolla Ltd.
- * Copyright (C) 2017-2018 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2017-2019 Jolla Ltd.
+ * Copyright (C) 2017-2019 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -29,6 +29,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifdef linux
+#  define _GNU_SOURCE /* for fopencookie */
+#  define HAVE_TEST_LOG_FILE
+#endif
 
 #include "test_common.h"
 
@@ -112,6 +117,97 @@ test_log_basic(
 }
 
 /*==========================================================================*
+ * File
+ *==========================================================================*/
+
+#ifdef HAVE_TEST_LOG_FILE
+
+static
+ssize_t
+test_log_file_write(
+    void* buf,
+    const char* chars,
+    size_t size)
+{
+    g_string_append_len(buf, chars, size);
+    return size;
+}
+
+static
+void
+test_log_file(
+    void)
+{
+    static const cookie_io_functions_t funcs = {
+        .write = test_log_file_write
+    };
+    GString* buf = g_string_new(NULL);
+    FILE* out = fopencookie(buf, "w", funcs);
+    FILE* default_stdout = stdout;
+    const int level = gutil_log_default.level;
+
+    g_assert(out);
+    g_assert(gutil_log_set_type(GLOG_TYPE_STDOUT, NULL));
+    g_assert(gutil_log_func == gutil_log_stdout);
+    gutil_log_timestamp = FALSE;
+    gutil_log_default.level = GLOG_LEVEL_WARN;
+
+    /* Warning pefix */
+    stdout = out;
+    gutil_log(NULL, GLOG_LEVEL_WARN, "Test");
+    stdout = default_stdout;
+    g_assert(fflush(out) == 0);
+    GDEBUG("%s", buf->str);
+    g_assert(!g_strcmp0(buf->str, "WARNING: Test\n"));
+    g_string_set_size(buf, 0);
+
+    /* Error prefix */
+    stdout = out;
+    gutil_log(NULL, GLOG_LEVEL_ERR, "Test");
+    stdout = default_stdout;
+    g_assert(fflush(out) == 0);
+    GDEBUG("%s", buf->str);
+    g_assert(!g_strcmp0(buf->str, "ERROR: Test\n"));
+    g_string_set_size(buf, 0);
+
+    /* Empty name (dropped) */
+    gutil_log_default.name = "";
+    stdout = out;
+    gutil_log(NULL, GLOG_LEVEL_ALWAYS, "Test");
+    stdout = default_stdout;
+    g_assert(fflush(out) == 0);
+    GDEBUG("%s", buf->str);
+    g_assert(!g_strcmp0(buf->str, "Test\n"));
+    g_string_set_size(buf, 0);
+
+    /* Non-empty name */
+    gutil_log_default.name = "test";
+    stdout = out;
+    gutil_log(NULL, GLOG_LEVEL_ALWAYS, "Test");
+    stdout = default_stdout;
+    g_assert(fflush(out) == 0);
+    GDEBUG("%s", buf->str);
+    g_assert(!g_strcmp0(buf->str, "[test] Test\n"));
+    g_string_set_size(buf, 0);
+
+    /* Hide the name */
+    gutil_log_default.flags |= GLOG_FLAG_HIDE_NAME;
+    stdout = out;
+    gutil_log(NULL, GLOG_LEVEL_ALWAYS, "Test");
+    stdout = default_stdout;
+    g_assert(fflush(out) == 0);
+    GDEBUG("%s", buf->str);
+    g_assert(!g_strcmp0(buf->str, "Test\n"));
+    g_string_set_size(buf, 0);
+
+    fclose(out);
+    gutil_log_default.level = level;
+    g_string_free(buf, TRUE);
+}
+
+#endif /* HAVE_TEST_LOG_FILE */
+
+/*==========================================================================*
  * Enabled
  *==========================================================================*/
 
@@ -190,6 +286,9 @@ int main(int argc, char* argv[])
 {
     g_test_init(&argc, &argv, NULL);
     g_test_add_func(TEST_PREFIX "basic", test_log_basic);
+#ifdef HAVE_TEST_LOG_FILE
+    g_test_add_func(TEST_PREFIX "file", test_log_file);
+#endif
     g_test_add_func(TEST_PREFIX "enabled", test_log_enabled);
     g_test_add_func(TEST_PREFIX "misc", test_log_misc);
     test_init(&test_opt, argc, argv);
