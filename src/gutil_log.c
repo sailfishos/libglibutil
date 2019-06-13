@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2018 Jolla Ltd.
- * Copyright (C) 2014-2018 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2019 Jolla Ltd.
+ * Copyright (C) 2014-2019 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -108,6 +108,7 @@ gutil_log_format(
 {
     int size, nchars = -1;
     char* buffer;
+
     if (buf) {
         size = bufsize;
         buffer = buf;
@@ -115,10 +116,11 @@ gutil_log_format(
         size = MAX(100,bufsize);
         buffer = g_malloc(size);
     }
-    while (buffer) {
 
+    while (buffer) {
         /* Try to print in the allocated space. */
         va_list va2;
+
         G_VA_COPY(va2, va);
         nchars = g_vsnprintf(buffer, size, format, va2);
         va_end(va2);
@@ -151,6 +153,7 @@ gutil_log_stdio(
     char buf[512];
     const char* prefix = "";
     char* msg;
+
     if (gutil_log_timestamp) {
         time_t now;
         time(&now);
@@ -158,6 +161,12 @@ gutil_log_stdio(
     } else {
         t[0] = 0;
     }
+
+    /* Empty name is treated the same way as NULL */
+    if (name && !name[0]) {
+        name = NULL;
+    }
+
     switch (level) {
     case GLOG_LEVEL_WARN: prefix = "WARNING: "; break;
     case GLOG_LEVEL_ERR:  prefix = "ERROR: ";   break;
