@@ -1,3 +1,10 @@
+libglibutil (1.0.36) unstable; urgency=low
+
+  * Handle empty log prefix as no prefix at all
+  * Don't nullify default log name in gutil_log_set_type()
+
+ -- Slava Monich <slava.monich@jolla.com>  Thu, 13 Jun 2019 18:15:33 +0300
+
 libglibutil (1.0.35) unstable; urgency=low
 
   * Added gutil_strv_last() function
