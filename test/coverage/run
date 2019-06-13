@@ -15,7 +15,7 @@ test_misc \
 test_ring \
 test_strv"
 
-FLAVOR="release"
+FLAVOR="coverage"
 
 pushd `dirname $0` > /dev/null
 COV_DIR="$PWD"
@@ -32,7 +32,7 @@ export LD_LIBRARY_PATH="$BASE_DIR/build/$FLAVOR"
 make GCOV=1 -C "$BASE_DIR" clean $FLAVOR
 for t in $TESTS ; do
     pushd "$TEST_DIR/$t"
-    make GCOV=1 -C "$TEST_DIR/$t" clean $FLAVOR || exit 1
+    make -C "$TEST_DIR/$t" clean $FLAVOR || exit 1
     build/$FLAVOR/$t || exit 1
     popd
 done

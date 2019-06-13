@@ -1,6 +1,6 @@
 # -*- Mode: makefile-gmake -*-
 
-.PHONY: clean all debug release libglibutil-release libglibutil-debug
+.PHONY: clean all debug release coverage debug_lib release_lib coverage_lib
 
 #
 # Real test makefile defines EXE (and possibly SRC) and includes this one.
@@ -35,20 +35,7 @@ COMMON_DIR = ../common
 BUILD_DIR = build
 DEBUG_BUILD_DIR = $(BUILD_DIR)/debug
 RELEASE_BUILD_DIR = $(BUILD_DIR)/release
-
-#
-# Code coverage
-#
-
-ifndef GCOV
-GCOV = 0
-endif
-
-ifneq ($(GCOV),0)
-CFLAGS += --coverage
-LDFLAGS += --coverage
-SUBMAKE_OPTS += GCOV=1
-endif
+COVERAGE_BUILD_DIR = $(BUILD_DIR)/coverage
 
 #
 # Tools and flags
@@ -68,6 +55,7 @@ LIBS = $(shell pkg-config --libs $(PKGS))
 QUIET_MAKE = make --no-print-directory
 DEBUG_FLAGS = -g
 RELEASE_FLAGS =
+COVERAGE_FLAGS = -g
 
 ifndef KEEP_SYMBOLS
 KEEP_SYMBOLS = 0
@@ -80,8 +68,11 @@ endif
 
 DEBUG_LDFLAGS = $(FULL_LDFLAGS) $(DEBUG_FLAGS)
 RELEASE_LDFLAGS = $(FULL_LDFLAGS) $(RELEASE_FLAGS)
+COVERAGE_LDFLAGS = $(FULL_LDFLAGS) $(COVERAGE_FLAGS) --coverage
+
 DEBUG_CFLAGS = $(FULL_CFLAGS) $(DEBUG_FLAGS) -DDEBUG
 RELEASE_CFLAGS = $(FULL_CFLAGS) $(RELEASE_FLAGS) -O2
+COVERAGE_CFLAGS = $(FULL_CFLAGS) $(COVERAGE_FLAGS) --coverage
 
 #
 # Files
@@ -93,26 +84,36 @@ DEBUG_OBJS = \
 RELEASE_OBJS = \
   $(COMMON_SRC:%.c=$(RELEASE_BUILD_DIR)/common_%.o) \
   $(SRC:%.c=$(RELEASE_BUILD_DIR)/%.o)
+COVERAGE_OBJS = \
+  $(COMMON_SRC:%.c=$(COVERAGE_BUILD_DIR)/common_%.o) \
+  $(SRC:%.c=$(COVERAGE_BUILD_DIR)/%.o)
 
 DEBUG_LIB_FILE := $(shell $(QUIET_MAKE) -C $(LIB_DIR) print_debug_lib)
 RELEASE_LIB_FILE := $(shell $(QUIET_MAKE) -C $(LIB_DIR) print_release_lib)
-DEBUG_LIB_PATH := $(shell $(QUIET_MAKE) -C $(LIB_DIR) print_debug_path)
+COVERAGE_LIB_FILE := $(shell $(QUIET_MAKE) -C $(LIB_DIR) print_coverage_lib)
+
 DEBUG_LIB := $(LIB_DIR)/$(DEBUG_LIB_FILE)
 RELEASE_LIB := $(LIB_DIR)/$(RELEASE_LIB_FILE)
+COVERAGE_LIB := $(LIB_DIR)/$(COVERAGE_LIB_FILE)
 
 #
 # Dependencies
 #
 
-DEPS = $(DEBUG_OBJS:%.o=%.d) $(RELEASE_OBJS:%.o=%.d)
+DEPS = $(DEBUG_OBJS:%.o=%.d) $(RELEASE_OBJS:%.o=%.d) $(COVERAGE_OBJS:%.o=%.d)
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(DEPS)),)
 -include $(DEPS)
 endif
 endif
 
+$(DEBUG_LIB): | debug_lib
+$(RELEASE_LIB): | release_lib
+$(COVERAGE_LIB): | coverage_lib
+
 $(DEBUG_OBJS): | $(DEBUG_BUILD_DIR)
 $(RELEASE_OBJS): | $(RELEASE_BUILD_DIR)
+$(COVERAGE_OBJS): | $(COVERAGE_BUILD_DIR)
 
 #
 # Rules
@@ -120,10 +121,13 @@ $(RELEASE_OBJS): | $(RELEASE_BUILD_DIR)
 
 DEBUG_EXE = $(DEBUG_BUILD_DIR)/$(EXE)
 RELEASE_EXE = $(RELEASE_BUILD_DIR)/$(EXE)
+COVERAGE_EXE = $(COVERAGE_BUILD_DIR)/$(EXE)
 
-debug: libglibutil-debug $(DEBUG_EXE)
+debug: debug_lib $(DEBUG_EXE)
 
-release: libglibutil-release $(RELEASE_EXE)
+release: release_lib $(RELEASE_EXE)
+
+coverage: coverage_lib $(COVERAGE_EXE)
 
 clean:
 	rm -f *~
@@ -136,15 +140,18 @@ test_banner:
 	@echo "===========" $(EXE) "=========== "
 
 test: test_banner debug 
-	@LD_LIBRARY_PATH="$(LIB_DIR)/$(DEBUG_LIB_PATH)" $(DEBUG_EXE)
+	@$(DEBUG_EXE)
 
 valgrind: test_banner debug
-	@LD_LIBRARY_PATH="$(LIB_DIR)/$(DEBUG_LIB_PATH)" G_DEBUG=gc-friendly G_SLICE=always-malloc valgrind --tool=memcheck --leak-check=full --show-possibly-lost=no $(DEBUG_EXE)
+	@G_DEBUG=gc-friendly G_SLICE=always-malloc valgrind --tool=memcheck --leak-check=full --show-possibly-lost=no $(DEBUG_EXE)
 
 $(DEBUG_BUILD_DIR):
 	mkdir -p $@
 
 $(RELEASE_BUILD_DIR):
+	mkdir -p $@
+
+$(COVERAGE_BUILD_DIR):
 	mkdir -p $@
 
 $(DEBUG_BUILD_DIR)/%.o : $(SRC_DIR)/%.c
@@ -153,11 +160,17 @@ $(DEBUG_BUILD_DIR)/%.o : $(SRC_DIR)/%.c
 $(RELEASE_BUILD_DIR)/%.o : $(SRC_DIR)/%.c
 	$(CC) -c $(RELEASE_CFLAGS) -MT"$@" -MF"$(@:%.o=%.d)" $< -o $@
 
+$(COVERAGE_BUILD_DIR)/%.o : $(SRC_DIR)/%.c
+	$(CC) -c $(COVERAGE_CFLAGS) -MT"$@" -MF"$(@:%.o=%.d)" $< -o $@
+
 $(DEBUG_BUILD_DIR)/common_%.o : $(COMMON_DIR)/%.c
 	$(CC) -c $(DEBUG_CFLAGS) -MT"$@" -MF"$(@:%.o=%.d)" $< -o $@
 
 $(RELEASE_BUILD_DIR)/common_%.o : $(COMMON_DIR)/%.c
 	$(CC) -c $(RELEASE_CFLAGS) -MT"$@" -MF"$(@:%.o=%.d)" $< -o $@
+
+$(COVERAGE_BUILD_DIR)/common_%.o : $(COMMON_DIR)/%.c
+	$(CC) -c $(COVERAGE_CFLAGS) -MT"$@" -MF"$(@:%.o=%.d)" $< -o $@
 
 $(DEBUG_EXE): $(DEBUG_LIB) $(DEBUG_BUILD_DIR) $(DEBUG_OBJS)
 	$(LD) $(DEBUG_LDFLAGS) $(DEBUG_OBJS) $< $(LIBS) -o $@
@@ -168,8 +181,14 @@ ifeq ($(KEEP_SYMBOLS),0)
 	strip $@
 endif
 
-libglibutil-debug:
+$(COVERAGE_EXE): $(COVERAGE_LIB) $(COVERAGE_BUILD_DIR) $(COVERAGE_OBJS)
+	$(LD) $(COVERAGE_LDFLAGS) $(COVERAGE_OBJS) $< $(LIBS) -o $@
+
+debug_lib:
 	@make $(SUBMAKE_OPTS) -C $(LIB_DIR) debug
 
-libglibutil-release:
+release_lib:
 	@make $(SUBMAKE_OPTS) -C $(LIB_DIR) release
+
+coverage_lib:
+	@make $(SUBMAKE_OPTS) -C $(LIB_DIR) coverage
