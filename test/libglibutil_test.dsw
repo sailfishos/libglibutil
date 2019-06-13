@@ -90,6 +90,21 @@ Package=<4>
 
 ###############################################################################
 
+Project: "test_log"=.\test_log\test_log.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libglibutil
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "test_misc"=.\test_misc\test_misc.dsp - Package Owner=<4>
 
 Package=<5>
