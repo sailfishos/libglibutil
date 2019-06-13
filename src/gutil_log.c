@@ -224,6 +224,7 @@ gutil_log_syslog(
 {
     int priority;
     const char* prefix = NULL;
+
     switch (level) {
     default:
     case GLOG_LEVEL_INFO:
@@ -244,6 +245,15 @@ gutil_log_syslog(
         prefix = "ERROR! ";
         break;
     }
+
+    if (name) {
+        /* We don't want to see default name twice in the log */
+        if (!name[0] || name == gutil_log_default.name ||
+            !g_strcmp0(name, gutil_log_default.name)) {
+            name = NULL;
+        }
+    }
+
     if (name || prefix) {
         char buf[512];
         char* msg = gutil_log_format(buf, sizeof(buf), format, va);
@@ -507,7 +517,10 @@ gutil_log_set_type(
         if (gutil_log_func != gutil_log_syslog) {
             openlog(NULL, LOG_PID | LOG_CONS, LOG_USER);
         }
-        gutil_log_default.name = NULL;
+        /* NULL default_name means "don't change the default name" */
+        if (default_name) {
+            gutil_log_default.name = default_name;
+        }
         gutil_log_func = gutil_log_syslog;
         return TRUE;
     }
@@ -515,7 +528,10 @@ gutil_log_set_type(
         closelog();
     }
 #endif /* GLOG_SYSLOG */
-    gutil_log_default.name = default_name;
+    /* NULL default_name means "don't change the default name" */
+    if (default_name) {
+        gutil_log_default.name = default_name;
+    }
     if (!g_ascii_strcasecmp(type, GLOG_TYPE_STDOUT)) {
         gutil_log_func = gutil_log_stdout;
         return TRUE;
