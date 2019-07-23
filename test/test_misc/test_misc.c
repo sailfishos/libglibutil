@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016-2018 Jolla Ltd.
- * Copyright (C) 2016-2018 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2016-2019 Jolla Ltd.
+ * Copyright (C) 2016-2019 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -267,10 +267,113 @@ test_data_from_string(
 }
 
 /*==========================================================================*
+ * BytesConcat
+ *==========================================================================*/
+
+static
+void
+test_bytes_concat(
+    void)
+{
+    static const guint8 val1[] = {0x01,0x02,0x03,0x04,0x05};
+    static const guint8 val2[] = {0x06,0x07,0x08,0x09};
+    static const guint8 val3[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09};
+    GBytes* b1 = g_bytes_new_static(val1, sizeof(val1));
+    GBytes* b2 = g_bytes_new_static(val2, sizeof(val2));
+    GBytes* b3 = g_bytes_new_static(val3, sizeof(val3));
+    GBytes* empty = g_bytes_new(NULL, 0);
+    GBytes* b;
+
+    g_assert(!gutil_bytes_concat(NULL, NULL));
+
+    b = gutil_bytes_concat(b1, NULL);
+    g_assert(b == b1);
+    g_bytes_unref(b);
+
+    b = gutil_bytes_concat(empty, NULL);
+    g_assert(b == empty);
+    g_bytes_unref(b);
+
+    b = gutil_bytes_concat(b1, empty, NULL);
+    g_assert(b == b1);
+    g_bytes_unref(b);
+
+    b = gutil_bytes_concat(empty, b1, NULL);
+    g_assert(b == b1);
+    g_bytes_unref(b);
+
+    b = gutil_bytes_concat(b1, empty, b2, NULL);
+    g_assert(g_bytes_equal(b, b3));
+    g_bytes_unref(b);
+
+    g_bytes_unref(b1);
+    g_bytes_unref(b2);
+    g_bytes_unref(b3);
+    g_bytes_unref(empty);
+}
+
+/*==========================================================================*
+ * BytesXor
+ *==========================================================================*/
+
+static
+void
+test_bytes_xor(
+    void)
+{
+    static const guint8 val1[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09};
+    static const guint8 val2[] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
+    static const guint8 val3[] = {0x01,0x03,0x01,0x07,0x01,0x03,0x01,0x0F,0x01};
+    static const guint8 val4[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+    static const guint8 val5[] = {0x05,0x06,0x07,0x08};
+    static const guint8 val6[] = {0x04,0x04,0x04,0x0C};
+    GBytes* b1 = g_bytes_new_static(val1, sizeof(val1));
+    GBytes* b2 = g_bytes_new_static(val2, sizeof(val2));
+    GBytes* b3 = g_bytes_new_static(val3, sizeof(val3));
+    GBytes* b4 = g_bytes_new_static(val4, sizeof(val4));
+    GBytes* b5 = g_bytes_new_static(val5, sizeof(val5));
+    GBytes* b6 = g_bytes_new_static(val6, sizeof(val6));
+    GBytes* empty = g_bytes_new(NULL, 0);
+    GBytes* b;
+
+    g_assert(!gutil_bytes_xor(b1, NULL));
+    g_assert(!gutil_bytes_xor(NULL, b1));
+    g_assert(!gutil_bytes_xor(NULL, NULL));
+
+    b = gutil_bytes_xor(empty, b1);
+    g_assert(b == empty);
+    g_bytes_unref(b);
+
+    b = gutil_bytes_xor(b1, empty);
+    g_assert(b == empty);
+    g_bytes_unref(b);
+
+    b = gutil_bytes_xor(b1, b1);    /* 010203040506070809^010203040506070809 */
+    g_assert(g_bytes_equal(b, b4));                   /* =000000000000000000 */
+    g_bytes_unref(b);
+
+    b = gutil_bytes_xor(b1, b2);    /* 010203040506070809^000102030405060708 */
+    g_assert(g_bytes_equal(b, b3));                   /* =010301070103010F01 */
+    g_bytes_unref(b);
+
+    b = gutil_bytes_xor(b1, b5);    /* 010203040506070809^05060708 */
+    g_assert(g_bytes_equal(b, b6));                   /* =0404040C */
+    g_bytes_unref(b);
+
+    g_bytes_unref(b1);
+    g_bytes_unref(b2);
+    g_bytes_unref(b3);
+    g_bytes_unref(b4);
+    g_bytes_unref(b5);
+    g_bytes_unref(b6);
+    g_bytes_unref(empty);
+}
+
+/*==========================================================================*
  * Common
  *==========================================================================*/
 
-#define TEST_PREFIX "/misc/"
+#define TEST_(x) "/misc/" x
 
 int main(int argc, char* argv[])
 {
@@ -283,13 +386,15 @@ int main(int argc, char* argv[])
     gutil_log_default.level = g_test_verbose() ?
         GLOG_LEVEL_VERBOSE : GLOG_LEVEL_NONE;
 
-    g_test_add_func(TEST_PREFIX "disconnect", test_disconnect);
-    g_test_add_func(TEST_PREFIX "hex2bin", test_hex2bin);
-    g_test_add_func(TEST_PREFIX "hexdump", test_hexdump);
-    g_test_add_func(TEST_PREFIX "parse_int", test_parse_int);
-    g_test_add_func(TEST_PREFIX "data_equal", test_data_equal);
-    g_test_add_func(TEST_PREFIX "data_from_bytes", test_data_from_bytes);
-    g_test_add_func(TEST_PREFIX "data_from_string", test_data_from_string);
+    g_test_add_func(TEST_("disconnect"), test_disconnect);
+    g_test_add_func(TEST_("hex2bin"), test_hex2bin);
+    g_test_add_func(TEST_("hexdump"), test_hexdump);
+    g_test_add_func(TEST_("parse_int"), test_parse_int);
+    g_test_add_func(TEST_("data_equal"), test_data_equal);
+    g_test_add_func(TEST_("data_from_bytes"), test_data_from_bytes);
+    g_test_add_func(TEST_("data_from_string"), test_data_from_string);
+    g_test_add_func(TEST_("bytes_concat"), test_bytes_concat);
+    g_test_add_func(TEST_("bytes_xor"), test_bytes_xor);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }

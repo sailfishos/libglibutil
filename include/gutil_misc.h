@@ -87,6 +87,19 @@ gutil_data_from_bytes(
     GUtilData* data,
     GBytes* bytes);
 
+/* since 1.0.37 */
+GBytes*
+gutil_bytes_concat(
+    GBytes* bytes,
+    ...)
+    G_GNUC_WARN_UNUSED_RESULT
+    G_GNUC_NULL_TERMINATED;
+
+GBytes*
+gutil_bytes_xor(
+    GBytes* bytes1,
+    GBytes* bytes2);
+
 G_END_DECLS
 
 #endif /* GUTIL_MISC_H */
