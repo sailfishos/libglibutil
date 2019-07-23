@@ -1,3 +1,9 @@
+libglibutil (1.0.37) unstable; urgency=low
+
+  * Handle empty log prefix as no prefix at all
+
+ -- Slava Monich <slava.monich@jolla.com>  Tue, 23 Jul 2019 21:17:18 +0300
+
 libglibutil (1.0.36) unstable; urgency=low
 
   * Handle empty log prefix as no prefix at all
