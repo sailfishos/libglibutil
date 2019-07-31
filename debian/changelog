@@ -1,6 +1,12 @@
+libglibutil (1.0.38) unstable; urgency=low
+
+  * Added gutil_data_has_prefix() and gutil_data_has_suffix()
+
+ -- Slava Monich <slava.monich@jolla.com>  Thu, 01 Aug 2019 00:13:32 +0300
+
 libglibutil (1.0.37) unstable; urgency=low
 
-  * Handle empty log prefix as no prefix at all
+  * Added gutil_bytes_concat() and gutil_bytes_xor()
 
  -- Slava Monich <slava.monich@jolla.com>  Tue, 23 Jul 2019 21:17:18 +0300
 
