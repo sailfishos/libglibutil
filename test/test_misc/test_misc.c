@@ -14,8 +14,8 @@
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
  *   3. Neither the names of the copyright holders nor the names of its
- *      contributors may be used to endorse or promote products derived from
- *      this software without specific prior written permission.
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -215,6 +215,66 @@ test_data_equal(
 }
 
 /*==========================================================================*
+ * DataPrefix
+ *==========================================================================*/
+
+static
+void
+test_data_prefix(
+    void)
+{
+    static const guint8 val_123[] = { '1', '2', '3' };
+    static const guint8 val_1234[] = { '1', '2', '3', '4' };
+    static const guint8 val_234[] = { '2', '3', '4' };
+
+    GUtilData data_empty, data_123, data_1234, data_234;
+
+    memset(&data_empty, 0, sizeof(data_empty));
+    TEST_INIT_DATA(data_123, val_123);
+    TEST_INIT_DATA(data_1234, val_1234);
+    TEST_INIT_DATA(data_234, val_234);
+
+    g_assert(gutil_data_has_prefix(NULL, NULL));
+    g_assert(!gutil_data_has_prefix(&data_empty, NULL));
+    g_assert(!gutil_data_has_prefix(NULL, &data_empty));
+    g_assert(gutil_data_has_prefix(&data_empty, &data_empty));
+    g_assert(gutil_data_has_prefix(&data_123, &data_empty));
+    g_assert(gutil_data_has_prefix(&data_1234, &data_123));
+    g_assert(!gutil_data_has_prefix(&data_123, &data_1234));
+    g_assert(!gutil_data_has_prefix(&data_1234, &data_234));
+}
+
+/*==========================================================================*
+ * DataSuffix
+ *==========================================================================*/
+
+static
+void
+test_data_suffix(
+    void)
+{
+    static const guint8 val_123[] = { '1', '2', '3' };
+    static const guint8 val_1234[] = { '1', '2', '3', '4' };
+    static const guint8 val_234[] = { '2', '3', '4' };
+
+    GUtilData data_empty, data_123, data_1234, data_234;
+
+    memset(&data_empty, 0, sizeof(data_empty));
+    TEST_INIT_DATA(data_123, val_123);
+    TEST_INIT_DATA(data_1234, val_1234);
+    TEST_INIT_DATA(data_234, val_234);
+
+    g_assert(gutil_data_has_suffix(NULL, NULL));
+    g_assert(!gutil_data_has_suffix(&data_empty, NULL));
+    g_assert(!gutil_data_has_suffix(NULL, &data_empty));
+    g_assert(gutil_data_has_suffix(&data_empty, &data_empty));
+    g_assert(gutil_data_has_suffix(&data_123, &data_empty));
+    g_assert(gutil_data_has_suffix(&data_1234, &data_234));
+    g_assert(!gutil_data_has_suffix(&data_234, &data_1234));
+    g_assert(!gutil_data_has_suffix(&data_1234, &data_123));
+}
+
+/*==========================================================================*
  * DataFromBytes
  *==========================================================================*/
 
@@ -391,6 +451,8 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("hexdump"), test_hexdump);
     g_test_add_func(TEST_("parse_int"), test_parse_int);
     g_test_add_func(TEST_("data_equal"), test_data_equal);
+    g_test_add_func(TEST_("data_prefix"), test_data_prefix);
+    g_test_add_func(TEST_("data_suffix"), test_data_suffix);
     g_test_add_func(TEST_("data_from_bytes"), test_data_from_bytes);
     g_test_add_func(TEST_("data_from_string"), test_data_from_string);
     g_test_add_func(TEST_("bytes_concat"), test_bytes_concat);

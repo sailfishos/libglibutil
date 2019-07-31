@@ -14,8 +14,8 @@
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
  *   3. Neither the names of the copyright holders nor the names of its
- *      contributors may be used to endorse or promote products derived from
- *      this software without specific prior written permission.
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -226,6 +226,46 @@ gutil_data_from_bytes(
         }
     }
     return data;
+}
+
+gboolean
+gutil_data_has_prefix(
+    const GUtilData* data,
+    const GUtilData* prefix) /* Since 1.0.38 */
+{
+    /*
+     * Not that it was overly important, but let's postulate that
+     * NULL begins with NULL, empty block begins with empty block
+     * but NULL doesn't begin with empty block and empty block
+     * doesn't begin with NULL.
+     */
+    if (G_LIKELY(data)) {
+        return G_LIKELY(prefix) &&
+            prefix->size <= data->size &&
+            !memcmp(data->bytes, prefix->bytes, prefix->size);
+    } else {
+        return !prefix;
+    }
+}
+
+gboolean
+gutil_data_has_suffix(
+    const GUtilData* data,
+    const GUtilData* suffix) /* Since 1.0.38 */
+{
+    /*
+     * Similarly to gutil_data_has_prefix, NULL ends with NULL, empty
+     * block ends with empty block but NULL doesn't end with empty block
+     * and empty block doesn't end with NULL.
+     */
+    if (G_LIKELY(data)) {
+        return G_LIKELY(suffix) &&
+            suffix->size <= data->size &&
+            !memcmp(data->bytes + (data->size - suffix->size),
+                suffix->bytes, suffix->size);
+    } else {
+        return !suffix;
+    }
 }
 
 GBytes*

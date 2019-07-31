@@ -54,7 +54,6 @@ gutil_hex2bytes(
     const char* str,
     gssize len);
 
-/* since 1.0.29 */
 #define GUTIL_HEXDUMP_BUFSIZE  (70)
 #define GUTIL_HEXDUMP_MAXBYTES (16)
 
@@ -62,43 +61,50 @@ guint
 gutil_hexdump(
     char* buf,
     const void* data,
-    guint len);
+    guint len); /* Since 1.0.29 */
 
-/* since 1.0.30 */
 gboolean
 gutil_parse_int(
     const char* str,
     int base,
-    int* value);
+    int* value); /* Since 1.0.30 */
 
-/* since 1.0.31 */
 gboolean
 gutil_data_equal(
     const GUtilData* data1,
-    const GUtilData* data2);
+    const GUtilData* data2); /* Since 1.0.31 */
+
+gboolean
+gutil_data_has_prefix(
+    const GUtilData* data,
+    const GUtilData* prefix); /* Since 1.0.38 */
+
+gboolean
+gutil_data_has_suffix(
+    const GUtilData* data,
+    const GUtilData* suffix); /* Since 1.0.38 */
 
 const GUtilData*
 gutil_data_from_string(
     GUtilData* data,
-    const char* str);
+    const char* str); /* Since 1.0.31 */
 
 const GUtilData*
 gutil_data_from_bytes(
     GUtilData* data,
-    GBytes* bytes);
+    GBytes* bytes); /* Since 1.0.31 */
 
-/* since 1.0.37 */
 GBytes*
 gutil_bytes_concat(
     GBytes* bytes,
-    ...)
+    ...) /* Since 1.0.37 */
     G_GNUC_WARN_UNUSED_RESULT
     G_GNUC_NULL_TERMINATED;
 
 GBytes*
 gutil_bytes_xor(
     GBytes* bytes1,
-    GBytes* bytes2);
+    GBytes* bytes2); /* Since 1.0.37 */
 
 G_END_DECLS
 
