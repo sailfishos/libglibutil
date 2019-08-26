@@ -81,7 +81,10 @@ endif
 # Tools and flags
 #
 
+ifndef CC
 CC = $(CROSS_COMPILE)gcc
+endif
+
 LD = $(CC)
 WARNINGS = -Wall
 INCLUDES = -I$(INCLUDE_DIR)
