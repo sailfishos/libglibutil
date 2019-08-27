@@ -70,7 +70,10 @@ COVERAGE_BUILD_DIR = $(BUILD_DIR)/coverage
 # Tools and flags
 #
 
+ifndef CC
 CC = $(CROSS_COMPILE)gcc
+endif
+
 LD = $(CC)
 WARNINGS = -Wall
 INCLUDES = -I$(INCLUDE_DIR)
