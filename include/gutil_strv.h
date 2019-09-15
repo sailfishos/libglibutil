@@ -110,6 +110,19 @@ gutil_strv_sort(
     gboolean ascending);
 
 /**
+ * Binary search in the sorted string array. Returns index of the
+ * specified string in the string array, or -1 if the string is not
+ * found. It's basically a version of gutil_strv_find optimized for
+ * sorted arrays. The string array must be sorted by gutil_strv_sort
+ * with the same 'ascending' argument.
+ */
+int
+gutil_strv_bsearch(
+    GStrV* sv,
+    const char* s,
+    gboolean ascending); /* Since 1.0.40 */
+
+/**
  * Removes leading and trailing whitespaces from all strings in the vector.
  */
 GStrV*

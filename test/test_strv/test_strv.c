@@ -128,6 +128,7 @@ test_find(
     g_assert(gutil_strv_contains(sv, "c"));
     g_assert(!gutil_strv_contains(sv, "d"));
     g_assert(gutil_strv_find(sv, "b") == 1);
+    g_assert(!gutil_strv_contains(sv, NULL));
     g_assert(!gutil_strv_contains(NULL, "a"));
     g_assert(!gutil_strv_contains(NULL, NULL));
     g_strfreev(sv);
@@ -187,6 +188,31 @@ test_sort(
 }
 
 /*==========================================================================*
+ * Bsearch
+ *==========================================================================*/
+
+static
+void
+test_bsearch(
+    void)
+{
+    char** a = g_strsplit("a,b,c,d", ",", 0);
+    char** d = g_strsplit("d,c,b,a", ",", 0);
+
+    g_assert(gutil_strv_sort(a, TRUE) == a);
+    g_assert(gutil_strv_sort(d, FALSE) == d);
+
+    g_assert(gutil_strv_bsearch(NULL, "a", TRUE) < 0);
+    g_assert(gutil_strv_bsearch(a, NULL, TRUE) < 0);
+    g_assert(gutil_strv_bsearch(a, "x", TRUE) < 0);
+    g_assert(gutil_strv_bsearch(a, "a", TRUE) == 0);
+    g_assert(gutil_strv_bsearch(d, "a", FALSE) == 3);
+
+    g_strfreev(a);
+    g_strfreev(d);
+}
+
+/*==========================================================================*
  * Strip
  *==========================================================================*/
 
@@ -218,6 +244,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_PREFIX "find", test_find);
     g_test_add_func(TEST_PREFIX "remove", test_remove);
     g_test_add_func(TEST_PREFIX "sort", test_sort);
+    g_test_add_func(TEST_PREFIX "bsearch", test_bsearch);
     g_test_add_func(TEST_PREFIX "strip", test_strip);
     test_init(&test_opt, argc, argv);
     return g_test_run();
