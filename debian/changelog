@@ -1,3 +1,9 @@
+libglibutil (1.0.41) unstable; urgency=low
+
+  * Added gutil_bytes_equal() and gutil_bytes_equal_data()
+
+ -- Slava Monich <slava.monich@jolla.com>  Sun, 10 Nov 2019 17:14:19 +0300
+
 libglibutil (1.0.40) unstable; urgency=low
 
   * Added gutil_strv_bsearch()
