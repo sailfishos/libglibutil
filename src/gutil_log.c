@@ -156,8 +156,14 @@ gutil_log_stdio(
 
     if (gutil_log_timestamp) {
         time_t now;
+#ifndef _WIN32
+        struct tm tm_;
+#define localtime(t) localtime_r(t, &tm_)
+#endif
+
         time(&now);
         strftime(t, sizeof(t), "%Y-%m-%d %H:%M:%S ", localtime(&now));
+#undef localtime
     } else {
         t[0] = 0;
     }
