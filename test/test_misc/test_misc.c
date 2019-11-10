@@ -39,7 +39,7 @@
 static TestOpt test_opt;
 
 /*==========================================================================*
- * Disconnect
+ * disconnect
  *==========================================================================*/
 
 static
@@ -81,7 +81,7 @@ test_disconnect(
 }
 
 /*==========================================================================*
- * Hex2bin
+ * hex2bin
  *==========================================================================*/
 
 static
@@ -95,6 +95,7 @@ test_hex2bin(
     const void* data;
     static const guint8 buf1[4] = { 0x01, 0x23, 0x45, 0x67 };
     static const guint8 buf2[4] = { 0x89, 0xab, 0xcd, 0xef };
+
     g_assert(!gutil_hex2bin(NULL, 0, NULL));
     g_assert(!gutil_hex2bin("x", 0, NULL));
     g_assert(!gutil_hex2bin("x", 0, buf));
@@ -126,7 +127,7 @@ test_hex2bin(
 }
 
 /*==========================================================================*
- * Hexdump
+ * hexdump
  *==========================================================================*/
 
 static
@@ -158,7 +159,7 @@ test_hexdump(
 }
 
 /*==========================================================================*
- * ParseInt
+ * parse_int
  *==========================================================================*/
 
 static
@@ -186,7 +187,7 @@ test_parse_int(
 }
 
 /*==========================================================================*
- * DataEqual
+ * data_equal
  *==========================================================================*/
 
 static
@@ -215,7 +216,7 @@ test_data_equal(
 }
 
 /*==========================================================================*
- * DataPrefix
+ * data_prefix
  *==========================================================================*/
 
 static
@@ -245,7 +246,7 @@ test_data_prefix(
 }
 
 /*==========================================================================*
- * DataSuffix
+ * data_suffix
  *==========================================================================*/
 
 static
@@ -275,7 +276,7 @@ test_data_suffix(
 }
 
 /*==========================================================================*
- * DataFromBytes
+ * data_from_bytes
  *==========================================================================*/
 
 static
@@ -302,7 +303,7 @@ test_data_from_bytes(
 }
 
 /*==========================================================================*
- * DataFromString
+ * data_from_string
  *==========================================================================*/
 
 static
@@ -327,7 +328,7 @@ test_data_from_string(
 }
 
 /*==========================================================================*
- * BytesConcat
+ * bytes_concat
  *==========================================================================*/
 
 static
@@ -373,7 +374,7 @@ test_bytes_concat(
 }
 
 /*==========================================================================*
- * BytesXor
+ * bytes_xor
  *==========================================================================*/
 
 static
@@ -430,6 +431,60 @@ test_bytes_xor(
 }
 
 /*==========================================================================*
+ * bytes_equal
+ *==========================================================================*/
+
+static
+void
+test_bytes_equal(
+    void)
+{
+    static const guint8 data1[] =  { 0x01 };
+    static const guint8 data11[] =  { 0x01, 0x01 };
+    static const guint8 data2[] =  { 0x02 };
+    GUtilData data;
+    GBytes* bytes = g_bytes_new(NULL, 0);
+
+    memset(&data, 0, sizeof(data));
+    g_assert(gutil_bytes_equal(NULL, NULL, 0));
+    g_assert(gutil_bytes_equal_data(NULL, NULL));
+
+    /* One of the arguments is not NULL => not equal */
+    g_assert(!gutil_bytes_equal(NULL, &data, 0));
+    g_assert(!gutil_bytes_equal(bytes, NULL, 0));
+    g_assert(!gutil_bytes_equal_data(bytes, NULL));
+    g_assert(!gutil_bytes_equal_data(NULL, &data));
+
+    /* Empty blocks of data are equal */
+    g_assert(gutil_bytes_equal(bytes, &data, 0));
+    g_assert(gutil_bytes_equal_data(bytes, &data));
+
+    /* Different sizes */
+    data.bytes = data11;
+    data.size = sizeof(data11);
+    g_assert(!gutil_bytes_equal(bytes, data.bytes, data.size));
+    g_assert(!gutil_bytes_equal_data(bytes, &data));
+
+    g_bytes_unref(bytes);
+    bytes = g_bytes_new_static(data1, sizeof(data1));
+    g_assert(!gutil_bytes_equal(bytes, data.bytes, data.size));
+    g_assert(!gutil_bytes_equal_data(bytes, &data));
+
+    /* Different contents */
+    data.bytes = data2;
+    data.size = sizeof(data2);
+    g_assert(!gutil_bytes_equal(bytes, data.bytes, data.size));
+    g_assert(!gutil_bytes_equal_data(bytes, &data));
+
+    /* Match */
+    data.bytes = data1;
+    data.size = sizeof(data1);
+    g_assert(gutil_bytes_equal(bytes, data.bytes, data.size));
+    g_assert(gutil_bytes_equal_data(bytes, &data));
+    g_bytes_unref(bytes);
+}
+
+/*==========================================================================*
  * Common
  *==========================================================================*/
 
@@ -457,6 +512,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("data_from_string"), test_data_from_string);
     g_test_add_func(TEST_("bytes_concat"), test_bytes_concat);
     g_test_add_func(TEST_("bytes_xor"), test_bytes_xor);
+    g_test_add_func(TEST_("bytes_equal"), test_bytes_equal);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }

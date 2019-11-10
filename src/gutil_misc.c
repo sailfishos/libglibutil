@@ -374,6 +374,47 @@ gutil_bytes_xor(
     return NULL;
 }
 
+gboolean
+gutil_bytes_equal(
+    GBytes* bytes,
+    const void* data,
+    gsize size) /* Since 1.0.41 */
+{
+    if (bytes && data) {
+        gsize bytes_size;
+        const guint8* contents = g_bytes_get_data(bytes, &bytes_size);
+
+        if (bytes_size == size) {
+            return !bytes_size || !memcmp(contents, data, size);
+        } else {
+            return FALSE;
+        }
+    } else {
+        /* NULLs are equal to each other but not to anything else */
+        return !bytes && !data;
+    }
+}
+
+gboolean
+gutil_bytes_equal_data(
+    GBytes* bytes,
+    const GUtilData* data) /* Since 1.0.41 */
+{
+    if (bytes && data) {
+        gsize bytes_size;
+        const guint8* contents = g_bytes_get_data(bytes, &bytes_size);
+
+        if (bytes_size == data->size) {
+            return !bytes_size || !memcmp(contents, data->bytes, data->size);
+        } else {
+            return FALSE;
+        }
+    } else {
+        /* NULLs are equal to each other but not to anything else */
+        return !bytes && !data;
+    }
+}
+
 /*
  * Local Variables:
  * mode: C

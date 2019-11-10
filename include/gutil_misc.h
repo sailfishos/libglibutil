@@ -61,7 +61,7 @@ guint
 gutil_hexdump(
     char* buf,
     const void* data,
-    guint len); /* Since 1.0.29 */
+    guint size); /* Since 1.0.29 */
 
 gboolean
 gutil_parse_int(
@@ -105,6 +105,17 @@ GBytes*
 gutil_bytes_xor(
     GBytes* bytes1,
     GBytes* bytes2); /* Since 1.0.37 */
+
+gboolean
+gutil_bytes_equal(
+    GBytes* bytes,
+    const void* data,
+    gsize size); /* Since 1.0.41 */
+
+gboolean
+gutil_bytes_equal_data(
+    GBytes* bytes,
+    const GUtilData* data); /* Since 1.0.41 */
 
 G_END_DECLS
 
