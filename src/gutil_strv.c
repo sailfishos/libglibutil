@@ -161,25 +161,37 @@ gutil_strv_remove_at(
 }
 
 /**
- * Checks two string arrays for equality.
+ * Checks two string arrays for equality. NULL and empty arrays are equal.
+ *
+ * This is basically a NULL-tolerant equivalent of g_strv_equal which
+ * appeared in glib 2.60.
  */
 gboolean
 gutil_strv_equal(
     const GStrV* sv1,
     const GStrV* sv2)
 {
-    const guint len1 = gutil_strv_length(sv1);
-    const guint len2 = gutil_strv_length(sv2);
-    if (len1 == len2) {
-        guint i;
-        for (i=0; i<len1; i++) {
-            if (strcmp(sv1[i], sv2[i])) {
-                return FALSE;
-            }
-        }
+    if (sv1 == sv2) {
         return TRUE;
+    } else if (!sv1) {
+        return !sv2[0];
+    } else if (!sv2) {
+        return !sv1[0];
+    } else {
+        guint len = 0;
+
+        while (sv1[len] && sv2[len]) len++;
+        if (!sv1[len] && !sv2[len]) {
+            guint i;
+            for (i=0; i<len; i++) {
+                if (strcmp(sv1[i], sv2[i])) {
+                    return FALSE;
+                }
+            }
+            return TRUE;
+        }
+        return FALSE;
     }
-    return FALSE;
 }
 
 static

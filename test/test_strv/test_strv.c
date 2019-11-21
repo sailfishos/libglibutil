@@ -99,11 +99,19 @@ test_equal(
     char** sv3 = g_strsplit("a,a,a, ,", ",", 0);
     char** sv4 = g_strsplit("a,b,c,,", ",", 0);
     char** sv5 = g_strsplit("a,b,c,", ",", 0);
+    char* empty = NULL;
 
+    g_assert(gutil_strv_equal(NULL, NULL));
+    g_assert(gutil_strv_equal(NULL, &empty));
+    g_assert(gutil_strv_equal(&empty, NULL));
+    g_assert(!gutil_strv_equal(sv1, NULL));
+    g_assert(!gutil_strv_equal(NULL, sv2));
+    g_assert(gutil_strv_equal(sv1, sv1));
     g_assert(gutil_strv_equal(sv1, sv2));
     g_assert(!gutil_strv_equal(sv1, sv3));
     g_assert(!gutil_strv_equal(sv1, sv4));
     g_assert(!gutil_strv_equal(sv1, sv5));
+    g_assert(!gutil_strv_equal(sv5, sv1));
 
     g_strfreev(sv1);
     g_strfreev(sv2);
