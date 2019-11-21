@@ -1,3 +1,10 @@
+libglibutil (1.0.42) unstable; urgency=low
+
+  * Zero-initialize timespec::tv_nsec
+  * Optimized gutil_strv_equal()
+
+ -- Slava Monich <slava.monich@jolla.com>  Fri, 22 Nov 2019 00:49:13 +0200
+
 libglibutil (1.0.41) unstable; urgency=low
 
   * Added gutil_bytes_equal() and gutil_bytes_equal_data()
