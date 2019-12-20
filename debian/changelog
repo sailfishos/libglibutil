@@ -1,3 +1,10 @@
+libglibutil (1.0.43) unstable; urgency=low
+
+  * Allow specifying per-module logging function
+  * Added default GLogProc2 compatible callbacks
+
+ -- Slava Monich <slava.monich@jolla.com>  Fri, 20 Dec 2019 19:31:32 +0200
+
 libglibutil (1.0.42) unstable; urgency=low
 
   * Zero-initialize timespec::tv_nsec
