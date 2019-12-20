@@ -135,6 +135,16 @@ test_log_file_write(
 
 static
 void
+test_log_drop(
+    const GLogModule* module,
+    int level,
+    const char* format,
+    va_list va)
+{
+}
+
+static
+void
 test_log_file(
     void)
 {
@@ -145,6 +155,7 @@ test_log_file(
     FILE* out = fopencookie(buf, "w", funcs);
     FILE* default_stdout = stdout;
     const int level = gutil_log_default.level;
+    GLogProc2 log_proc;
 
     g_assert(out);
     g_assert(gutil_log_set_type(GLOG_TYPE_STDOUT, NULL));
@@ -199,6 +210,13 @@ test_log_file(
     GDEBUG("%s", buf->str);
     g_assert(!g_strcmp0(buf->str, "Test\n"));
     g_string_set_size(buf, 0);
+
+    /* Forward output to test_log_drop */
+    log_proc = gutil_log_default.log_proc;
+    gutil_log_default.log_proc = test_log_drop;
+    gutil_log(&gutil_log_default, GLOG_LEVEL_ALWAYS, "Test");
+    g_assert(!buf->len);  /* Dropped by test_log_drop */
+    gutil_log_default.log_proc = log_proc;
 
     fclose(out);
     gutil_log_default.level = level;

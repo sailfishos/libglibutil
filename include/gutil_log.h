@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2018 Jolla Ltd.
- * Copyright (C) 2014-2018 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2019 Jolla Ltd.
+ * Copyright (C) 2014-2019 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -75,11 +75,19 @@ G_BEGIN_DECLS
 #  endif
 #endif
 
+/* Logging function prototypes */
+#define GUTIL_DEFINE_LOG_FN(fn)  void fn(const char* name, int level, \
+    const char* format, va_list va)
+#define GUTIL_DEFINE_LOG_FN2(fn)  void fn(const GLogModule* module, \
+    int level, const char* format, va_list va)
+typedef GUTIL_DEFINE_LOG_FN((*GLogProc));
+typedef GUTIL_DEFINE_LOG_FN2((*GLogProc2));
+
 /* Log module */
 struct glog_module {
     const char* name;               /* Name (used as prefix) */
     const GLogModule* parent;       /* Parent log module (optional) */
-    void* reserved;                 /* Reserved for future expansion */
+    GLogProc2 log_proc;             /* Per-module logging function (1.0.43) */
     const int max_level;            /* Maximum level defined at compile time */
     int level;                      /* Current log level */
     int flags;                      /* Flags (see below) */
@@ -145,10 +153,6 @@ extern const char GLOG_TYPE_CUSTOM[];
 extern const char GLOG_TYPE_SYSLOG[];
 
 /* Available log handlers */
-#define GUTIL_DEFINE_LOG_FN(fn)  void fn(const char* name, int level, \
-    const char* format, va_list va)
-#define GUTIL_DEFINE_LOG_FN2(fn)  void fn(const GLogModule* module, \
-    int level, const char* format, va_list va)
 GUTIL_DEFINE_LOG_FN(gutil_log_stdout);
 GUTIL_DEFINE_LOG_FN(gutil_log_stderr);
 GUTIL_DEFINE_LOG_FN(gutil_log_glib);
@@ -156,8 +160,6 @@ GUTIL_DEFINE_LOG_FN(gutil_log_syslog);
 
 /* Log configuration */
 GLOG_MODULE_DECL(gutil_log_default)
-typedef GUTIL_DEFINE_LOG_FN((*GLogProc));
-typedef GUTIL_DEFINE_LOG_FN2((*GLogProc2));
 extern GLogProc gutil_log_func;
 extern GLogProc2 gutil_log_func2;
 extern gboolean gutil_log_timestamp; /* Only affects stdout and stderr */

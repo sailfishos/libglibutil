@@ -58,7 +58,7 @@ GLogProc2 gutil_log_func2 = gutil_log_default_proc;
 GLogModule gutil_log_default = {
     NULL,               /* name      */
     NULL,               /* parent    */
-    NULL,               /* reserved  */
+    NULL,               /* log_proc  */
     GLOG_LEVEL_MAX,     /* max_level */
     GLOG_LEVEL_DEFAULT, /* level     */
     0,                  /* flags     */
@@ -336,11 +336,11 @@ gutil_logv_r(
                 check->level : gutil_log_default.level;
             if ((level > GLOG_LEVEL_NONE && level <= max_level) ||
                 (level == GLOG_LEVEL_ALWAYS)) {
-                GLogProc2 log = gutil_log_func2;
-                if (G_LIKELY(log)) {
-                    if (!module) module = &gutil_log_default;
-                    log(module, level, format, va);
-                }
+                GLogProc2 log;
+                /* Caller makes sure that at least gutil_log_func2 is there */
+                if (!module) module = &gutil_log_default;
+                log = module->log_proc ? module->log_proc : gutil_log_func2;
+                log(module, level, format, va);
             }
         }
     }
