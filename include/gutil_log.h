@@ -157,6 +157,10 @@ GUTIL_DEFINE_LOG_FN(gutil_log_stdout);
 GUTIL_DEFINE_LOG_FN(gutil_log_stderr);
 GUTIL_DEFINE_LOG_FN(gutil_log_glib);
 GUTIL_DEFINE_LOG_FN(gutil_log_syslog);
+GUTIL_DEFINE_LOG_FN2(gutil_log_stdout2);  /* Since 1.0.43 */
+GUTIL_DEFINE_LOG_FN2(gutil_log_stderr2);  /* Since 1.0.43 */
+GUTIL_DEFINE_LOG_FN2(gutil_log_glib2);    /* Since 1.0.43 */
+GUTIL_DEFINE_LOG_FN2(gutil_log_syslog2);  /* Since 1.0.43 */
 
 /* Log configuration */
 GLOG_MODULE_DECL(gutil_log_default)

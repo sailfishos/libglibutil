@@ -218,6 +218,26 @@ gutil_log_stderr(
     gutil_log_stdio(stderr, name, level, format, va);
 }
 
+void
+gutil_log_stdout2(
+    const GLogModule* module,
+    int level,
+    const char* format,
+    va_list va) /* Since 1.0.43 */
+{
+    gutil_log_stdout(module ? module->name : NULL, level, format, va);
+}
+
+void
+gutil_log_stderr2(
+    const GLogModule* module,
+    int level,
+    const char* format,
+    va_list va) /* Since 1.0.43 */
+{
+    gutil_log_stderr(module ? module->name : NULL, level, format, va);
+}
+
 /* Formards output to syslog */
 #if GLOG_SYSLOG
 #include <syslog.h>
@@ -274,6 +294,16 @@ gutil_log_syslog(
         vsyslog(priority, format, va);
     }
 }
+
+void
+gutil_log_syslog2(
+    const GLogModule* module,
+    int level,
+    const char* format,
+    va_list va) /* Since 1.0.43 */
+{
+    gutil_log_syslog(module ? module->name : NULL, level, format, va);
+}
 #endif /* GLOG_SYSLOG */
 
 /* Forwards output to g_logv */
@@ -295,6 +325,16 @@ gutil_log_glib(
     case GLOG_LEVEL_ERR:     flags = G_LOG_LEVEL_CRITICAL; break;
     }
     g_logv(name, flags, format, va);
+}
+
+void
+gutil_log_glib2(
+    const GLogModule* module,
+    int level,
+    const char* format,
+    va_list va) /* Since 1.0.43 */
+{
+    gutil_log_glib(module ? module->name : NULL, level, format, va);
 }
 #endif /* GLOG_GLIB */
 
