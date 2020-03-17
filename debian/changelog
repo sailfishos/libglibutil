@@ -1,3 +1,10 @@
+libglibutil (1.0.44) unstable; urgency=low
+
+  * Adapted to side-by-side linking
+  * Allow overriding CC for unit tests
+
+ -- Slava Monich <slava.monich@jolla.com>  Tue, 17 Mar 2020 19:01:45 +0200
+
 libglibutil (1.0.43) unstable; urgency=low
 
   * Allow specifying per-module logging function
