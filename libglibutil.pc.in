@@ -1,10 +1,10 @@
 name=glibutil
-libdir=/usr/lib
+libdir=@libdir@
 includedir=/usr/include
 
 Name: libglibutil
 Description: Library of glib utilities
-Version: [version]
+Version: @version@
 Requires.private: glib-2.0
 Libs: -L${libdir} -l${name}
 Cflags: -I${includedir} -I${includedir}/gutil
