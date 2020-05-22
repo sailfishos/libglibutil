@@ -1,3 +1,9 @@
+libglibutil (1.0.45) unstable; urgency=low
+
+  * Support for multiple archs
+
+ -- Slava Monich <slava.monich@jolla.com>  Fri, 22 May 2020 16:11:42 +0300
+
 libglibutil (1.0.44) unstable; urgency=low
 
   * Adapted to side-by-side linking
