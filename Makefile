@@ -70,10 +70,7 @@ COVERAGE_BUILD_DIR = $(BUILD_DIR)/coverage
 # Tools and flags
 #
 
-ifndef CC
-CC = $(CROSS_COMPILE)gcc
-endif
-
+CC ?= $(CROSS_COMPILE)gcc
 LD = $(CC)
 WARNINGS = -Wall
 INCLUDES = -I$(INCLUDE_DIR)
@@ -86,10 +83,7 @@ DEBUG_FLAGS = -g
 RELEASE_FLAGS =
 COVERAGE_FLAGS = -g
 
-ifndef KEEP_SYMBOLS
-KEEP_SYMBOLS = 0
-endif
-
+KEEP_SYMBOLS ?= 0
 ifneq ($(KEEP_SYMBOLS),0)
 RELEASE_FLAGS += -g
 endif
@@ -164,6 +158,7 @@ clean:
 	rm -fr debian/tmp debian/libglibutil debian/libglibutil-dev
 	rm -f documentation.list debian/files debian/*.substvars
 	rm -f debian/*.debhelper.log debian/*.debhelper debian/*~
+	rm -fr debian/*.install
 
 test:
 	make -C test test
@@ -221,9 +216,6 @@ $(RELEASE_STATIC_LIB): $(RELEASE_OBJS)
 $(COVERAGE_STATIC_LIB): $(COVERAGE_OBJS)
 	$(AR) rc $@ $?
 
-$(PKGCONFIG): $(LIB_NAME).pc.in
-	sed -e 's/\[version\]/'$(PCVERSION)/g $< > $@
-
 #
 # Install
 #
@@ -234,9 +226,19 @@ INSTALL = install
 INSTALL_DIRS = $(INSTALL) -d
 INSTALL_FILES = $(INSTALL) -m $(INSTALL_PERM)
 
-INSTALL_LIB_DIR = $(DESTDIR)$(libdir)
+# This one could be substituted with arch specific dir
+LIBDIR ?= /usr/lib
+ABS_LIBDIR = $(shell echo /$(LIBDIR) | sed -r 's|/+|/|g')
+
+INSTALL_LIB_DIR = $(DESTDIR)$(ABS_LIBDIR)
 INSTALL_INCLUDE_DIR = $(DESTDIR)/usr/include/gutil
-INSTALL_PKGCONFIG_DIR = $(DESTDIR)$(libdir)/pkgconfig
+INSTALL_PKGCONFIG_DIR = $(DESTDIR)$(ABS_LIBDIR)/pkgconfig
+
+$(PKGCONFIG): $(LIB_NAME).pc.in
+	sed -e 's|@version@|$(PCVERSION)|g' -e 's|@libdir@|$(ABS_LIBDIR)|' $< > $@
+
+debian/%.install: debian/%.install.in
+	sed 's|@LIBDIR@|$(LIBDIR)|g' $< > $@
 
 install: $(INSTALL_LIB_DIR)
 	$(INSTALL_FILES) $(RELEASE_LIB) $(INSTALL_LIB_DIR)

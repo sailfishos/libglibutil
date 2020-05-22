@@ -6,9 +6,11 @@ test/coverage/libglibutil.gcov
 test/coverage/results
 debian/files
 debian/libglibutil-dev.debhelper.log
+debian/libglibutil-dev.install
 debian/libglibutil-dev.substvars
 debian/libglibutil-dev
 debian/libglibutil.debhelper.log
+debian/libglibutil.install
 debian/libglibutil.postinst.debhelper
 debian/libglibutil.postrm.debhelper
 debian/libglibutil.substvars
