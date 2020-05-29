@@ -71,6 +71,7 @@ COVERAGE_BUILD_DIR = $(BUILD_DIR)/coverage
 #
 
 CC ?= $(CROSS_COMPILE)gcc
+STRIP ?= strip
 LD = $(CC)
 WARNINGS = -Wall
 INCLUDES = -I$(INCLUDE_DIR)
@@ -192,7 +193,7 @@ $(RELEASE_LIB): $(RELEASE_OBJS)
 	$(LD) $(RELEASE_OBJS) $(RELEASE_LDFLAGS) -o $@
 	ln -sf $(LIB) $(RELEASE_LINK)
 ifeq ($(KEEP_SYMBOLS),0)
-	strip $@
+	$(STRIP) $@
 endif
 
 $(DEBUG_LINK):
