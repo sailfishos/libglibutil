@@ -1,5 +1,5 @@
 Name: libglibutil
-Version: 1.0.45
+Version: 1.0.46
 Release: 0
 Summary: Library of glib utilities
 Group: Development/Libraries
