@@ -218,6 +218,20 @@ $(COVERAGE_STATIC_LIB): $(COVERAGE_OBJS)
 	$(AR) rc $@ $?
 
 #
+# LIBDIR usually gets substituted with arch specific dir.
+# It's relative in deb build and can be whatever in rpm build.
+#
+
+LIBDIR ?= usr/lib
+ABS_LIBDIR := $(shell echo /$(LIBDIR) | sed -r 's|/+|/|g')
+
+$(PKGCONFIG): $(LIB_NAME).pc.in Makefile
+	sed -e 's|@version@|$(PCVERSION)|g' -e 's|@libdir@|$(ABS_LIBDIR)|g' $< > $@
+
+debian/%.install: debian/%.install.in
+	sed 's|@LIBDIR@|$(LIBDIR)|g' $< > $@
+
+#
 # Install
 #
 
@@ -227,19 +241,9 @@ INSTALL = install
 INSTALL_DIRS = $(INSTALL) -d
 INSTALL_FILES = $(INSTALL) -m $(INSTALL_PERM)
 
-# This one could be substituted with arch specific dir
-LIBDIR ?= /usr/lib
-ABS_LIBDIR = $(shell echo /$(LIBDIR) | sed -r 's|/+|/|g')
-
 INSTALL_LIB_DIR = $(DESTDIR)$(ABS_LIBDIR)
 INSTALL_INCLUDE_DIR = $(DESTDIR)/usr/include/gutil
 INSTALL_PKGCONFIG_DIR = $(DESTDIR)$(ABS_LIBDIR)/pkgconfig
-
-$(PKGCONFIG): $(LIB_NAME).pc.in
-	sed -e 's|@version@|$(PCVERSION)|g' -e 's|@libdir@|$(ABS_LIBDIR)|' $< > $@
-
-debian/%.install: debian/%.install.in
-	sed 's|@LIBDIR@|$(LIBDIR)|g' $< > $@
 
 install: $(INSTALL_LIB_DIR)
 	$(INSTALL_FILES) $(RELEASE_LIB) $(INSTALL_LIB_DIR)
