@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2019 Jolla Ltd.
- * Copyright (C) 2014-2019 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2020 Jolla Ltd.
+ * Copyright (C) 2014-2020 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -82,7 +82,19 @@ gutil_strv_contains(
 GStrV*
 gutil_strv_add(
     GStrV* sv,
-    const char* s);
+    const char* s)
+    G_GNUC_WARN_UNUSED_RESULT;
+
+/**
+ * Appends new string(s) to the array.
+ */
+GStrV*
+gutil_strv_addv(
+    GStrV* sv,
+    const char* s,
+    ...) /* Since 1.0.47 */
+    G_GNUC_WARN_UNUSED_RESULT
+    G_GNUC_NULL_TERMINATED;
 
 /**
  * Removes the string from the specified position in the array.
@@ -91,7 +103,8 @@ GStrV*
 gutil_strv_remove_at(
     GStrV* sv,
     int pos,
-    gboolean free_string);
+    gboolean free_string)
+    G_GNUC_WARN_UNUSED_RESULT;
 
 /**
  * Checks two string arrays for equality.
