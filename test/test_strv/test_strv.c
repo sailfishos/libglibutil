@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2015-2019 Jolla Ltd.
- * Copyright (C) 2015-2019 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2015-2020 Jolla Ltd.
+ * Copyright (C) 2015-2020 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -84,6 +84,35 @@ test_last(
 }
 
 /*==========================================================================*
+ * Add
+ *==========================================================================*/
+
+static
+void
+test_addv(
+    void)
+{
+    char** sv1;
+    char** sv2;
+
+    g_assert(!gutil_strv_add(NULL, NULL));
+    g_assert(!gutil_strv_addv(NULL, NULL, NULL));
+
+    sv1 = gutil_strv_add(NULL, "a");
+    g_assert(gutil_strv_addv(sv1, NULL, NULL) == sv1);
+    sv2 = gutil_strv_addv(NULL, "a", NULL);
+    g_assert(gutil_strv_equal(sv1, sv2));
+
+    g_strfreev(sv1);
+    sv1 = g_strsplit("a,bb,ccc", ",", 0);
+    sv2 = gutil_strv_addv(sv2, "bb", "ccc", NULL);
+    g_assert(gutil_strv_equal(sv1, sv2));
+
+    g_strfreev(sv1);
+    g_strfreev(sv2);
+}
+
+/*==========================================================================*
  * Equal
  *==========================================================================*/
 
@@ -92,15 +121,14 @@ void
 test_equal(
     void)
 {
-    /* gutil_strv_add(NULL, NULL) is a nop */
-    char** sv1 = gutil_strv_add(gutil_strv_add(gutil_strv_add(gutil_strv_add(
-        gutil_strv_add(gutil_strv_add(NULL, NULL), "a"), "b"), "c"), " "), "");
+    char** sv1 = gutil_strv_addv(NULL, "a", "b", "c", " ", "", NULL);
     char** sv2 = g_strsplit("a,b,c, ,", ",", 0);
     char** sv3 = g_strsplit("a,a,a, ,", ",", 0);
     char** sv4 = g_strsplit("a,b,c,,", ",", 0);
     char** sv5 = g_strsplit("a,b,c,", ",", 0);
     char* empty = NULL;
 
+    g_assert(!gutil_strv_add(NULL, NULL));
     g_assert(gutil_strv_equal(NULL, NULL));
     g_assert(gutil_strv_equal(NULL, &empty));
     g_assert(gutil_strv_equal(&empty, NULL));
@@ -247,6 +275,7 @@ int main(int argc, char* argv[])
 {
     g_test_init(&argc, &argv, NULL);
     g_test_add_func(TEST_PREFIX "basic", test_basic);
+    g_test_add_func(TEST_PREFIX "addv", test_addv);
     g_test_add_func(TEST_PREFIX "last", test_last);
     g_test_add_func(TEST_PREFIX "equal", test_equal);
     g_test_add_func(TEST_PREFIX "find", test_find);

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2019 Jolla Ltd.
- * Copyright (C) 2014-2019 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2020 Jolla Ltd.
+ * Copyright (C) 2014-2020 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -125,14 +125,42 @@ gutil_strv_add(
     const char* s)
 {
     if (s) {
-        const guint len = gutil_strv_length(sv);
-        GStrV* newsv = g_realloc(sv, sizeof(char*)*(len+2));
-        newsv[len] = g_strdup(s);
-        newsv[len+1] = NULL;
-        return newsv;
-    } else {
-        return sv;
+        guint len = gutil_strv_length(sv);
+
+        sv = g_renew(char*, sv, len + 2);
+        sv[len++] = g_strdup(s);
+        sv[len] = NULL;
     }
+    return sv;
+}
+
+/**
+ * Appends new strings to the array.
+ */
+GStrV*
+gutil_strv_addv(
+    GStrV* sv,
+    const char* s,
+    ...)
+{
+    if (s) {
+        va_list va;
+        const char* s1;
+        guint len, i, n;
+
+        va_start(va, s);
+        for (n = 1; (s1 = va_arg(va, char*)) != NULL; n++);
+        va_end(va);
+
+        len = gutil_strv_length(sv);
+        sv = g_renew(gchar*, sv, len + n + 1);
+        sv[len++] = g_strdup(s);
+        va_start(va, s);
+        for (i = 1; i < n; i++) sv[len++] = g_strdup(va_arg(va, char*));
+        va_end(va);
+        sv[len] = NULL;
+    }
+    return sv;
 }
 
 /**
