@@ -20,7 +20,7 @@ all: debug release pkgconfig
 
 VERSION_MAJOR = 1
 VERSION_MINOR = 0
-VERSION_RELEASE = 47
+VERSION_RELEASE = 48
 
 # Version for pkg-config
 PCVERSION = $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_RELEASE)
@@ -245,6 +245,13 @@ INSTALL_LIB_DIR = $(DESTDIR)$(ABS_LIBDIR)
 INSTALL_INCLUDE_DIR = $(DESTDIR)/usr/include/gutil
 INSTALL_PKGCONFIG_DIR = $(DESTDIR)$(ABS_LIBDIR)/pkgconfig
 
+#
+# rpm based systems expect libraries to be 755
+# deb based systems expect libraries to be 644
+#
+# 755 works for both because dh_fixperms removes execute permissions
+# from any libraries and other files that don't need it.
+#
 install: $(INSTALL_LIB_DIR)
 	$(INSTALL) -m 755 $(RELEASE_LIB) $(INSTALL_LIB_DIR)
 	ln -sf $(LIB) $(INSTALL_LIB_DIR)/$(LIB_SYMLINK2)
