@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2017 Jolla Ltd.
- * Contact: Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2017-2020 Jolla Ltd.
+ * Copyright (C) 2017-2020 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -13,9 +13,9 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of Jolla Ltd nor the names of its contributors may
- *      be used to endorse or promote products derived from this software
- *      without specific prior written permission.
+ *   3. Neither the names of the copyright holders nor the names of its
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -31,6 +31,7 @@
  */
 
 #include "gutil_idlequeue.h"
+#include "gutil_macros.h"
 #include "gutil_log.h"
 
 typedef struct gutil_idle_queue_item GUtilIdleQueueItem;
@@ -60,7 +61,7 @@ gutil_idle_queue_item_destroy(
     if (item->destroy) {
         item->destroy(item->data);
     }
-    g_slice_free(GUtilIdleQueueItem, item);
+    gutil_slice_free(item);
 }
 
 static
@@ -151,7 +152,7 @@ gutil_idle_queue_unref(
         GASSERT(q->ref_count > 0);
         if (g_atomic_int_dec_and_test(&q->ref_count)) {
             gutil_idle_queue_cancel_all(q);
-            g_slice_free(GUtilIdleQueue, q);
+            gutil_slice_free(q);
         }
     }
 }
