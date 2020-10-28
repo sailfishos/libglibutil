@@ -31,6 +31,7 @@
  */
 
 #include "gutil_strv.h"
+#include "gutil_misc.h"
 
 #include <stdlib.h>
 
@@ -41,13 +42,7 @@ guint
 gutil_strv_length(
     const GStrV* sv)
 {
-    if (G_LIKELY(sv)) {
-        guint i = 0;
-        while (sv[i]) i++;
-        return i;
-    } else {
-        return 0;
-    }
+    return (guint) gutil_ptrv_length(sv);
 }
 
 /**

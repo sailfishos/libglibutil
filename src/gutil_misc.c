@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016-2019 Jolla Ltd.
- * Copyright (C) 2016-2019 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2016-2020 Jolla Ltd.
+ * Copyright (C) 2016-2020 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -412,6 +412,22 @@ gutil_bytes_equal_data(
     } else {
         /* NULLs are equal to each other but not to anything else */
         return !bytes && !data;
+    }
+}
+
+/* Calculates the length of NULL-terminated array of pointers */
+gsize
+gutil_ptrv_length(
+    gconstpointer ptrv) /* Since 1.0.50 */
+{
+    if (G_LIKELY(ptrv)) {
+        gsize len = 0;
+        const gconstpointer* ptr = ptrv;
+
+        while (*ptr++) len++;
+        return len;
+    } else {
+        return 0;
     }
 }
 

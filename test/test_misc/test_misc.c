@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016-2019 Jolla Ltd.
- * Copyright (C) 2016-2019 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2016-2020 Jolla Ltd.
+ * Copyright (C) 2016-2020 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -485,6 +485,23 @@ test_bytes_equal(
 }
 
 /*==========================================================================*
+ * ptrv
+ *==========================================================================*/
+
+static
+void
+test_ptrv(
+    void)
+{
+    static const gconstpointer ptrv0[] = { NULL };
+    static const gconstpointer ptrv1[] = { ptrv0, NULL };
+
+    g_assert_cmpuint(gutil_ptrv_length(NULL), == ,0);
+    g_assert_cmpuint(gutil_ptrv_length(ptrv0), == ,0);
+    g_assert_cmpuint(gutil_ptrv_length(ptrv1), == ,1);
+}
+
+/*==========================================================================*
  * Common
  *==========================================================================*/
 
@@ -513,6 +530,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("bytes_concat"), test_bytes_concat);
     g_test_add_func(TEST_("bytes_xor"), test_bytes_xor);
     g_test_add_func(TEST_("bytes_equal"), test_bytes_equal);
+    g_test_add_func(TEST_("ptrv"), test_ptrv);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }

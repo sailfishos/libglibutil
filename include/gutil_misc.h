@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016-2019 Jolla Ltd.
- * Copyright (C) 2016-2019 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2016-2020 Jolla Ltd.
+ * Copyright (C) 2016-2020 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -116,6 +116,10 @@ gboolean
 gutil_bytes_equal_data(
     GBytes* bytes,
     const GUtilData* data); /* Since 1.0.41 */
+
+gsize
+gutil_ptrv_length(
+    gconstpointer ptrv); /* Since 1.0.50 */
 
 G_END_DECLS
 
