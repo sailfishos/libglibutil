@@ -31,6 +31,9 @@
  */
 
 #include "gutil_log.h"
+#include "gutil_misc.h"
+
+#include <stdlib.h>
 
 #ifdef unix
 #  include <unistd.h>
@@ -638,6 +641,33 @@ gutil_log_get_type()
 #endif /* GLOG_GLIB */
                                                   GLOG_TYPE_CUSTOM;
 }
+
+/* Initialize defaults from the environment */
+#ifndef _WIN32
+__attribute__((constructor))
+static
+void
+gutil_log_init()
+{
+    int val = 0;
+
+    if (gutil_parse_int(getenv("GUTIL_LOG_DEFAULT_LEVEL"), 0, &val) &&
+        val >= GLOG_LEVEL_INHERIT && val <= GLOG_LEVEL_VERBOSE) {
+        gutil_log_default.level = val;
+        GDEBUG("Default log level %d", val);
+    }
+
+    if (gutil_parse_int(getenv("GUTIL_LOG_TIMESTAMP"), 0, &val) && val > 0) {
+        gutil_log_timestamp = (val > 0);
+        GDEBUG("Timestamps %s", (val > 0) ? "enabled" : "disabled");
+    }
+
+    if (gutil_parse_int(getenv("GUTIL_LOG_TID"), 0, &val) && val > 0) {
+        gutil_log_tid = (val > 0);
+        GDEBUG("Thread id prefix %s", (val > 0) ? "enabled" : "disabled");
+    }
+}
+#endif
 
 /*
  * Local Variables:
