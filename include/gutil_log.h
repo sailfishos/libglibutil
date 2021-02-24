@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2019 Jolla Ltd.
- * Copyright (C) 2014-2019 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2021 Jolla Ltd.
+ * Copyright (C) 2014-2021 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -167,6 +167,7 @@ GLOG_MODULE_DECL(gutil_log_default)
 extern GLogProc gutil_log_func;
 extern GLogProc2 gutil_log_func2;
 extern gboolean gutil_log_timestamp; /* Only affects stdout and stderr */
+extern gboolean gutil_log_tid;       /* Since 1.0.51 */
 
 /* Log module (optional) */
 #define GLOG_MODULE_DEFINE_(var,name) \
