@@ -57,7 +57,7 @@
 #endif /* GLOG_GLIB */
 
 /* Allows timestamps in stdout log */
-gboolean gutil_log_timestamp = TRUE;
+gboolean gutil_log_timestamp = FALSE;
 
 /* Adds thread id prefix */
 gboolean gutil_log_tid = FALSE; /* Since 1.0.51 */
