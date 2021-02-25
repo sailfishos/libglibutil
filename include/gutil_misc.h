@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016-2020 Jolla Ltd.
- * Copyright (C) 2016-2020 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2016-2021 Jolla Ltd.
+ * Copyright (C) 2016-2021 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -119,7 +119,11 @@ gutil_bytes_equal_data(
 
 gsize
 gutil_ptrv_length(
-    gconstpointer ptrv); /* Since 1.0.50 */
+    const void* ptrv); /* Since 1.0.50 */
+
+void
+gutil_ptrv_free(
+    void** ptrv); /* Since 1.0.51 */
 
 G_END_DECLS
 

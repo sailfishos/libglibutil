@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016-2020 Jolla Ltd.
- * Copyright (C) 2016-2020 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2016-2021 Jolla Ltd.
+ * Copyright (C) 2016-2021 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -485,12 +485,12 @@ test_bytes_equal(
 }
 
 /*==========================================================================*
- * ptrv
+ * ptrv_length
  *==========================================================================*/
 
 static
 void
-test_ptrv(
+test_ptrv_length(
     void)
 {
     static const gconstpointer ptrv0[] = { NULL };
@@ -499,6 +499,24 @@ test_ptrv(
     g_assert_cmpuint(gutil_ptrv_length(NULL), == ,0);
     g_assert_cmpuint(gutil_ptrv_length(ptrv0), == ,0);
     g_assert_cmpuint(gutil_ptrv_length(ptrv1), == ,1);
+}
+
+/*==========================================================================*
+ * ptrv_free
+ *==========================================================================*/
+
+static
+void
+test_ptrv_free(
+    void)
+{
+    void** ptrv0 = g_new0(void*, 1);
+    void** ptrv1 = g_new0(void*, 2);
+
+    ptrv1[0] = g_new0(int, 1);
+    gutil_ptrv_free(NULL);
+    gutil_ptrv_free(ptrv0);
+    gutil_ptrv_free(ptrv1);
 }
 
 /*==========================================================================*
@@ -530,7 +548,8 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("bytes_concat"), test_bytes_concat);
     g_test_add_func(TEST_("bytes_xor"), test_bytes_xor);
     g_test_add_func(TEST_("bytes_equal"), test_bytes_equal);
-    g_test_add_func(TEST_("ptrv"), test_ptrv);
+    g_test_add_func(TEST_("ptrv_lenght"), test_ptrv_length);
+    g_test_add_func(TEST_("ptrv_free"), test_ptrv_free);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }
