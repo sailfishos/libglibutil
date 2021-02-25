@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2019 Jolla Ltd.
- * Copyright (C) 2014-2019 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2021 Jolla Ltd.
+ * Copyright (C) 2014-2021 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -31,9 +31,17 @@
  */
 
 #include "gutil_log.h"
+#include "gutil_misc.h"
 
-#if defined(DEBUG) && defined(_WIN32)
+#include <stdlib.h>
+
+#ifdef unix
+#  include <unistd.h>
+#  include <sys/syscall.h>
+#  define gettid() ((int)syscall(SYS_gettid))
+#elif defined(_WIN32)
 #  include <windows.h>
+#  define gettid() ((int)GetCurrentThreadId())
 #endif
 
 #ifndef GLOG_SYSLOG
@@ -49,7 +57,10 @@
 #endif /* GLOG_GLIB */
 
 /* Allows timestamps in stdout log */
-gboolean gutil_log_timestamp = TRUE;
+gboolean gutil_log_timestamp = FALSE;
+
+/* Adds thread id prefix */
+gboolean gutil_log_tid = FALSE; /* Since 1.0.51 */
 
 /* Log configuration */
 static GUTIL_DEFINE_LOG_FN2(gutil_log_default_proc);
@@ -191,8 +202,18 @@ gutil_log_stdio(
     }
 #endif
     if (name) {
+#ifdef gettid
+        if (gutil_log_tid)
+            fprintf(out, "[%d] %s[%s] %s%s\n", gettid(), t, name, prefix, msg);
+        else
+#endif
         fprintf(out, "%s[%s] %s%s\n", t, name, prefix, msg);
     } else {
+#ifdef gettid
+        if (gutil_log_tid)
+            fprintf(out, "[%d] %s%s%s\n", gettid(), t, prefix, msg);
+        else
+#endif
         fprintf(out, "%s%s%s\n", t, prefix, msg);
     }
     if (msg != buf) g_free(msg);
@@ -280,13 +301,27 @@ gutil_log_syslog(
         }
     }
 
-    if (name || prefix) {
+    if (name || prefix
+#ifdef gettid
+        || gutil_log_tid
+#endif
+        ) {
         char buf[512];
         char* msg = gutil_log_format(buf, sizeof(buf), format, va);
         if (!prefix) prefix = "";
         if (name) {
+#ifdef gettid
+            if (gutil_log_tid)
+                syslog(priority, "[%d] [%s] %s%s", gettid(), name, prefix, msg);
+            else
+#endif
             syslog(priority, "[%s] %s%s", name, prefix, msg);
         } else {
+#ifdef gettid
+            if (gutil_log_tid)
+                syslog(priority, "[%d] %s%s", gettid(), prefix, msg);
+            else
+#endif
             syslog(priority, "%s%s", prefix, msg);
         }
         if (msg != buf) g_free(msg);
@@ -606,6 +641,33 @@ gutil_log_get_type()
 #endif /* GLOG_GLIB */
                                                   GLOG_TYPE_CUSTOM;
 }
+
+/* Initialize defaults from the environment */
+#ifndef _WIN32
+__attribute__((constructor))
+static
+void
+gutil_log_init()
+{
+    int val = 0;
+
+    if (gutil_parse_int(getenv("GUTIL_LOG_DEFAULT_LEVEL"), 0, &val) &&
+        val >= GLOG_LEVEL_INHERIT && val <= GLOG_LEVEL_VERBOSE) {
+        gutil_log_default.level = val;
+        GDEBUG("Default log level %d", val);
+    }
+
+    if (gutil_parse_int(getenv("GUTIL_LOG_TIMESTAMP"), 0, &val) && val > 0) {
+        gutil_log_timestamp = (val > 0);
+        GDEBUG("Timestamps %s", (val > 0) ? "enabled" : "disabled");
+    }
+
+    if (gutil_parse_int(getenv("GUTIL_LOG_TID"), 0, &val) && val > 0) {
+        gutil_log_tid = (val > 0);
+        GDEBUG("Thread id prefix %s", (val > 0) ? "enabled" : "disabled");
+    }
+}
+#endif
 
 /*
  * Local Variables:
