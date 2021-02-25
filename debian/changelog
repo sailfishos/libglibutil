@@ -1,3 +1,12 @@
+libglibutil (1.0.51) unstable; urgency=low
+
+  * Initialize default log settings from the environment
+  * Disable timestamps by default
+  * Added gutil_log_tid option
+  * Added gutil_ptrv_free()
+
+ -- Slava Monich <slava.monich@jolla.com>  Thu, 25 Feb 2021 19:36:05 +0200
+
 libglibutil (1.0.50) unstable; urgency=low
 
   * Added gutil_ptrv_length()
