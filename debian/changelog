@@ -1,3 +1,9 @@
+libglibutil (1.0.52) unstable; urgency=low
+
+  * Added gutil_memdup()
+
+ -- Slava Monich <slava.monich@jolla.com>  Sun, 18 Apr 2021 17:40:41 +0300
+
 libglibutil (1.0.51) unstable; urgency=low
 
   * Initialize default log settings from the environment
