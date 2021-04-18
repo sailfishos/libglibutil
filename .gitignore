@@ -4,6 +4,7 @@ test/libglibutil_test.opt
 test/coverage/full.gcov
 test/coverage/libglibutil.gcov
 test/coverage/results
+debian/.debhelper
 debian/files
 debian/libglibutil-dev.debhelper.log
 debian/libglibutil-dev.install
