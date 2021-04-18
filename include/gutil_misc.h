@@ -125,6 +125,11 @@ void
 gutil_ptrv_free(
     void** ptrv); /* Since 1.0.51 */
 
+void*
+gutil_memdup(
+    const void* ptr,
+    gsize size); /* Since 1.0.52 */
+
 G_END_DECLS
 
 #endif /* GUTIL_MISC_H */

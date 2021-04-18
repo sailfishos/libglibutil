@@ -520,6 +520,27 @@ test_ptrv_free(
 }
 
 /*==========================================================================*
+ * memdup
+ *==========================================================================*/
+
+static
+void
+test_memdup(
+    void)
+{
+    static const guint8 data[] = { 0x01, 0x02, 0x03 };
+    void* copy = gutil_memdup(data, sizeof(data));
+
+    g_assert(copy);
+    g_assert(!memcmp(copy, data, sizeof(data)));
+    g_free(copy);
+
+    g_assert(!gutil_memdup(data, 0));
+    g_assert(!gutil_memdup(NULL, 0));
+    g_assert(!gutil_memdup(NULL, 1));
+}
+
+/*==========================================================================*
  * Common
  *==========================================================================*/
 
@@ -550,6 +571,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("bytes_equal"), test_bytes_equal);
     g_test_add_func(TEST_("ptrv_lenght"), test_ptrv_length);
     g_test_add_func(TEST_("ptrv_free"), test_ptrv_free);
+    g_test_add_func(TEST_("memdup"), test_memdup);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }

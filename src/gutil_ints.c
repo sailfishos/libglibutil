@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2017-2020 Jolla Ltd.
- * Copyright (C) 2017-2020 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2017-2021 Jolla Ltd.
+ * Copyright (C) 2017-2021 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -32,6 +32,7 @@
 
 #include "gutil_intarray.h"
 #include "gutil_ints.h"
+#include "gutil_misc.h"
 #include "gutil_macros.h"
 
 struct gutil_ints {
@@ -45,10 +46,10 @@ struct gutil_ints {
 GUtilInts*
 gutil_ints_new(
     const int* data,
-    guint count)
+    guint n)
 {
-    if (data && count) {
-        return gutil_ints_new_take(g_memdup(data, count*sizeof(int)), count);
+    if (data && n) {
+        return gutil_ints_new_take(gutil_memdup(data, n * sizeof(int)), n);
     } else {
         return NULL;
     }
@@ -155,12 +156,12 @@ gutil_ints_unref_to_data(
                 /* We can allow the caller to free the data */
                 result = (int*)ints->data;
             } else {
-                result = g_memdup(ints->data, ints->count * sizeof(int));
+                result = gutil_memdup(ints->data, ints->count * sizeof(int));
                 ints->free_func(ints->user_data);
             }
             gutil_slice_free(ints);
         } else {
-            result = g_memdup(ints->data, ints->count * sizeof(int));
+            result = gutil_memdup(ints->data, ints->count * sizeof(int));
         }
         return result;
     } else {

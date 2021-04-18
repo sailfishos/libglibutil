@@ -444,6 +444,22 @@ gutil_ptrv_free(
     }
 }
 
+/* Similar to g_memdup but takes gsize as the number of bytes to copy */
+void*
+gutil_memdup(
+    const void* ptr,
+    gsize size) /* Since 1.0.52 */
+{
+    if (G_LIKELY(ptr) && G_LIKELY(size)) {
+        void* copy = g_malloc(size);
+
+        memcpy(copy, ptr, size);
+        return copy;
+    } else {
+        return NULL;
+    }
+}
+
 /*
  * Local Variables:
  * mode: C
