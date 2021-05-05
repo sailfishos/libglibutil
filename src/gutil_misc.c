@@ -195,6 +195,30 @@ gutil_parse_int(
 }
 
 gboolean
+gutil_parse_uint(
+    const char* str,
+    int base,
+    unsigned int* value) /* Since 1.0.53 */
+{
+    gboolean ok = FALSE;
+
+    if (str && str[0]) {
+        char* tmp = NULL;
+        char* end = NULL;
+        const char* stripped = gutil_strstrip(str, &tmp);
+        guint64 ull;
+
+        ull = g_ascii_strtoull(stripped, &end, base);
+        ok = !*end && ull <= UINT_MAX;
+        if (ok && value) {
+            *value = (unsigned int)ull;
+        }
+        g_free(tmp);
+    }
+    return ok;
+}
+
+gboolean
 gutil_data_equal(
     const GUtilData* data1,
     const GUtilData* data2) /* Since 1.0.31 */

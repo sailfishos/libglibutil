@@ -70,6 +70,12 @@ gutil_parse_int(
     int* value); /* Since 1.0.30 */
 
 gboolean
+gutil_parse_uint(
+    const char* str,
+    int base,
+    unsigned int* value); /* Since 1.0.53 */
+
+gboolean
 gutil_data_equal(
     const GUtilData* data1,
     const GUtilData* data2); /* Since 1.0.31 */

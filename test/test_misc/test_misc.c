@@ -193,6 +193,41 @@ test_parse_int(
 }
 
 /*==========================================================================*
+ * parse_uint
+ *==========================================================================*/
+
+static
+void
+test_parse_uint(
+    void)
+{
+    unsigned int value;
+
+    g_assert(!gutil_parse_uint(NULL, 0, NULL));
+    g_assert(!gutil_parse_uint("", 0, NULL));
+    g_assert(!gutil_parse_uint("garbage", 0, NULL));
+    g_assert(!gutil_parse_uint("0 trailing garbage", 0, NULL));
+    g_assert(gutil_parse_uint("0", 0, NULL));
+    g_assert(gutil_parse_uint("0", 0, &value));
+    g_assert_cmpuint(value, == ,0);
+    g_assert(gutil_parse_uint("42", 0, &value));
+    g_assert_cmpuint(value, == ,42);
+    g_assert(!gutil_parse_uint("0x10000000000000000", 0, &value));
+    g_assert(!gutil_parse_uint("-2147483649", 0, &value));
+    g_assert(!gutil_parse_uint("-1", 0, &value));
+    g_assert(gutil_parse_uint("4294967295", 0, &value));
+    g_assert_cmpuint(value, == ,4294967295);
+    g_assert(gutil_parse_uint(" 0x7fffffff ", 0, &value));
+    g_assert_cmpuint(value, == ,0x7fffffff);
+    g_assert(gutil_parse_uint(" 7fffffff ", 16, &value));
+    g_assert_cmpuint(value, == ,0x7fffffff);
+    g_assert(gutil_parse_uint("7ffffffe ", 16, &value));
+    g_assert_cmpuint(value, == ,0x7ffffffe);
+    g_assert(gutil_parse_uint("0xffffffff", 0, &value));
+    g_assert_cmpuint(value, == ,0xffffffff);
+}
+
+/*==========================================================================*
  * data_equal
  *==========================================================================*/
 
@@ -567,6 +602,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("hex2bin"), test_hex2bin);
     g_test_add_func(TEST_("hexdump"), test_hexdump);
     g_test_add_func(TEST_("parse_int"), test_parse_int);
+    g_test_add_func(TEST_("parse_uint"), test_parse_uint);
     g_test_add_func(TEST_("data_equal"), test_data_equal);
     g_test_add_func(TEST_("data_prefix"), test_data_prefix);
     g_test_add_func(TEST_("data_suffix"), test_data_suffix);
