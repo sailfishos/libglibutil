@@ -45,6 +45,7 @@ gutil_disconnect_handlers(
 {
     if (G_LIKELY(instance) && G_LIKELY(ids)) {
         int i;
+
         for (i=0; i<count; i++) {
             if (ids[i]) {
                 g_signal_handler_disconnect(instance, ids[i]);
@@ -63,6 +64,7 @@ gutil_hex2bin(
     if (str && data && len > 0 && !(len & 1)) {
         gssize i;
         guint8* ptr = data;
+
         for (i=0; i<len; i+=2) {
             static const guint8 hex[] = {
                 0, 1, 2, 3, 4, 5, 6, 7,     /* 0x30..0x37 */
@@ -75,7 +77,8 @@ gutil_hex2bin(
             };
             const char x1 = str[i];
             const char x2 = str[i+1];
-            if (isxdigit(x1) && isxdigit(x2)) {
+
+            if (g_ascii_isxdigit(x1) && g_ascii_isxdigit(x2)) {
                 *ptr++ = (hex[x1-0x30] << 4) + hex[x2-0x30];
             } else {
                 return NULL;
@@ -94,9 +97,11 @@ gutil_hex2bytes(
     if (str) {
         if (len < 0) len = strlen(str);
         if (len > 0 && !(len & 1)) {
-            void* data = g_malloc(len/2);
+            const gsize n = len/2;
+            void* data = g_malloc(n);
+
             if (gutil_hex2bin(str, len, data)) {
-                return g_bytes_new_take(data, len/2);
+                return g_bytes_new_take(data, n);
             }
             g_free(data);
         }
@@ -182,12 +187,11 @@ gutil_parse_int(
         char* tmp = NULL;
         char* end = NULL;
         const char* stripped = gutil_strstrip(str, &tmp);
-        gint64 l;
+        const gint64 ll = g_ascii_strtoll(stripped, &end, base);
 
-        l = g_ascii_strtoll(stripped, &end, base);
-        ok = !*end && l >= INT_MIN && l <= INT_MAX;
+        ok = !*end && ll >= INT_MIN && ll <= INT_MAX;
         if (ok && value) {
-            *value = (int)l;
+            *value = (int)ll;
         }
         g_free(tmp);
     }
@@ -206,9 +210,8 @@ gutil_parse_uint(
         char* tmp = NULL;
         char* end = NULL;
         const char* stripped = gutil_strstrip(str, &tmp);
-        guint64 ull;
+        const guint64 ull = g_ascii_strtoull(stripped, &end, base);
 
-        ull = g_ascii_strtoull(stripped, &end, base);
         ok = !*end && ull <= UINT_MAX;
         if (ok && value) {
             *value = (unsigned int)ull;
