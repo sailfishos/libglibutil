@@ -175,14 +175,20 @@ test_parse_int(
     g_assert(!gutil_parse_int("0 trailing garbage", 0, NULL));
     g_assert(gutil_parse_int("0", 0, NULL));
     g_assert(gutil_parse_int("0", 0, &value));
-    g_assert(value == 0);
+    g_assert_cmpint(value, == ,0);
+    g_assert(gutil_parse_int("-1", 0, &value));
+    g_assert_cmpint(value, == ,-1);
+    g_assert(gutil_parse_int("42", 0, &value));
+    g_assert_cmpint(value, == ,42);
     g_assert(!gutil_parse_int("0x10000000000000000", 0, &value));
     g_assert(!gutil_parse_int("-2147483649", 0, &value));
     g_assert(!gutil_parse_int("4294967295", 0, &value));
     g_assert(gutil_parse_int(" 0x7fffffff ", 0, &value));
-    g_assert(value == 0x7fffffff);
+    g_assert_cmpint(value, == ,0x7fffffff);
     g_assert(gutil_parse_int(" 7fffffff ", 16, &value));
-    g_assert(value == 0x7fffffff);
+    g_assert_cmpint(value, == ,0x7fffffff);
+    g_assert(gutil_parse_int("7ffffffe ", 16, &value));
+    g_assert_cmpint(value, == ,0x7ffffffe);
     g_assert(!gutil_parse_int("0xffffffff", 0, &value));
 }
 

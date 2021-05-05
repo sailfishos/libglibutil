@@ -36,7 +36,6 @@
 
 #include <ctype.h>
 #include <limits.h>
-#include <errno.h>
 
 void
 gutil_disconnect_handlers(
@@ -153,36 +152,52 @@ gutil_hexdump(
     return bytes_dumped;
 }
 
-/* Since 1.0.30 */
+static
+const char*
+gutil_strstrip(
+    const char* str,
+    char** tmp)
+{
+    /* Caller makes sure that str isn't NULL */
+    const gsize len = strlen(str);
+
+    if (g_ascii_isspace(str[0]) || g_ascii_isspace(str[len - 1])) {
+        /* Need to modify the original string */
+        return (*tmp = g_strstrip(gutil_memdup(str, len + 1)));
+    } else {
+        /* The original string is fine as is */
+        return str;
+    }
+}
+
 gboolean
 gutil_parse_int(
     const char* str,
     int base,
-    int* value)
+    int* value) /* Since 1.0.30 */
 {
     gboolean ok = FALSE;
 
     if (str && str[0]) {
-        char* str2 = g_strstrip(g_strdup(str));
-        char* end = str2;
+        char* tmp = NULL;
+        char* end = NULL;
+        const char* stripped = gutil_strstrip(str, &tmp);
         gint64 l;
 
-        errno = 0;
-        l = g_ascii_strtoll(str2, &end, base);
-        ok = !*end && errno != ERANGE && l >= INT_MIN && l <= INT_MAX;
+        l = g_ascii_strtoll(stripped, &end, base);
+        ok = !*end && l >= INT_MIN && l <= INT_MAX;
         if (ok && value) {
             *value = (int)l;
         }
-        g_free(str2);
+        g_free(tmp);
     }
     return ok;
 }
 
-/* since 1.0.31 */
 gboolean
 gutil_data_equal(
     const GUtilData* data1,
-    const GUtilData* data2)
+    const GUtilData* data2) /* Since 1.0.31 */
 {
     if (data1 == data2) {
         return TRUE;
