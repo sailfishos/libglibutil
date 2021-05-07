@@ -657,12 +657,12 @@ gutil_log_init()
         GDEBUG("Default log level %d", val);
     }
 
-    if (gutil_parse_int(getenv("GUTIL_LOG_TIMESTAMP"), 0, &val) && val > 0) {
+    if (gutil_parse_int(getenv("GUTIL_LOG_TIMESTAMP"), 0, &val) && val >= 0) {
         gutil_log_timestamp = (val > 0);
         GDEBUG("Timestamps %s", (val > 0) ? "enabled" : "disabled");
     }
 
-    if (gutil_parse_int(getenv("GUTIL_LOG_TID"), 0, &val) && val > 0) {
+    if (gutil_parse_int(getenv("GUTIL_LOG_TID"), 0, &val) && val >= 0) {
         gutil_log_tid = (val > 0);
         GDEBUG("Thread id prefix %s", (val > 0) ? "enabled" : "disabled");
     }
