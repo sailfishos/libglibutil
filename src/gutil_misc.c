@@ -502,6 +502,52 @@ gutil_memdup(
     }
 }
 
+gsize
+gutil_range_init_with_bytes(
+    GUtilRange* range,
+    GBytes* bytes) /* Since 1.0.55 */
+{
+    gsize size = 0;
+
+    if (G_LIKELY(range)) {
+        if (G_LIKELY(bytes)) {
+            range->ptr = (const guint8*) g_bytes_get_data(bytes, &size);
+            range->end = range->ptr + size;
+        } else {
+            memset(range, 0, sizeof(*range));
+        }
+    }
+    return size;
+}
+
+gboolean
+gutil_range_has_prefix(
+    const GUtilRange* range,
+    const GUtilData* prefix) /* Since 1.0.55 */
+{
+    if (G_LIKELY(range) && G_LIKELY(range->ptr) && G_LIKELY(prefix)) {
+        if (range->end > range->ptr) {
+            return (gsize)(range->end - range->ptr) >= prefix->size &&
+                !memcmp(range->ptr, prefix->bytes, prefix->size);
+        } else {
+            return !prefix->size;
+        }
+    }
+    return FALSE;
+}
+
+gboolean
+gutil_range_skip_prefix(
+    GUtilRange* range,
+    const GUtilData* prefix) /* Since 1.0.55 */
+{
+    if (gutil_range_has_prefix(range, prefix)) {
+        range->ptr += prefix->size;
+        return TRUE;
+    }
+    return FALSE;
+}
+
 /*
  * Local Variables:
  * mode: C

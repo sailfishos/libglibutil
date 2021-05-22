@@ -136,6 +136,21 @@ gutil_memdup(
     const void* ptr,
     gsize size); /* Since 1.0.52 */
 
+gsize
+gutil_range_init_with_bytes(
+    GUtilRange* range,
+    GBytes* bytes); /* Since 1.0.55 */
+
+gboolean
+gutil_range_has_prefix(
+    const GUtilRange* range,
+    const GUtilData* prefix); /* Since 1.0.55 */
+
+gboolean
+gutil_range_skip_prefix(
+    GUtilRange* range,
+    const GUtilData* prefix); /* Since 1.0.55 */
+
 G_END_DECLS
 
 #endif /* GUTIL_MISC_H */
