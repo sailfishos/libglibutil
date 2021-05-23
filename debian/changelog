@@ -1,3 +1,12 @@
+libglibutil (1.0.55) unstable; urgency=low
+
+  * Added gutil_log_dump()
+  * Added gutil_range_init_with_bytes()
+  * Added gutil_range_has_prefix()
+  * Added gutil_range_skip_prefix()
+
+ -- Slava Monich <slava.monich@jolla.com>  Sun, 23 May 2021 03:33:58 +0300
+
 libglibutil (1.0.54) unstable; urgency=low
 
   * Added GUtilRange type
