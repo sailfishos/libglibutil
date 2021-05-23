@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2017-2019 Jolla Ltd.
- * Copyright (C) 2017-2019 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2017-2021 Jolla Ltd.
+ * Copyright (C) 2017-2021 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -14,8 +14,8 @@
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
  *   3. Neither the names of the copyright holders nor the names of its
- *      contributors may be used to endorse or promote products derived from
- *      this software without specific prior written permission.
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -41,23 +41,23 @@
 #include "gutil_log.h"
 
 static TestOpt test_opt;
-
-/*==========================================================================*
- * Basic
- *==========================================================================*/
-
-static GString* test_log_basic_buf;
+static GString* test_log_buf;
 
 static
 void
-test_log_basic_fn(
+test_log_fn(
     const char* name,
     int level,
     const char* format,
     va_list va)
 {
-    g_string_append_vprintf(test_log_basic_buf, format, va);
+    g_string_append_vprintf(test_log_buf, format, va);
+    g_string_append_c(test_log_buf, '\n');
 }
+
+/*==========================================================================*
+ * Basic
+ *==========================================================================*/
 
 static
 void
@@ -68,8 +68,8 @@ test_log_basic(
     const GLogProc2 fn2 = gutil_log_func2;
     const int level = gutil_log_default.level;
     GLOG_MODULE_DEFINE2_(module, "test", gutil_log_default);
-    test_log_basic_buf = g_string_new(NULL);
-    gutil_log_func = test_log_basic_fn;
+    test_log_buf = g_string_new(NULL);
+    gutil_log_func = test_log_fn;
 
     module.level = GLOG_LEVEL_INHERIT;
     gutil_log_default.level = GLOG_LEVEL_ERR;
@@ -77,10 +77,10 @@ test_log_basic(
     gutil_log(NULL, GLOG_LEVEL_DEBUG, "Debug!");
     gutil_log(&module, GLOG_LEVEL_DEBUG, "Debug!");
     gutil_log_assert(NULL, GLOG_LEVEL_WARN, "Test!", __FILE__, __LINE__);
-    g_assert(!test_log_basic_buf->len);
+    g_assert(!test_log_buf->len);
     gutil_log(&module, GLOG_LEVEL_ERR, "Err!");
-    g_assert(test_log_basic_buf->len);
-    g_string_set_size(test_log_basic_buf, 0);
+    g_assert(test_log_buf->len);
+    g_string_set_size(test_log_buf, 0);
 
     /* With NULL parent, still gutil_log_default is going to be checked */
     module.parent = NULL;
@@ -88,19 +88,19 @@ test_log_basic(
     gutil_log(NULL, GLOG_LEVEL_DEBUG, "Debug!");
     gutil_log(&module, GLOG_LEVEL_DEBUG, "Debug!");
     gutil_log_assert(NULL, GLOG_LEVEL_WARN, "Test!", __FILE__, __LINE__);
-    g_assert(!test_log_basic_buf->len);
+    g_assert(!test_log_buf->len);
     gutil_log(&module, GLOG_LEVEL_ERR, "Err!");
-    g_assert(test_log_basic_buf->len);
-    g_string_set_size(test_log_basic_buf, 0);
+    g_assert(test_log_buf->len);
+    g_string_set_size(test_log_buf, 0);
 
     gutil_log(&module, GLOG_LEVEL_ALWAYS, "Always!");
-    g_assert(test_log_basic_buf->len);
-    g_string_set_size(test_log_basic_buf, 0);
+    g_assert(test_log_buf->len);
+    g_string_set_size(test_log_buf, 0);
 
     /* Test GLOG_FLAG_DISABLE */
     module.flags |= GLOG_FLAG_DISABLE;
     gutil_log(&module, GLOG_LEVEL_ALWAYS, "Always!");
-    g_assert(!test_log_basic_buf->len);
+    g_assert(!test_log_buf->len);
     module.flags &= ~GLOG_FLAG_DISABLE;
 
     /* Without log functions these calls have no effect */
@@ -109,8 +109,8 @@ test_log_basic(
     gutil_log_func2 = NULL;
     gutil_log(NULL, GLOG_LEVEL_ALWAYS, "Always!");
 
-    g_string_free(test_log_basic_buf, TRUE);
-    test_log_basic_buf = NULL;
+    g_string_free(test_log_buf, TRUE);
+    test_log_buf = NULL;
     gutil_log_default.level = level;
     gutil_log_func = fn;
     gutil_log_func2 = fn2;
@@ -169,7 +169,7 @@ test_log_file(
     stdout = default_stdout;
     g_assert(fflush(out) == 0);
     GDEBUG("%s", buf->str);
-    g_assert(!g_strcmp0(buf->str, "WARNING: Test\n"));
+    g_assert_cmpstr(buf->str, == ,"WARNING: Test\n");
     g_string_set_size(buf, 0);
 
     /* Error prefix */
@@ -178,7 +178,7 @@ test_log_file(
     stdout = default_stdout;
     g_assert(fflush(out) == 0);
     GDEBUG("%s", buf->str);
-    g_assert(!g_strcmp0(buf->str, "ERROR: Test\n"));
+    g_assert_cmpstr(buf->str, == ,"ERROR: Test\n");
     g_string_set_size(buf, 0);
 
     /* Empty name (dropped) */
@@ -188,7 +188,7 @@ test_log_file(
     stdout = default_stdout;
     g_assert(fflush(out) == 0);
     GDEBUG("%s", buf->str);
-    g_assert(!g_strcmp0(buf->str, "Test\n"));
+    g_assert_cmpstr(buf->str, == ,"Test\n");
     g_string_set_size(buf, 0);
 
     /* Non-empty name */
@@ -198,7 +198,7 @@ test_log_file(
     stdout = default_stdout;
     g_assert(fflush(out) == 0);
     GDEBUG("%s", buf->str);
-    g_assert(!g_strcmp0(buf->str, "[test] Test\n"));
+    g_assert_cmpstr(buf->str, == ,"[test] Test\n");
     g_string_set_size(buf, 0);
 
     /* Hide the name */
@@ -208,7 +208,7 @@ test_log_file(
     stdout = default_stdout;
     g_assert(fflush(out) == 0);
     GDEBUG("%s", buf->str);
-    g_assert(!g_strcmp0(buf->str, "Test\n"));
+    g_assert_cmpstr(buf->str, == ,"Test\n");
     g_string_set_size(buf, 0);
 
     /* Forward output to test_log_drop */
@@ -284,13 +284,56 @@ test_log_misc(
     const GLogProc fn = gutil_log_func;
     g_assert(gutil_log_set_type(GLOG_TYPE_STDOUT, "test"));
     g_assert(gutil_log_func == gutil_log_stdout);
-    g_assert(!g_strcmp0(gutil_log_get_type(), GLOG_TYPE_STDOUT));
+    g_assert_cmpstr(gutil_log_get_type(), == ,GLOG_TYPE_STDOUT);
     g_assert(gutil_log_set_type(GLOG_TYPE_STDERR, "test"));
     g_assert(gutil_log_func == gutil_log_stderr);
-    g_assert(!g_strcmp0(gutil_log_get_type(), GLOG_TYPE_STDERR));
+    g_assert_cmpstr(gutil_log_get_type(), == ,GLOG_TYPE_STDERR);
     g_assert(!gutil_log_set_type("whatever", "test"));
     gutil_log_func = NULL;
-    g_assert(!g_strcmp0(gutil_log_get_type(), GLOG_TYPE_CUSTOM));
+    g_assert_cmpstr(gutil_log_get_type(), == ,GLOG_TYPE_CUSTOM);
+    gutil_log_func = fn;
+}
+
+/*==========================================================================*
+ * Dump
+ *==========================================================================*/
+
+static
+void
+test_log_dump(
+    void)
+{
+    static const guint8 short_data[] = { 0x01, 0x02, 0x03, 0x04 };
+    static const guint8 long_data[] = {
+        0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+        0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
+        0x00
+    };
+
+    const GLogProc fn = gutil_log_func;
+    test_log_buf = g_string_new(NULL);
+    gutil_log_func = test_log_fn;
+
+    gutil_log_dump(&gutil_log_default, GLOG_LEVEL_NONE, NULL,
+        short_data, sizeof(short_data));
+    g_assert_cmpuint(test_log_buf->len, == ,0);
+
+    gutil_log_dump(&gutil_log_default, GLOG_LEVEL_ALWAYS, "  ",
+        short_data, sizeof(short_data));
+    g_assert_cmpstr(test_log_buf->str, == ,
+        "  0000: 01 02 03 04                                         ....\n");
+
+    g_string_set_size(test_log_buf, 0);
+    gutil_log_dump(&gutil_log_default, GLOG_LEVEL_ALWAYS, NULL,
+        long_data, sizeof(long_data));
+    g_assert_cmpstr(test_log_buf->str, == ,
+        "0000: 30 31 32 33 34 35 36 37  38 39 3a 3b 3c 3d 3e 3f    "
+        "01234567 89:;<=>?\n"
+        "0010: 00                                                  "
+        ".\n");
+
+    g_string_free(test_log_buf, TRUE);
+    test_log_buf = NULL;
     gutil_log_func = fn;
 }
 
@@ -309,6 +352,7 @@ int main(int argc, char* argv[])
 #endif
     g_test_add_func(TEST_PREFIX "enabled", test_log_enabled);
     g_test_add_func(TEST_PREFIX "misc", test_log_misc);
+    g_test_add_func(TEST_PREFIX "dump", test_log_dump);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }

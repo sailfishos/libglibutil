@@ -14,8 +14,8 @@
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
  *   3. Neither the names of the copyright holders nor the names of its
- *      contributors may be used to endorse or promote products derived from
- *      this software without specific prior written permission.
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -138,6 +138,14 @@ gutil_logv(
     int level,
     const char* format,
     va_list va);
+
+void
+gutil_log_dump(
+    const GLogModule* module,
+    int level,
+    const char* prefix,
+    const void* data,
+    gsize size); /* Since 1.0.55 */
 
 /* Check if logging is enabled for the specified log level */
 gboolean
@@ -318,9 +326,12 @@ gutil_log_assert(
        GLOG_LEVEL_DEBUG, f, ##args)
 #    define GDEBUG_(f,args...)  gutil_log(GLOG_MODULE_CURRENT, \
        GLOG_LEVEL_DEBUG, "%s() " f, __FUNCTION__, ##args)
+#    define GDEBUG_DUMP(buf,n)  gutil_log_dump(GLOG_MODULE_CURRENT, \
+       GLOG_LEVEL_DEBUG, NULL, buf, n) /* Since 1.0.55 */
 #  else
 #    define GDEBUG(f,args...)   GLOG_NOTHING
 #    define GDEBUG_(f,args...)  GLOG_NOTHING
+#    define GDEBUG_DUMP(buf,n)  GLOG_NOTHING /* Since 1.0.55 */
 #  endif /* GUTIL_LOG_DEBUG */
 #else
 #  define GDEBUG_               GDEBUG

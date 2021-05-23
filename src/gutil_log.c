@@ -490,6 +490,30 @@ gutil_log_enabled(
     return FALSE;
 }
 
+void
+gutil_log_dump(
+    const GLogModule* module,
+    int level,
+    const char* prefix,
+    const void* data,
+    gsize size) /* Since 1.0.55 */
+{
+    if (gutil_log_enabled(module, level)) {
+        const guint8* ptr = data;
+        guint off = 0;
+
+        if (!prefix) prefix = "";
+        while (size > 0) {
+            char buf[GUTIL_HEXDUMP_BUFSIZE];
+            const guint consumed = gutil_hexdump(buf, ptr + off, size);
+
+            gutil_log(module, level, "%s%04X: %s", prefix, off, buf);
+            size -= consumed;
+            off += consumed;
+        }
+    }
+}
+
 /* gutil_log_parse_option helper */
 static
 int
