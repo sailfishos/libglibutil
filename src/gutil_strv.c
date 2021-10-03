@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2020 Jolla Ltd.
- * Copyright (C) 2014-2020 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2021 Jolla Ltd.
+ * Copyright (C) 2014-2021 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -173,10 +173,7 @@ gutil_strv_remove_at(
             if (free_string) {
                 g_free(sv[pos]);
             }
-            if (pos < len-1) {
-                memmove(sv + pos, sv + pos + 1, sizeof(char*)*(len-pos-1));
-            }
-            sv[len-1] = NULL;
+            memmove(sv + pos, sv + pos + 1, sizeof(char*)*(len - pos));
             sv = g_realloc(sv, sizeof(char*)*len);
         }
     }
