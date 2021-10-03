@@ -173,6 +173,8 @@ test_parse_int(
     g_assert(!gutil_parse_int("", 0, NULL));
     g_assert(!gutil_parse_int("garbage", 0, NULL));
     g_assert(!gutil_parse_int("0 trailing garbage", 0, NULL));
+    g_assert(!gutil_parse_int("0", -1, NULL));
+    g_assert(!gutil_parse_int("0", 1, NULL));
     g_assert(gutil_parse_int("0", 0, NULL));
     g_assert(gutil_parse_int("0", 0, &value));
     g_assert_cmpint(value, == ,0);
@@ -207,14 +209,20 @@ test_parse_uint(
     g_assert(!gutil_parse_uint("", 0, NULL));
     g_assert(!gutil_parse_uint("garbage", 0, NULL));
     g_assert(!gutil_parse_uint("0 trailing garbage", 0, NULL));
+    g_assert(!gutil_parse_uint("0", -1, NULL));
+    g_assert(!gutil_parse_uint("0", 1, NULL));
     g_assert(gutil_parse_uint("0", 0, NULL));
     g_assert(gutil_parse_uint("0", 0, &value));
     g_assert_cmpuint(value, == ,0);
     g_assert(gutil_parse_uint("42", 0, &value));
     g_assert_cmpuint(value, == ,42);
     g_assert(!gutil_parse_uint("0x10000000000000000", 0, &value));
+#if defined __SIZEOF_INT__ && __SIZEOF_INT__ == 4
+    g_assert(!gutil_parse_uint("0x100000000", 0, &value));
+#endif
     g_assert(!gutil_parse_uint("-2147483649", 0, &value));
     g_assert(!gutil_parse_uint("-1", 0, &value));
+    g_assert(!gutil_parse_uint(" -1 ", 0, &value));
     g_assert(gutil_parse_uint("4294967295", 0, &value));
     g_assert_cmpuint(value, == ,4294967295);
     g_assert(gutil_parse_uint(" 0x7fffffff ", 0, &value));
@@ -225,6 +233,91 @@ test_parse_uint(
     g_assert_cmpuint(value, == ,0x7ffffffe);
     g_assert(gutil_parse_uint("0xffffffff", 0, &value));
     g_assert_cmpuint(value, == ,0xffffffff);
+}
+
+/*==========================================================================*
+ * parse_int64
+ *==========================================================================*/
+
+static
+void
+test_parse_int64(
+    void)
+{
+    gint64 value;
+
+    g_assert(!gutil_parse_int64(NULL, 0, NULL));
+    g_assert(!gutil_parse_int64("", 0, NULL));
+    g_assert(!gutil_parse_int64("garbage", 0, NULL));
+    g_assert(!gutil_parse_int64("0 trailing garbage", 0, NULL));
+    g_assert(!gutil_parse_int64("0", -1, NULL));
+    g_assert(!gutil_parse_int64("0", 1, NULL));
+    g_assert(gutil_parse_int64("0", 0, NULL));
+    g_assert(gutil_parse_int64("0", 0, &value));
+    g_assert_cmpint(value, == ,0);
+    g_assert(gutil_parse_int64("-1", 0, &value));
+    g_assert_cmpint(value, == ,-1);
+    g_assert(gutil_parse_int64("42", 0, &value));
+    g_assert_cmpint(value, == ,42);
+    g_assert(gutil_parse_int64("-2147483649", 0, &value));
+    g_assert_cmpint(value, == ,-2147483649);
+    g_assert(gutil_parse_int64("4294967295", 0, &value));
+    g_assert_cmpint(value, == ,4294967295);
+    g_assert(gutil_parse_int64(" 0x7fffffff ", 0, &value));
+    g_assert_cmpint(value, == ,0x7fffffff);
+    g_assert(gutil_parse_int64(" 7fffffff ", 16, &value));
+    g_assert_cmpint(value, == ,0x7fffffff);
+    g_assert(gutil_parse_int64("7ffffffe ", 16, &value));
+    g_assert_cmpint(value, == ,0x7ffffffe);
+    g_assert(gutil_parse_int64("0xffffffff", 0, &value));
+    g_assert_cmpint(value, == ,0xffffffff);
+    g_assert(!gutil_parse_int64("0x10000000000000000", 0, &value));
+    g_assert(!gutil_parse_int64("-9223372036854775809", 0, &value));
+    g_assert(gutil_parse_int64("-9223372036854775808", 0, &value));
+    g_assert_cmpint(value, == ,0x8000000000000000);
+    g_assert(!gutil_parse_int64("9223372036854775808", 0, &value));
+    g_assert(gutil_parse_int64("9223372036854775807", 0, &value));
+    g_assert_cmpint(value, == ,0x7fffffffffffffff);
+}
+
+/*==========================================================================*
+ * parse_uint64
+ *==========================================================================*/
+
+static
+void
+test_parse_uint64(
+    void)
+{
+    guint64 value;
+
+    g_assert(!gutil_parse_uint64(NULL, 0, NULL));
+    g_assert(!gutil_parse_uint64("", 0, NULL));
+    g_assert(!gutil_parse_uint64("garbage", 0, NULL));
+    g_assert(!gutil_parse_uint64("0 trailing garbage", 0, NULL));
+    g_assert(!gutil_parse_uint64("0", -1, NULL));
+    g_assert(!gutil_parse_uint64("0", 1, NULL));
+    g_assert(gutil_parse_uint64("0", 0, NULL));
+    g_assert(gutil_parse_uint64("0", 0, &value));
+    g_assert_cmpuint(value, == ,0);
+    g_assert(gutil_parse_uint64("42", 0, &value));
+    g_assert_cmpuint(value, == ,42);
+    g_assert(!gutil_parse_uint64("0x10000000000000000", 0, &value));
+    g_assert(!gutil_parse_uint64("-2147483649", 0, &value));
+    g_assert(!gutil_parse_uint64("-1", 0, &value));
+    g_assert(!gutil_parse_uint64(" -1 ", 0, &value));
+    g_assert(gutil_parse_uint64("4294967295", 0, &value));
+    g_assert_cmpuint(value, == ,4294967295);
+    g_assert(!gutil_parse_uint64(" 0x7fffffff ffffffff ", 0, &value));
+    g_assert(gutil_parse_uint64(" 0x7fffffffffffffff ", 0, &value));
+    g_assert_cmpuint(value, == ,0x7fffffffffffffff);
+    g_assert(!gutil_parse_uint64(" 7fffffff ffffffff", 16, &value));
+    g_assert(gutil_parse_uint64(" 7fffffffffffffff ", 16, &value));
+    g_assert_cmpuint(value, == ,0x7fffffffffffffff);
+    g_assert(gutil_parse_uint64("0x100000000", 0, &value));
+    g_assert_cmpuint(value, == ,0x100000000);
+    g_assert(gutil_parse_uint64("0xffffffffffffffff", 0, &value));
+    g_assert_cmpuint(value, == ,0xffffffffffffffff);
 }
 
 /*==========================================================================*
@@ -679,6 +772,8 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("hexdump"), test_hexdump);
     g_test_add_func(TEST_("parse_int"), test_parse_int);
     g_test_add_func(TEST_("parse_uint"), test_parse_uint);
+    g_test_add_func(TEST_("parse_int64"), test_parse_int64);
+    g_test_add_func(TEST_("parse_uint64"), test_parse_uint64);
     g_test_add_func(TEST_("data_equal"), test_data_equal);
     g_test_add_func(TEST_("data_prefix"), test_data_prefix);
     g_test_add_func(TEST_("data_suffix"), test_data_suffix);

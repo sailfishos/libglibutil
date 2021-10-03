@@ -35,6 +35,7 @@
 #include <glib-object.h>
 
 #include <ctype.h>
+#include <errno.h>
 #include <limits.h>
 
 void
@@ -181,21 +182,15 @@ gutil_parse_int(
     int base,
     int* value) /* Since 1.0.30 */
 {
-    gboolean ok = FALSE;
+    gint64 ll;
 
-    if (str && str[0]) {
-        char* tmp = NULL;
-        char* end = NULL;
-        const char* stripped = gutil_strstrip(str, &tmp);
-        const gint64 ll = g_ascii_strtoll(stripped, &end, base);
-
-        ok = !*end && ll >= INT_MIN && ll <= INT_MAX;
-        if (ok && value) {
+    if (gutil_parse_int64(str, base, &ll) && ll >= INT_MIN && ll <= INT_MAX) {
+        if (value) {
             *value = (int)ll;
         }
-        g_free(tmp);
+        return TRUE;
     }
-    return ok;
+    return FALSE;
 }
 
 gboolean
@@ -204,17 +199,76 @@ gutil_parse_uint(
     int base,
     unsigned int* value) /* Since 1.0.53 */
 {
+    guint64 ull;
+
+    if (gutil_parse_uint64(str, base, &ull) && ull <= UINT_MAX) {
+        if (value) {
+            *value = (unsigned int)ull;
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+gboolean
+gutil_parse_int64(
+    const char* str,
+    int base,
+    gint64* value) /* Since 1.0.56 */
+{
     gboolean ok = FALSE;
 
-    if (str && str[0]) {
+    if (str && *str) {
         char* tmp = NULL;
         char* end = NULL;
         const char* stripped = gutil_strstrip(str, &tmp);
-        const guint64 ull = g_ascii_strtoull(stripped, &end, base);
+        gint64 ll;
 
-        ok = !*end && ull <= UINT_MAX;
-        if (ok && value) {
-            *value = (unsigned int)ull;
+        errno = 0;
+        ll = g_ascii_strtoll(stripped, &end, base);
+        if (end && !*end &&
+            !((ll == G_MAXINT64 || ll == G_MININT64) && errno == ERANGE) &&
+            !(ll == 0 && errno == EINVAL)) {
+            if (value) {
+                *value = ll;
+            }
+            ok = TRUE;
+        }
+        g_free(tmp);
+    }
+    return ok;
+}
+
+gboolean
+gutil_parse_uint64(
+    const char* str,
+    int base,
+    guint64* value) /* Since 1.0.56 */
+{
+    gboolean ok = FALSE;
+
+    /*
+     * Sorry, we don't accept minus as a part of an unsigned number
+     * (unlike strtoul)
+     */
+    if (str && *str && *str != '-') {
+        char* tmp = NULL;
+        const char* stripped = gutil_strstrip(str, &tmp);
+
+        if (*stripped != '-') {
+            char* end = NULL;
+            guint64 ull;
+
+            errno = 0;
+            ull = g_ascii_strtoull(stripped, &end, base);
+            if (end && !*end &&
+                !(ull == G_MAXUINT64 && errno == ERANGE) &&
+                !(ull == 0 && errno == EINVAL)) {
+                if (value) {
+                    *value = ull;
+                }
+                ok = TRUE;
+            }
         }
         g_free(tmp);
     }
