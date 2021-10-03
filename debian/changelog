@@ -1,3 +1,10 @@
+libglibutil (1.0.56) unstable; urgency=low
+
+  * Added gutil_parse_int64()
+  * Added gutil_parse_uint64()
+
+ -- Slava Monich <slava.monich@jolla.com>  Sun, 03 Oct 2021 20:18:15 +0300
+
 libglibutil (1.0.55) unstable; urgency=low
 
   * Added gutil_log_dump()

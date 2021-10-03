@@ -1,10 +1,10 @@
 Name: libglibutil
 
-Version: 1.0.55
+Version: 1.0.56
 Release: 0
 Summary: Library of glib utilities
 License: BSD
-URL: https://git.sailfishos.org/mer-core/libglibutil
+URL: https://github.com/sailfishos/libglibutil
 Source: %{name}-%{version}.tar.bz2
 
 BuildRequires: pkgconfig
