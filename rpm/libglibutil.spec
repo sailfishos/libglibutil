@@ -7,6 +7,7 @@ License: BSD
 URL: https://git.sailfishos.org/mer-core/libglibutil
 Source: %{name}-%{version}.tar.bz2
 
+BuildRequires: pkgconfig
 BuildRequires: pkgconfig(glib-2.0)
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -17,7 +18,6 @@ Provides glib utility functions and macros
 %package devel
 Summary: Development library for %{name}
 Requires: %{name} = %{version}
-Requires: pkgconfig
 
 %description devel
 This package contains the development library for %{name}.
