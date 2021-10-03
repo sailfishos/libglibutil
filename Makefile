@@ -152,7 +152,7 @@ print_coverage_lib:
 	@echo $(COVERAGE_STATIC_LIB)
 
 clean:
-	make -C test clean
+	$(MAKE) -C test clean
 	rm -fr test/coverage/results test/coverage/*.gcov
 	rm -f *~ $(SRC_DIR)/*~ $(INCLUDE_DIR)/*~
 	rm -fr $(BUILD_DIR) RPMS installroot
@@ -162,7 +162,7 @@ clean:
 	rm -fr debian/*.install
 
 test:
-	make -C test test
+	$(MAKE) -C test test
 
 $(BUILD_DIR):
 	mkdir -p $@

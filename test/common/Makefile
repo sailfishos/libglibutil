@@ -52,7 +52,7 @@ FULL_CFLAGS = $(BASE_CFLAGS) $(DEFINES) $(WARNINGS) $(INCLUDES) -MMD -MP \
   $(shell pkg-config --cflags $(PKGS))
 FULL_LDFLAGS = $(BASE_LDFLAGS)
 LIBS = $(shell pkg-config --libs $(PKGS))
-QUIET_MAKE = make --no-print-directory
+QUIET_MAKE = $(MAKE) --no-print-directory
 DEBUG_FLAGS = -g
 RELEASE_FLAGS =
 COVERAGE_FLAGS = -g
@@ -134,7 +134,7 @@ clean:
 	rm -fr $(BUILD_DIR)
 
 cleaner: clean
-	@make -C $(LIB_DIR) clean
+	@$(MAKE) -C $(LIB_DIR) clean
 
 test_banner:
 	@echo "===========" $(EXE) "=========== "
@@ -185,10 +185,10 @@ $(COVERAGE_EXE): $(COVERAGE_LIB) $(COVERAGE_BUILD_DIR) $(COVERAGE_OBJS)
 	$(LD) $(COVERAGE_LDFLAGS) $(COVERAGE_OBJS) $< $(LIBS) -o $@
 
 debug_lib:
-	@make $(SUBMAKE_OPTS) -C $(LIB_DIR) debug
+	@$(MAKE) $(SUBMAKE_OPTS) -C $(LIB_DIR) debug
 
 release_lib:
-	@make $(SUBMAKE_OPTS) -C $(LIB_DIR) release
+	@$(MAKE) $(SUBMAKE_OPTS) -C $(LIB_DIR) release
 
 coverage_lib:
-	@make $(SUBMAKE_OPTS) -C $(LIB_DIR) coverage
+	@$(MAKE) $(SUBMAKE_OPTS) -C $(LIB_DIR) coverage

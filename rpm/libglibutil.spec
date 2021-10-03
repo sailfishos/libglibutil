@@ -33,7 +33,7 @@ rm -rf %{buildroot}
 make LIBDIR=%{_libdir} DESTDIR=%{buildroot} install-dev
 
 %check
-make -C test test
+make %{_smp_mflags} -C test test
 
 %post -p /sbin/ldconfig
 
