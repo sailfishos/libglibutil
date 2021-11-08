@@ -224,7 +224,7 @@ test_parse_uint(
     g_assert(!gutil_parse_uint("-1", 0, &value));
     g_assert(!gutil_parse_uint(" -1 ", 0, &value));
     g_assert(gutil_parse_uint("4294967295", 0, &value));
-    g_assert_cmpuint(value, == ,4294967295);
+    g_assert_cmpuint(value, == ,4294967295U);
     g_assert(gutil_parse_uint(" 0x7fffffff ", 0, &value));
     g_assert_cmpuint(value, == ,0x7fffffff);
     g_assert(gutil_parse_uint(" 7fffffff ", 16, &value));
@@ -260,9 +260,9 @@ test_parse_int64(
     g_assert(gutil_parse_int64("42", 0, &value));
     g_assert_cmpint(value, == ,42);
     g_assert(gutil_parse_int64("-2147483649", 0, &value));
-    g_assert_cmpint(value, == ,-2147483649);
+    g_assert_cmpint(value, == ,-2147483649LL);
     g_assert(gutil_parse_int64("4294967295", 0, &value));
-    g_assert_cmpint(value, == ,4294967295);
+    g_assert_cmpint(value, == ,4294967295LL);
     g_assert(gutil_parse_int64(" 0x7fffffff ", 0, &value));
     g_assert_cmpint(value, == ,0x7fffffff);
     g_assert(gutil_parse_int64(" 7fffffff ", 16, &value));
@@ -307,7 +307,7 @@ test_parse_uint64(
     g_assert(!gutil_parse_uint64("-1", 0, &value));
     g_assert(!gutil_parse_uint64(" -1 ", 0, &value));
     g_assert(gutil_parse_uint64("4294967295", 0, &value));
-    g_assert_cmpuint(value, == ,4294967295);
+    g_assert_cmpuint(value, == ,4294967295U);
     g_assert(!gutil_parse_uint64(" 0x7fffffff ffffffff ", 0, &value));
     g_assert(gutil_parse_uint64(" 0x7fffffffffffffff ", 0, &value));
     g_assert_cmpuint(value, == ,0x7fffffffffffffff);
