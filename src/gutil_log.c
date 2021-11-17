@@ -14,8 +14,8 @@
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
  *   3. Neither the names of the copyright holders nor the names of its
- *      contributors may be used to endorse or promote products derived from
- *      this software without specific prior written permission.
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -676,7 +676,7 @@ gutil_log_init()
     int val = 0;
 
     if (gutil_parse_int(getenv("GUTIL_LOG_DEFAULT_LEVEL"), 0, &val) &&
-        val >= GLOG_LEVEL_INHERIT && val <= GLOG_LEVEL_VERBOSE) {
+        val >= GLOG_LEVEL_INHERIT) {
         gutil_log_default.level = val;
         GDEBUG("Default log level %d", val);
     }
