@@ -41,6 +41,7 @@ make %{_smp_mflags} -C test test
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{_libdir}/%{name}.so.*
 
 %files devel
