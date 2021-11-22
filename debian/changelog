@@ -1,3 +1,9 @@
+libglibutil (1.0.60) unstable; urgency=low
+
+  * Housekeeping release
+
+ -- Slava Monich <slava.monich@jolla.com>  Mon, 22 Nov 2021 23:37:14 +0200
+
 libglibutil (1.0.58) unstable; urgency=low
 
   * Don't check upper bound when setting log level from the envvironment
