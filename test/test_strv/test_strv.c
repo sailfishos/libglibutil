@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2015-2020 Jolla Ltd.
- * Copyright (C) 2015-2020 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2015-2021 Jolla Ltd.
+ * Copyright (C) 2015-2021 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -171,12 +171,12 @@ test_find(
 }
 
 /*==========================================================================*
- * Remove
+ * RemoveAt
  *==========================================================================*/
 
 static
 void
-test_remove(
+test_remove_at(
     void)
 {
     char** sv = g_strsplit("a,b,c", ",", 0);
@@ -195,6 +195,37 @@ test_remove(
 
     g_free(c);
     g_strfreev(sv);
+}
+
+/*==========================================================================*
+ * Remove
+ *==========================================================================*/
+
+static
+void
+test_remove(
+    void)
+{
+    guint orig_len = 8;
+    char** sv = g_strsplit("a,b,c,b,c,c,d,b", ",", 0); /* 8 elements */
+    char** sv1 = g_strsplit("a,b,b,c,c,d,b", ",", 0); /* Minus one c */
+    char** sv2 = g_strsplit("a,c,c,d", ",", 0); /* Minus all b's */
+    char** sv3 = g_strsplit("a,c,c", ",", 0); /* Minus all (actually one) d */
+
+    g_assert(!gutil_strv_remove_all(NULL, NULL));
+    g_assert(gutil_strv_remove_all(sv, NULL) == sv);
+    g_assert_cmpuint(gutil_strv_length(sv), == ,orig_len);
+
+    g_assert(sv == gutil_strv_remove_all(sv, "e")); /* "e" is not there */
+    g_assert_cmpuint(gutil_strv_length(sv), == ,orig_len);
+    g_assert(gutil_strv_equal(sv = gutil_strv_remove_one(sv, "c"), sv1));
+    g_assert(gutil_strv_equal(sv = gutil_strv_remove_all(sv, "b"), sv2));
+    g_assert(gutil_strv_equal(sv = gutil_strv_remove_all(sv, "d"), sv3));
+
+    g_strfreev(sv);
+    g_strfreev(sv1);
+    g_strfreev(sv2);
+    g_strfreev(sv3);
 }
 
 /*==========================================================================*
@@ -279,6 +310,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_PREFIX "last", test_last);
     g_test_add_func(TEST_PREFIX "equal", test_equal);
     g_test_add_func(TEST_PREFIX "find", test_find);
+    g_test_add_func(TEST_PREFIX "remove_at", test_remove_at);
     g_test_add_func(TEST_PREFIX "remove", test_remove);
     g_test_add_func(TEST_PREFIX "sort", test_sort);
     g_test_add_func(TEST_PREFIX "bsearch", test_bsearch);

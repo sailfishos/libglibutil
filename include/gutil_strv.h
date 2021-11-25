@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2020 Jolla Ltd.
- * Copyright (C) 2014-2020 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2021 Jolla Ltd.
+ * Copyright (C) 2014-2021 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -105,6 +105,19 @@ gutil_strv_remove_at(
     int pos,
     gboolean free_string)
     G_GNUC_WARN_UNUSED_RESULT;
+
+/**
+ * Removes one or all matching strings from the array and frees them.
+ */
+GStrV*
+gutil_strv_remove(
+    GStrV* sv,
+    const char* s,
+    gboolean remove_all) /* Since 1.0.61 */
+    G_GNUC_WARN_UNUSED_RESULT;
+
+#define gutil_strv_remove_one(sv, s) gutil_strv_remove(sv, s, FALSE)
+#define gutil_strv_remove_all(sv, s) gutil_strv_remove(sv, s, TRUE)
 
 /**
  * Checks two string arrays for equality.

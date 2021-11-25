@@ -181,6 +181,33 @@ gutil_strv_remove_at(
 }
 
 /**
+ * Removes one or all matching strings from the array and frees them.
+ */
+GStrV*
+gutil_strv_remove(
+    GStrV* sv,
+    const char* s,
+    gboolean remove_all)
+{
+    if (G_LIKELY(sv) && G_LIKELY(s)) {
+        int pos = gutil_strv_find(sv, s);
+
+        if (pos >= 0) {
+            sv = gutil_strv_remove_at(sv, pos, TRUE);
+            if (remove_all) {
+                int start_pos = pos;
+
+                while ((pos = gutil_strv_find(sv + start_pos, s)) >= 0) {
+                    start_pos += pos;
+                    sv = gutil_strv_remove_at(sv, start_pos, TRUE);
+                }
+            }
+        }
+    }
+    return sv;
+}
+
+/**
  * Checks two string arrays for equality. NULL and empty arrays are equal.
  *
  * This is basically a NULL-tolerant equivalent of g_strv_equal which
