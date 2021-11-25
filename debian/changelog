@@ -1,3 +1,9 @@
+libglibutil (1.0.61) unstable; urgency=low
+
+  * Added gutil_strv_remove()
+
+ -- Slava Monich <slava.monich@jolla.com>  Thu, 25 Nov 2021 18:31:18 +0200
+
 libglibutil (1.0.60) unstable; urgency=low
 
   * Housekeeping release
