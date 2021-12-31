@@ -260,9 +260,9 @@ test_parse_int64(
     g_assert(gutil_parse_int64("42", 0, &value));
     g_assert_cmpint(value, == ,42);
     g_assert(gutil_parse_int64("-2147483649", 0, &value));
-    g_assert_cmpint(value, == ,-2147483649LL);
+    g_assert_cmpint(value, == ,G_GINT64_CONSTANT(-2147483649));
     g_assert(gutil_parse_int64("4294967295", 0, &value));
-    g_assert_cmpint(value, == ,4294967295LL);
+    g_assert_cmpint(value, == ,G_GINT64_CONSTANT(4294967295));
     g_assert(gutil_parse_int64(" 0x7fffffff ", 0, &value));
     g_assert_cmpint(value, == ,0x7fffffff);
     g_assert(gutil_parse_int64(" 7fffffff ", 16, &value));
@@ -271,13 +271,15 @@ test_parse_int64(
     g_assert_cmpint(value, == ,0x7ffffffe);
     g_assert(gutil_parse_int64("0xffffffff", 0, &value));
     g_assert_cmpint(value, == ,0xffffffff);
-    g_assert(!gutil_parse_int64("0x10000000000000000", 0, &value));
-    g_assert(!gutil_parse_int64("-9223372036854775809", 0, &value));
     g_assert(gutil_parse_int64("-9223372036854775808", 0, &value));
     g_assert_cmpint(value, == ,0x8000000000000000);
-    g_assert(!gutil_parse_int64("9223372036854775808", 0, &value));
     g_assert(gutil_parse_int64("9223372036854775807", 0, &value));
     g_assert_cmpint(value, == ,0x7fffffffffffffff);
+#ifndef _WIN32
+    g_assert(!gutil_parse_int64("0x10000000000000000", 0, &value));
+    g_assert(!gutil_parse_int64("-9223372036854775809", 0, &value));
+    g_assert(!gutil_parse_int64("9223372036854775808", 0, &value));
+#endif
 }
 
 /*==========================================================================*
@@ -302,7 +304,6 @@ test_parse_uint64(
     g_assert_cmpuint(value, == ,0);
     g_assert(gutil_parse_uint64("42", 0, &value));
     g_assert_cmpuint(value, == ,42);
-    g_assert(!gutil_parse_uint64("0x10000000000000000", 0, &value));
     g_assert(!gutil_parse_uint64("-2147483649", 0, &value));
     g_assert(!gutil_parse_uint64("-1", 0, &value));
     g_assert(!gutil_parse_uint64(" -1 ", 0, &value));
@@ -318,6 +319,9 @@ test_parse_uint64(
     g_assert_cmpuint(value, == ,0x100000000);
     g_assert(gutil_parse_uint64("0xffffffffffffffff", 0, &value));
     g_assert_cmpuint(value, == ,0xffffffffffffffff);
+#ifndef _WIN32
+    g_assert(!gutil_parse_uint64("0x10000000000000000", 0, &value));
+#endif
 }
 
 /*==========================================================================*
