@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2015-2021 Jolla Ltd.
- * Copyright (C) 2015-2021 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2015-2022 Jolla Ltd.
+ * Copyright (C) 2015-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -163,37 +163,15 @@ test_find(
     g_assert(gutil_strv_contains(sv, "b"));
     g_assert(gutil_strv_contains(sv, "c"));
     g_assert(!gutil_strv_contains(sv, "d"));
-    g_assert(gutil_strv_find(sv, "b") == 1);
+    g_assert_cmpint(gutil_strv_find(sv, "b"), == ,1);
+    g_assert_cmpint(gutil_strv_find_last(sv, "a"), == ,0);
+    g_assert_cmpint(gutil_strv_find_last(sv, "b"), == ,2);
+    g_assert_cmpint(gutil_strv_find_last(sv, "c"), == ,3);
+    g_assert_cmpint(gutil_strv_find_last(sv, "d"), == ,-1);
+    g_assert_cmpint(gutil_strv_find_last(NULL, NULL), == ,-1);
     g_assert(!gutil_strv_contains(sv, NULL));
     g_assert(!gutil_strv_contains(NULL, "a"));
     g_assert(!gutil_strv_contains(NULL, NULL));
-    g_strfreev(sv);
-}
-
-/*==========================================================================*
- * RemoveAt
- *==========================================================================*/
-
-static
-void
-test_remove_at(
-    void)
-{
-    char** sv = g_strsplit("a,b,c", ",", 0);
-    char* c = sv[2];
-
-    g_assert(!gutil_strv_remove_at(NULL, 0, FALSE));
-    g_assert(gutil_strv_remove_at(sv, 3, FALSE) == sv);
-    g_assert(gutil_strv_remove_at(sv, -1, FALSE) == sv);
-
-    sv = gutil_strv_remove_at(sv, 2, FALSE);
-    g_assert(!gutil_strv_contains(sv, "c"));
-
-    sv = gutil_strv_remove_at(sv, 0, TRUE);
-    g_assert(!gutil_strv_contains(sv, "a"));
-    g_assert(gutil_strv_length(sv) == 1);
-
-    g_free(c);
     g_strfreev(sv);
 }
 
@@ -226,6 +204,54 @@ test_remove(
     g_strfreev(sv1);
     g_strfreev(sv2);
     g_strfreev(sv3);
+}
+
+/*==========================================================================*
+ * RemoveAt
+ *==========================================================================*/
+
+static
+void
+test_remove_at(
+    void)
+{
+    char** sv = g_strsplit("a,b,c", ",", 0);
+    char* c = sv[2];
+
+    g_assert(!gutil_strv_remove_at(NULL, 0, FALSE));
+    g_assert(gutil_strv_remove_at(sv, 3, FALSE) == sv);
+    g_assert(gutil_strv_remove_at(sv, -1, FALSE) == sv);
+
+    sv = gutil_strv_remove_at(sv, 2, FALSE);
+    g_assert(!gutil_strv_contains(sv, "c"));
+
+    sv = gutil_strv_remove_at(sv, 0, TRUE);
+    g_assert(!gutil_strv_contains(sv, "a"));
+    g_assert(gutil_strv_length(sv) == 1);
+
+    g_free(c);
+    g_strfreev(sv);
+}
+
+/*==========================================================================*
+ * RemoveDups
+ *==========================================================================*/
+
+static
+void
+test_remove_dups(
+    void)
+{
+    char** sv = g_strsplit("a,b,c,b,c,c,d,b", ",", 0); /* 8 elements */
+    char** sv1 = g_strsplit("a,b,c,d", ",", 0); /* No dups */
+
+    g_assert(!gutil_strv_remove_dups(NULL));
+    g_assert(gutil_strv_equal(sv = gutil_strv_remove_dups(sv), sv1));
+    g_assert(sv == gutil_strv_remove_dups(sv)); /* Nothing to realloc */
+    g_assert(gutil_strv_equal(sv, sv1)); /* Still equal */
+
+    g_strfreev(sv);
+    g_strfreev(sv1);
 }
 
 /*==========================================================================*
@@ -310,8 +336,9 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_PREFIX "last", test_last);
     g_test_add_func(TEST_PREFIX "equal", test_equal);
     g_test_add_func(TEST_PREFIX "find", test_find);
-    g_test_add_func(TEST_PREFIX "remove_at", test_remove_at);
     g_test_add_func(TEST_PREFIX "remove", test_remove);
+    g_test_add_func(TEST_PREFIX "remove_at", test_remove_at);
+    g_test_add_func(TEST_PREFIX "remove_dups", test_remove_dups);
     g_test_add_func(TEST_PREFIX "sort", test_sort);
     g_test_add_func(TEST_PREFIX "bsearch", test_bsearch);
     g_test_add_func(TEST_PREFIX "strip", test_strip);

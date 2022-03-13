@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2021 Jolla Ltd.
- * Copyright (C) 2014-2021 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2022 Jolla Ltd.
+ * Copyright (C) 2014-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -69,6 +69,15 @@ gutil_strv_find(
     const char* s);
 
 /**
+ * Returns index of the last occurrence of specified string in the string
+ * array, or -1 if the string is not found.
+ */
+int
+gutil_strv_find_last(
+    const GStrV* sv,
+    const char* s);  /* Since 1.0.62 */
+
+/**
  * Checks if string array contains the specified string.
  */
 gboolean
@@ -126,6 +135,13 @@ gboolean
 gutil_strv_equal(
     const GStrV* sv1,
     const GStrV* sv2);
+
+/**
+ * Removes all duplicates from the string array.
+ */
+GStrV*
+gutil_strv_remove_dups(
+    GStrV* sv); /* Since 1.0.62 */
 
 /**
  * Sorts the string array

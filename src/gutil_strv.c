@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2021 Jolla Ltd.
- * Copyright (C) 2014-2021 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2022 Jolla Ltd.
+ * Copyright (C) 2014-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -88,9 +88,10 @@ gutil_strv_find(
     const GStrV* sv,
     const char* s)
 {
-    if (sv && s) {
+    if (G_LIKELY(sv) && G_LIKELY(s)) {
         int i = 0;
         const GStrV* ptr;
+
         for (ptr = sv; *ptr; ptr++, i++) {
             if (!strcmp(*ptr, s)) {
                 return i;
@@ -98,6 +99,36 @@ gutil_strv_find(
         }
     }
     return -1;
+}
+
+/* Helper for gutil_strv_find_last and friends */
+static
+int
+gutil_strv_find_last_impl(
+    const GStrV* sv,
+    const char* s,
+    int i /* exclisive */)
+{
+    while (i > 0) {
+        if (!strcmp(sv[--i], s)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/**
+ * Returns index of the last occurrence of specified string in the string
+ * array, or -1 if the string is not found.
+ */
+int
+gutil_strv_find_last(
+    const GStrV* sv,
+    const char* s)  /* Since 1.0.62 */
+{
+    /* NULL sv is handled by gutil_strv_length() */
+    return G_LIKELY(s) ?  gutil_strv_find_last_impl(sv, s,
+        gutil_strv_length(sv)) : -1;
 }
 
 /**
@@ -158,6 +189,22 @@ gutil_strv_addv(
     return sv;
 }
 
+/* Internal helper for removal functions */
+static
+GStrV*
+gutil_strv_remove_impl(
+    GStrV* sv,
+    guint pos,
+    guint len,
+    gboolean free_string)
+{
+    if (free_string) {
+        g_free(sv[pos]);
+    }
+    memmove(sv + pos, sv + pos + 1, sizeof(char*)*(len - pos));
+    return g_realloc(sv, sizeof(char*)*len);
+}
+
 /**
  * Removes the string from the specified position in the array.
  */
@@ -169,12 +216,9 @@ gutil_strv_remove_at(
 {
     if (G_LIKELY(sv) && G_LIKELY(pos >= 0)) {
         const int len = gutil_strv_length(sv);
+
         if (pos < len) {
-            if (free_string) {
-                g_free(sv[pos]);
-            }
-            memmove(sv + pos, sv + pos + 1, sizeof(char*)*(len - pos));
-            sv = g_realloc(sv, sizeof(char*)*len);
+            sv = gutil_strv_remove_impl(sv, pos, len, free_string);
         }
     }
     return sv;
@@ -190,17 +234,47 @@ gutil_strv_remove(
     gboolean remove_all)
 {
     if (G_LIKELY(sv) && G_LIKELY(s)) {
-        int pos = gutil_strv_find(sv, s);
+        const int pos = gutil_strv_find(sv, s);
 
         if (pos >= 0) {
-            sv = gutil_strv_remove_at(sv, pos, TRUE);
-            if (remove_all) {
-                int start_pos = pos;
+            guint len = gutil_strv_length(sv);
 
-                while ((pos = gutil_strv_find(sv + start_pos, s)) >= 0) {
-                    start_pos += pos;
-                    sv = gutil_strv_remove_at(sv, start_pos, TRUE);
+            sv = gutil_strv_remove_impl(sv, pos, len, TRUE);
+            if (remove_all) {
+                int i, l;
+
+                len--;
+                l = len - pos;
+                while ((i = gutil_strv_find_last_impl(sv + pos, s, l)) >= 0) {
+                    sv = gutil_strv_remove_impl(sv, pos + i, len--, TRUE);
+                    l = i;
                 }
+            }
+        }
+    }
+    return sv;
+}
+
+/**
+ * Removes all duplicates from the string array.
+ */
+GStrV*
+gutil_strv_remove_dups(
+    GStrV* sv) /* Since 1.0.62 */
+{
+    if (G_LIKELY(sv)) {
+        guint len = gutil_strv_length(sv), pos = 0, l = len;
+
+        while (pos < len) {
+            int i = gutil_strv_find_last_impl(sv + pos + 1, sv[pos], l - 1);
+
+            if (i < 0) {
+                /* Done with this string, switch to the next one */
+                pos++;
+                l = len - pos;
+            } else {
+                sv = gutil_strv_remove_impl(sv, pos + 1 + i, len--, TRUE);
+                l = i + 1;
             }
         }
     }
