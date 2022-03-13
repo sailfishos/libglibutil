@@ -1,3 +1,11 @@
+libglibutil (1.0.62) unstable; urgency=low
+
+  * Added gutil_strlen0()
+  * Added gutil_strv_find_last()
+  * Added gutil_strv_remove_dups()
+
+ -- Slava Monich <slava.monich@jolla.com>  Sun, 13 Mar 2022 21:59:26 +0200
+
 libglibutil (1.0.61) unstable; urgency=low
 
   * Added gutil_strv_remove()
