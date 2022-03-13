@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016-2021 Jolla Ltd.
- * Copyright (C) 2016-2021 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2016-2022 Jolla Ltd.
+ * Copyright (C) 2016-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -679,6 +679,20 @@ test_memdup(
 }
 
 /*==========================================================================*
+ * strlen
+ *==========================================================================*/
+
+static
+void
+test_strlen(
+    void)
+{
+    g_assert(!gutil_strlen0(NULL));
+    g_assert_cmpuint(gutil_strlen0(""), == ,0);
+    g_assert_cmpuint(gutil_strlen0("1"), == ,1);
+}
+
+/*==========================================================================*
  * range_init
  *==========================================================================*/
 
@@ -789,6 +803,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("ptrv_lenght"), test_ptrv_length);
     g_test_add_func(TEST_("ptrv_free"), test_ptrv_free);
     g_test_add_func(TEST_("memdup"), test_memdup);
+    g_test_add_func(TEST_("strlen"), test_strlen);
     g_test_add_func(TEST_("range_init"), test_range_init);
     g_test_add_func(TEST_("range_prefix"), test_range_prefix);
     test_init(&test_opt, argc, argv);

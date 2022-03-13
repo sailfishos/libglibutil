@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016-2021 Jolla Ltd.
- * Copyright (C) 2016-2021 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2016-2022 Jolla Ltd.
+ * Copyright (C) 2016-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -554,6 +554,14 @@ gutil_memdup(
     } else {
         return NULL;
     }
+}
+
+/* NULL-tolerant version of strlen */
+gsize
+gutil_strlen0(
+    const char* str) /* Since 1.0.62 */
+{
+    return str ? strlen(str) : 0;
 }
 
 gsize
