@@ -511,6 +511,52 @@ gutil_bytes_equal_data(
     }
 }
 
+gboolean
+gutil_bytes_has_prefix(
+    GBytes* bytes,
+    const void* data,
+    gsize size) /* Since 1.0.63 */
+{
+    if (!bytes) {
+        /* NULL GBytes has neither prefix nor suffix, even an empty one */
+        return FALSE;
+    } else if (!size) {
+        /*
+         * That's largely a philosophical question - can anything have
+         * an empty prefix? Let's assume that the answer is yes. And
+         * then if anything can have such a prefix, everything has it.
+         * Right? Except for NULL GBytes which doesn't have anything
+         * as said earlier.
+         */
+        return TRUE;
+    } else {
+        gsize bytes_size;
+        const guint8* contents = g_bytes_get_data(bytes, &bytes_size);
+
+        return (bytes_size >= size) && !memcmp(contents, data, size);
+    }
+}
+
+gboolean
+gutil_bytes_has_suffix(
+    GBytes* bytes,
+    const void* data,
+    gsize size) /* Since 1.0.63 */
+{
+    /* Treat an empty suffix the same way as an empty prefix */
+    if (!bytes) {
+        return FALSE;
+    } else if (!size) {
+        return TRUE;
+    } else {
+        gsize bytes_size;
+        const guint8* contents = g_bytes_get_data(bytes, &bytes_size);
+
+        return (bytes_size >= size) &&
+            !memcmp(contents + (bytes_size - size), data, size);
+    }
+}
+
 /* Calculates the length of NULL-terminated array of pointers */
 gsize
 gutil_ptrv_length(

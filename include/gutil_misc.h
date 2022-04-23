@@ -135,6 +135,18 @@ gutil_bytes_equal_data(
     GBytes* bytes,
     const GUtilData* data); /* Since 1.0.41 */
 
+gboolean
+gutil_bytes_has_prefix(
+    GBytes* bytes,
+    const void* data,
+    gsize size); /* Since 1.0.63 */
+
+gboolean
+gutil_bytes_has_suffix(
+    GBytes* bytes,
+    const void* data,
+    gsize size); /* Since 1.0.63 */
+
 gsize
 gutil_ptrv_length(
     const void* ptrv); /* Since 1.0.50 */

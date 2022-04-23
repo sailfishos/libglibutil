@@ -769,6 +769,64 @@ test_range_prefix(
 }
 
 /*==========================================================================*
+ * bytes_prefix
+ *==========================================================================*/
+
+static
+void
+test_bytes_prefix(
+    void)
+{
+    static const guint8 data[] = { 0x01, 0x02, 0x03, 0x04 };
+    static const guint8 prefix[] = { 0x01, 0x02 };
+    static const guint8 not_prefix[] = { 0x03, 0x04 };
+    static const guint8 too_long[] = { 0x01, 0x02, 0x03, 0x04, 0x05 };
+    GBytes* empty = g_bytes_new_static(NULL, 0);
+    GBytes* bytes = g_bytes_new_static(TEST_ARRAY_AND_SIZE(data));
+
+    /* NULL GBytes doesn't have any prefix, even an empty one */
+    g_assert(!gutil_bytes_has_prefix(NULL, NULL, 0));
+
+    /* Anything has an empty prefix */
+    g_assert(gutil_bytes_has_prefix(empty, NULL, 0));
+    g_assert(gutil_bytes_has_prefix(bytes, prefix, 0));
+
+    /* Test the matching */
+    g_assert(gutil_bytes_has_prefix(bytes, TEST_ARRAY_AND_SIZE(prefix)));
+    g_assert(!gutil_bytes_has_prefix(bytes, TEST_ARRAY_AND_SIZE(not_prefix)));
+    g_assert(!gutil_bytes_has_prefix(bytes, TEST_ARRAY_AND_SIZE(too_long)));
+}
+
+/*==========================================================================*
+ * bytes_suffix
+ *==========================================================================*/
+
+static
+void
+test_bytes_suffix(
+    void)
+{
+    static const guint8 data[] = { 0x01, 0x02, 0x03, 0x04 };
+    static const guint8 suffix[] = { 0x03, 0x04 };
+    static const guint8 not_suffix[] = { 0x02, 0x03 };
+    static const guint8 too_long[] = { 0x01, 0x02, 0x03, 0x04, 0x05 };
+    GBytes* empty = g_bytes_new_static(NULL, 0);
+    GBytes* bytes = g_bytes_new_static(TEST_ARRAY_AND_SIZE(data));
+
+    /* NULL GBytes doesn't have any suffix, even an empty one */
+    g_assert(!gutil_bytes_has_suffix(NULL, NULL, 0));
+
+    /* Anything has an empty suffix */
+    g_assert(gutil_bytes_has_suffix(empty, NULL, 0));
+    g_assert(gutil_bytes_has_suffix(bytes, suffix, 0));
+
+    /* Test the matching */
+    g_assert(gutil_bytes_has_suffix(bytes, TEST_ARRAY_AND_SIZE(suffix)));
+    g_assert(!gutil_bytes_has_suffix(bytes, TEST_ARRAY_AND_SIZE(not_suffix)));
+    g_assert(!gutil_bytes_has_suffix(bytes, TEST_ARRAY_AND_SIZE(too_long)));
+}
+
+/*==========================================================================*
  * Common
  *==========================================================================*/
 
@@ -806,6 +864,8 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("strlen"), test_strlen);
     g_test_add_func(TEST_("range_init"), test_range_init);
     g_test_add_func(TEST_("range_prefix"), test_range_prefix);
+    g_test_add_func(TEST_("bytes_prefix"), test_bytes_prefix);
+    g_test_add_func(TEST_("bytes_suffix"), test_bytes_suffix);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }
