@@ -1,6 +1,6 @@
 Name: libglibutil
 
-Version: 1.0.62
+Version: 1.0.63
 Release: 0
 Summary: Library of glib utilities
 License: BSD
