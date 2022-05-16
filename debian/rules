@@ -9,8 +9,14 @@ LIBDIR=usr/lib/$(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 override_dh_auto_build:
 	dh_auto_build -- LIBDIR=$(LIBDIR) release pkgconfig debian/libglibutil.install debian/libglibutil-dev.install
 
+override_dh_auto_clean:
+	dh_auto_clean --no-parallel
+
 override_dh_auto_install:
 	dh_auto_install -- LIBDIR=$(LIBDIR) install-dev
+
+override_dh_auto_test:
+	dh_auto_test --no-parallel
 
 %:
 	dh $@
