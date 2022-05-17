@@ -1,3 +1,9 @@
+libglibutil (1.0.64) unstable; urgency=low
+
+  * Resolved a mysterious parallel build issue
+
+ -- Slava Monich <slava.monich@jolla.com>  Tue, 17 May 2022 03:56:50 +0300
+
 libglibutil (1.0.63) unstable; urgency=low
 
   * Added gutil_bytes_has_prefix()
