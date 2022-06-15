@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2017-2021 Jolla Ltd.
- * Copyright (C) 2017-2021 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2017-2022 Jolla Ltd.
+ * Copyright (C) 2017-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -30,15 +30,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef linux
-#  define _GNU_SOURCE /* for fopencookie */
-#  define HAVE_TEST_LOG_FILE
-#endif
+#define _GNU_SOURCE /* for fopencookie */
 
 #include "test_common.h"
 
 #include "gutil_strv.h"
 #include "gutil_log.h"
+
+#ifdef __GLIBC__
+/* glibc has writeable stdout */
+#  define HAVE_TEST_LOG_FILE
+#endif
 
 static TestOpt test_opt;
 static GString* test_log_buf;
