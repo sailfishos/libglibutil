@@ -795,6 +795,9 @@ test_bytes_prefix(
     g_assert(gutil_bytes_has_prefix(bytes, TEST_ARRAY_AND_SIZE(prefix)));
     g_assert(!gutil_bytes_has_prefix(bytes, TEST_ARRAY_AND_SIZE(not_prefix)));
     g_assert(!gutil_bytes_has_prefix(bytes, TEST_ARRAY_AND_SIZE(too_long)));
+
+    g_bytes_unref(empty);
+    g_bytes_unref(bytes);
 }
 
 /*==========================================================================*
@@ -824,6 +827,9 @@ test_bytes_suffix(
     g_assert(gutil_bytes_has_suffix(bytes, TEST_ARRAY_AND_SIZE(suffix)));
     g_assert(!gutil_bytes_has_suffix(bytes, TEST_ARRAY_AND_SIZE(not_suffix)));
     g_assert(!gutil_bytes_has_suffix(bytes, TEST_ARRAY_AND_SIZE(too_long)));
+
+    g_bytes_unref(empty);
+    g_bytes_unref(bytes);
 }
 
 /*==========================================================================*
