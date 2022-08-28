@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2014-2021 Jolla Ltd.
- * Copyright (C) 2014-2021 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2014-2022 Jolla Ltd.
+ * Copyright (C) 2014-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -490,6 +490,29 @@ gutil_log_enabled(
     return FALSE;
 }
 
+static
+void
+gutil_log_dump2(
+    const GLogModule* module,
+    int level,
+    const char* prefix,
+    const void* data,
+    gsize size)
+{
+    const guint8* ptr = data;
+    guint off = 0;
+
+    if (!prefix) prefix = "";
+    while (size > 0) {
+        char buf[GUTIL_HEXDUMP_BUFSIZE];
+        const guint consumed = gutil_hexdump(buf, ptr + off, size);
+
+        gutil_log(module, level, "%s%04X: %s", prefix, off, buf);
+        size -= consumed;
+        off += consumed;
+    }
+}
+
 void
 gutil_log_dump(
     const GLogModule* module,
@@ -499,18 +522,21 @@ gutil_log_dump(
     gsize size) /* Since 1.0.55 */
 {
     if (gutil_log_enabled(module, level)) {
-        const guint8* ptr = data;
-        guint off = 0;
+        gutil_log_dump2(module, level, prefix, data, size);
+    }
+}
 
-        if (!prefix) prefix = "";
-        while (size > 0) {
-            char buf[GUTIL_HEXDUMP_BUFSIZE];
-            const guint consumed = gutil_hexdump(buf, ptr + off, size);
-
-            gutil_log(module, level, "%s%04X: %s", prefix, off, buf);
-            size -= consumed;
-            off += consumed;
-        }
+void
+gutil_log_dump_bytes(
+    const GLogModule* module,
+    int level,
+    const char* prefix,
+    GBytes* bytes) /* Since 1.0.67 */
+{
+    if (G_LIKELY(bytes) && gutil_log_enabled(module, level)) {
+        gsize size = 0;
+        const guint8* data = g_bytes_get_data(bytes, &size);
+        gutil_log_dump2(module, level, prefix, data, size);
     }
 }
 
