@@ -1,3 +1,9 @@
+libglibutil (1.0.67) unstable; urgency=low
+
+  * Added gutil_log_dump_bytes()
+
+ -- Slava Monich <slava.monich@jolla.com>  Fri, 15 Jul 2022 03:02:33 +0300
+
 libglibutil (1.0.66) unstable; urgency=low
 
   * Bumped debhelper compat level to 7
