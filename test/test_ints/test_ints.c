@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2017 Jolla Ltd.
- * Contact: Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2017-2022 Jolla Ltd.
+ * Copyright (C) 2017-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -13,9 +13,9 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of Jolla Ltd nor the names of its contributors may
- *      be used to endorse or promote products derived from this software
- *      without specific prior written permission.
+ *   3. Neither the names of the copyright holders nor the names of its
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -33,6 +33,7 @@
 #include "test_common.h"
 
 #include "gutil_ints.h"
+#include "gutil_misc.h"
 
 static TestOpt test_opt;
 
@@ -141,7 +142,7 @@ test_ints_basic(
     g_free(data);
 
     /* And this one duplicates the data because we use test_custom_free: */
-    data = g_memdup(a1, sizeof(a1));
+    data = gutil_memdup(a1, sizeof(a1));
     i1 = gutil_ints_new_with_free_func(data, G_N_ELEMENTS(a1),
         test_custom_free, data);
     data = gutil_ints_unref_to_data(i1, &count);
