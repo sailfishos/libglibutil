@@ -13,7 +13,8 @@ test_ints \
 test_log \
 test_misc \
 test_ring \
-test_strv"
+test_strv \
+test_weakref"
 
 FLAVOR="coverage"
 

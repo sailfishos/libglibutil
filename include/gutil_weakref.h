@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2014-2021 Jolla Ltd.
  * Copyright (C) 2023 Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -30,42 +29,51 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GUTIL_TYPES_H
-#define GUTIL_TYPES_H
+#ifndef GUTIL_WEAKREF_H
+#define GUTIL_WEAKREF_H
 
-#include <glib.h>
-#include <string.h>
-#include <stdio.h>
+#include "gutil_types.h"
+
+/*
+ * Ref-countable weak reference can be used to avoid calling g_weak_ref_set()
+ * too often because it grabs global weak_locations_lock for exclusive access.
+ * Note that g_weak_ref_set() is also invoked internally by g_weak_ref_init()
+ * and g_weak_ref_clear().
+ *
+ * g_weak_ref_get() on the other hand only acquires weak_locations_lock
+ * for read-only access which is less of a bottleneck in a multi-threaded
+ * environment. And it's generally significantly simpler and faster than
+ * g_weak_ref_set().
+ *
+ * Since 1.0.68
+ */
 
 G_BEGIN_DECLS
 
-typedef char* GStrV;
-typedef struct gutil_idle_pool GUtilIdlePool;
-typedef struct gutil_idle_queue GUtilIdleQueue;
-typedef struct gutil_ints GUtilInts;
-typedef struct gutil_int_array GUtilIntArray;
-typedef struct gutil_int_history GUtilIntHistory;
-typedef struct gutil_inotify_watch GUtilInotifyWatch;
-typedef struct gutil_ring GUtilRing;
-typedef struct gutil_time_notify GUtilTimeNotify;
-typedef struct gutil_weakref GUtilWeakRef; /* Since 1.0.68 */
+GUtilWeakRef*
+gutil_weakref_new(
+    gpointer obj);
 
-typedef struct gutil_data {
-    const guint8* bytes;
-    gsize size;
-} GUtilData;
+GUtilWeakRef*
+gutil_weakref_ref(
+    GUtilWeakRef* ref);
 
-typedef struct gutil_range {
-    const guint8* ptr;
-    const guint8* end;
-} GUtilRange; /* Since 1.0.54 */
+void
+gutil_weakref_unref(
+    GUtilWeakRef* ref);
 
-#define GLOG_MODULE_DECL(m) extern GLogModule m;
-typedef struct glog_module GLogModule;
+gpointer
+gutil_weakref_get(
+    GUtilWeakRef* ref);
+
+void
+gutil_weakref_set(
+    GUtilWeakRef* ref,
+    gpointer obj);
 
 G_END_DECLS
 
-#endif /* GUTIL_TYPES_H */
+#endif /* GUTIL_WEAKREF_H */
 
 /*
  * Local Variables:

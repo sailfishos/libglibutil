@@ -53,7 +53,8 @@ SRC = \
   gutil_misc.c \
   gutil_ring.c \
   gutil_strv.c \
-  gutil_timenotify.c
+  gutil_timenotify.c \
+  gutil_weakref.c
 
 #
 # Directories

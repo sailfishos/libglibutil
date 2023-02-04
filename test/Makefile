@@ -12,3 +12,4 @@ all:
 	@$(MAKE) -C test_misc $*
 	@$(MAKE) -C test_ring $*
 	@$(MAKE) -C test_strv $*
+	@$(MAKE) -C test_weakref $*

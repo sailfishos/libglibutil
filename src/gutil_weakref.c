@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2014-2021 Jolla Ltd.
  * Copyright (C) 2023 Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -30,42 +29,82 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GUTIL_TYPES_H
-#define GUTIL_TYPES_H
+#include "gutil_weakref.h"
+#include "gutil_log.h"
+#include "gutil_macros.h"
 
-#include <glib.h>
-#include <string.h>
-#include <stdio.h>
+#include <glib-object.h>
 
-G_BEGIN_DECLS
+/*
+ * Ref-countable weak reference can be used to avoid calling g_weak_ref_set()
+ * too often because it grabs global weak_locations_lock for exclusive access.
+ * Note that g_weak_ref_set() is also invoked internally by g_weak_ref_init()
+ * and g_weak_ref_clear().
+ *
+ * g_weak_ref_get() on the other hand only acquires weak_locations_lock
+ * for read-only access which is less of a bottleneck in a multi-threaded
+ * environment. And it's generally significantly simpler and faster than
+ * g_weak_ref_set().
+ *
+ * Since 1.0.68
+ */
 
-typedef char* GStrV;
-typedef struct gutil_idle_pool GUtilIdlePool;
-typedef struct gutil_idle_queue GUtilIdleQueue;
-typedef struct gutil_ints GUtilInts;
-typedef struct gutil_int_array GUtilIntArray;
-typedef struct gutil_int_history GUtilIntHistory;
-typedef struct gutil_inotify_watch GUtilInotifyWatch;
-typedef struct gutil_ring GUtilRing;
-typedef struct gutil_time_notify GUtilTimeNotify;
-typedef struct gutil_weakref GUtilWeakRef; /* Since 1.0.68 */
+struct gutil_weakref {
+    gint ref_count;
+    GWeakRef weak_ref;
+};
 
-typedef struct gutil_data {
-    const guint8* bytes;
-    gsize size;
-} GUtilData;
+GUtilWeakRef*
+gutil_weakref_new(
+    gpointer obj)
+{
+    GUtilWeakRef* self = g_slice_new(GUtilWeakRef);
 
-typedef struct gutil_range {
-    const guint8* ptr;
-    const guint8* end;
-} GUtilRange; /* Since 1.0.54 */
+    g_atomic_int_set(&self->ref_count, 1);
+    g_weak_ref_init(&self->weak_ref, obj);
+    return self;
+}
 
-#define GLOG_MODULE_DECL(m) extern GLogModule m;
-typedef struct glog_module GLogModule;
+GUtilWeakRef*
+gutil_weakref_ref(
+    GUtilWeakRef* self)
+{
+    if (G_LIKELY(self)) {
+        GASSERT(self->ref_count > 0);
+        g_atomic_int_inc(&self->ref_count);
+    }
+    return self;
+}
 
-G_END_DECLS
+void
+gutil_weakref_unref(
+    GUtilWeakRef* self)
+{
+    if (G_LIKELY(self)) {
+        GASSERT(self->ref_count > 0);
+        if (g_atomic_int_dec_and_test(&self->ref_count)) {
+            g_weak_ref_clear(&self->weak_ref);
+            gutil_slice_free(self);
+        }
+    }
+}
 
-#endif /* GUTIL_TYPES_H */
+gpointer
+gutil_weakref_get(
+    GUtilWeakRef* self)
+{
+    return G_LIKELY(self) ? g_weak_ref_get(&self->weak_ref) : NULL;
+}
+
+void
+gutil_weakref_set(
+    GUtilWeakRef* self,
+    gpointer obj)
+{
+    if (G_LIKELY(self)) {
+        g_weak_ref_set(&self->weak_ref, obj);
+    }
+}
 
 /*
  * Local Variables:
