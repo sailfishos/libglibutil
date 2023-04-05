@@ -2,6 +2,7 @@
 
 all:
 %:
+	@$(MAKE) -C test_datapack $*
 	@$(MAKE) -C test_history $*
 	@$(MAKE) -C test_idlepool $*
 	@$(MAKE) -C test_idlequeue $*
