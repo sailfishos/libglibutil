@@ -15,15 +15,29 @@ PKGS = glib-2.0 gobject-2.0
 all: debug release pkgconfig
 
 #
+# Directories
+#
+
+SRC_DIR = src
+INCLUDE_DIR = include
+BUILD_DIR = build
+DEBUG_BUILD_DIR = $(BUILD_DIR)/debug
+RELEASE_BUILD_DIR = $(BUILD_DIR)/release
+COVERAGE_BUILD_DIR = $(BUILD_DIR)/coverage
+
+#
 # Library version
 #
 
-VERSION_MAJOR = 1
-VERSION_MINOR = 0
-VERSION_RELEASE = 68
+VERSION_FILE = $(INCLUDE_DIR)/gutil_version.h
+get_version = $(shell grep -E '^ *\#define +GUTIL_VERSION_$1 +[0-9]+$$' $(VERSION_FILE) | sed 's/  */ /g' | cut -d ' ' -f 3)
+
+VERSION_MAJOR := $(call get_version,MAJOR)
+VERSION_MINOR := $(call get_version,MINOR)
+VERSION_MICRO := $(call get_version,MICRO)
 
 # Version for pkg-config
-PCVERSION = $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_RELEASE)
+PCVERSION := $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_MICRO)
 
 #
 # Library name
@@ -35,7 +49,7 @@ LIB_DEV_SYMLINK = $(LIB_NAME).so
 LIB_SYMLINK1 = $(LIB_DEV_SYMLINK).$(VERSION_MAJOR)
 LIB_SYMLINK2 = $(LIB_SYMLINK1).$(VERSION_MINOR)
 LIB_SONAME = $(LIB_SYMLINK1)
-LIB = $(LIB_SONAME).$(VERSION_MINOR).$(VERSION_RELEASE)
+LIB = $(LIB_SONAME).$(VERSION_MINOR).$(VERSION_MICRO)
 STATIC_LIB = $(LIB_NAME).a
 
 #
@@ -55,18 +69,8 @@ SRC = \
   gutil_ring.c \
   gutil_strv.c \
   gutil_timenotify.c \
+  gutil_version.c \
   gutil_weakref.c
-
-#
-# Directories
-#
-
-SRC_DIR = src
-INCLUDE_DIR = include
-BUILD_DIR = build
-DEBUG_BUILD_DIR = $(BUILD_DIR)/debug
-RELEASE_BUILD_DIR = $(BUILD_DIR)/release
-COVERAGE_BUILD_DIR = $(BUILD_DIR)/coverage
 
 #
 # Tools and flags

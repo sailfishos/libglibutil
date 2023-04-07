@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2022 Jolla Ltd.
- * Copyright (C) 2016-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -35,8 +35,21 @@
 #include "gutil_misc.h"
 #include "gutil_idlepool.h"
 #include "gutil_log.h"
+#include "gutil_version.h"
 
 static TestOpt test_opt;
+
+/*==========================================================================*
+ * version
+ *==========================================================================*/
+
+static
+void
+test_version(
+    void)
+{
+    g_assert_cmpuint(gutil_version(), == ,GUTIL_VERSION);
+}
 
 /*==========================================================================*
  * disconnect
@@ -849,6 +862,7 @@ int main(int argc, char* argv[])
     gutil_log_default.level = g_test_verbose() ?
         GLOG_LEVEL_VERBOSE : GLOG_LEVEL_NONE;
 
+    g_test_add_func(TEST_("version"), test_version);
     g_test_add_func(TEST_("disconnect"), test_disconnect);
     g_test_add_func(TEST_("hex2bin"), test_hex2bin);
     g_test_add_func(TEST_("hexdump"), test_hexdump);
