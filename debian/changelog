@@ -1,10 +1,18 @@
+libglibutil (1.0.69) unstable; urgency=low
+
+  * Runtime and compile time version detection
+  * Added gutil_datapack module
+  * Require glib 2.32
+
+ -- Slava Monich <slava@monich.com>  Thu, 06 Apr 2023 02:13:48 +0300
+
 libglibutil (1.0.68) unstable; urgency=low
 
   * Added gutil_weakref module
   * Fixed a few compilation warnings
   * Packaging tweaks
 
- -- Slava Monich <slava.monich@jolla.com>  Sat, 04 Feb 2023 04:26:45 +0200
+ -- Slava Monich <slava@monich.com>  Sat, 04 Feb 2023 04:26:45 +0200
 
 libglibutil (1.0.67) unstable; urgency=low
 

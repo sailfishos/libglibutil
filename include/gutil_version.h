@@ -46,8 +46,8 @@ G_BEGIN_DECLS
 
 #define GUTIL_VERSION_MAJOR   1
 #define GUTIL_VERSION_MINOR   0
-#define GUTIL_VERSION_MICRO   68
-#define GUTIL_VERSION_STRING  "1.0.68"
+#define GUTIL_VERSION_MICRO   69
+#define GUTIL_VERSION_STRING  "1.0.69"
 
 extern const guint gutil_version_major; /* GUTIL_VERSION_MAJOR */
 extern const guint gutil_version_minor; /* GUTIL_VERSION_MINOR */
@@ -72,6 +72,7 @@ extern const guint gutil_version_micro; /* GUTIL_VERSION_MICRO */
     (gutil_version_major, gutil_version_minor, gutil_version_micro)
 
 /* Specific versions */
+#define GUTIL_VERSION_1_0_69 GUTIL_VERSION_(1,0,69)
 
 G_END_DECLS
 
