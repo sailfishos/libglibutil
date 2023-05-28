@@ -13,6 +13,7 @@ test_intarray \
 test_ints \
 test_log \
 test_misc \
+test_objv \
 test_ring \
 test_strv \
 test_weakref"

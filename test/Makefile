@@ -11,6 +11,7 @@ all:
 	@$(MAKE) -C test_ints $*
 	@$(MAKE) -C test_log $*
 	@$(MAKE) -C test_misc $*
+	@$(MAKE) -C test_objv $*
 	@$(MAKE) -C test_ring $*
 	@$(MAKE) -C test_strv $*
 	@$(MAKE) -C test_weakref $*

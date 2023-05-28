@@ -69,6 +69,7 @@ SRC = \
   gutil_ring.c \
   gutil_strv.c \
   gutil_timenotify.c \
+  gutil_objv.c \
   gutil_version.c \
   gutil_weakref.c
 
