@@ -47,6 +47,7 @@ test_null(
 {
     g_assert(!gutil_objv_copy(NULL));
     g_assert(!gutil_objv_add(NULL, NULL));
+    g_assert(!gutil_objv_insert(NULL, NULL, 0));
     g_assert(!gutil_objv_remove(NULL, NULL, FALSE));
     g_assert(!gutil_objv_remove_at(NULL, 0));
     g_assert(!gutil_objv_at(NULL, 0));
@@ -112,6 +113,86 @@ test_basic(
     g_assert(!g_weak_ref_get(&r2));
 }
 
+/*==========================================================================*
+ * insert
+ *==========================================================================*/
+
+static
+void
+test_insert(
+    void)
+{
+    GObject* o1 = g_object_new(TEST_OBJECT_TYPE, NULL);
+    GObject* o2 = g_object_new(TEST_OBJECT_TYPE, NULL);
+    GObject* o3 = g_object_new(TEST_OBJECT_TYPE, NULL);
+    GObject** v;
+    GWeakRef r1, r2, r3;
+
+    g_weak_ref_init(&r1, o1);
+    g_weak_ref_init(&r2, o2);
+    g_weak_ref_init(&r3, o3);
+
+    v = gutil_objv_add(gutil_objv_add(NULL, o1), o2);
+
+    /* Insert at the end (with index beyond the valid range) */
+    v = gutil_objv_insert(v, o3, 100);
+
+    g_assert_cmpuint(gutil_ptrv_length(v), == ,3);
+    g_assert(gutil_objv_at(v, 0) == o1);
+    g_assert(gutil_objv_at(v, 1) == o2);
+    g_assert(gutil_objv_at(v, 2) == o3);
+
+    /* Again at the end (with the right index) */
+    v = gutil_objv_remove_at(v, 2);
+
+    g_assert_cmpuint(gutil_ptrv_length(v), == ,2);
+    g_assert(gutil_objv_at(v, 0) == o1);
+    g_assert(gutil_objv_at(v, 1) == o2);
+
+    v = gutil_objv_insert(v, o3, 2);
+
+    g_assert_cmpuint(gutil_ptrv_length(v), == ,3);
+    g_assert(gutil_objv_at(v, 0) == o1);
+    g_assert(gutil_objv_at(v, 1) == o2);
+    g_assert(gutil_objv_at(v, 2) == o3);
+
+    /* At the beginning */
+    v = gutil_objv_remove_at(v, 0);
+
+    g_assert_cmpuint(gutil_ptrv_length(v), == ,2);
+    g_assert(gutil_objv_at(v, 0) == o2);
+    g_assert(gutil_objv_at(v, 1) == o3);
+
+    v = gutil_objv_insert(v, o1, 0);
+
+    g_assert_cmpuint(gutil_ptrv_length(v), == ,3);
+    g_assert(gutil_objv_at(v, 0) == o1);
+    g_assert(gutil_objv_at(v, 1) == o2);
+    g_assert(gutil_objv_at(v, 2) == o3);
+
+    /* And at the middle */
+    v = gutil_objv_remove_at(v, 1);
+
+    g_assert_cmpuint(gutil_ptrv_length(v), == ,2);
+    g_assert(gutil_objv_at(v, 0) == o1);
+    g_assert(gutil_objv_at(v, 1) == o3);
+
+    v = gutil_objv_insert(v, o2, 1);
+
+    g_assert_cmpuint(gutil_ptrv_length(v), == ,3);
+    g_assert(gutil_objv_at(v, 0) == o1);
+    g_assert(gutil_objv_at(v, 1) == o2);
+    g_assert(gutil_objv_at(v, 2) == o3);
+
+    g_object_unref(o1);
+    g_object_unref(o2);
+    g_object_unref(o3);
+    gutil_objv_free(v);
+
+    g_assert(!g_weak_ref_get(&r1));
+    g_assert(!g_weak_ref_get(&r2));
+    g_assert(!g_weak_ref_get(&r3));
+}
 /*==========================================================================*
  * copy
  *==========================================================================*/
@@ -217,6 +298,7 @@ int main(int argc, char* argv[])
     g_test_init(&argc, &argv, NULL);
     g_test_add_func(TEST_("null"), test_null);
     g_test_add_func(TEST_("basic"), test_basic);
+    g_test_add_func(TEST_("insert"), test_insert);
     g_test_add_func(TEST_("copy"), test_copy);
     g_test_add_func(TEST_("remove"), test_remove);
     test_init(&test_opt, argc, argv);

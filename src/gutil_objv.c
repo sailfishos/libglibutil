@@ -38,6 +38,7 @@ gutil_objv_free(
 {
     if (objv) {
         GObject** ptr = objv;
+
         while (*ptr) g_object_unref(*ptr++);
         g_free(objv);
     }
@@ -50,6 +51,7 @@ gutil_objv_copy(
     if (objv) {
         GObject* const* ptr = objv;
         gsize n = 0;
+
         /* Count the services and bump references at the same time */
         while (*ptr) {
             g_object_ref(*ptr++);
@@ -72,6 +74,30 @@ gutil_objv_add(
         objv = g_renew(GObject*, objv, len + 2);
         g_object_ref(objv[len++] = obj);
         objv[len] = NULL;
+    }
+    return objv;
+}
+
+GObject**
+gutil_objv_insert(
+    GObject** objv,
+    GObject* obj,
+    gsize pos) /* Since 1.0.71 */
+{
+    if (obj) {
+        gsize len = gutil_ptrv_length(objv);
+
+        objv = g_renew(GObject*, objv, len + 2);
+        if (pos >= len) {
+            /* Insert as the last element */
+            g_object_ref(objv[len++] = obj);
+            objv[len] = NULL;
+        } else {
+            /* Insert somewhere in the middle (or at the very beginning) */
+            memmove(objv + (pos + 1), objv + pos, sizeof(GObject*) *
+                (len - pos + 1)); /* Move NULL too */
+            g_object_ref(objv[pos] = obj);
+        }
     }
     return objv;
 }
@@ -99,7 +125,7 @@ gutil_objv_remove_impl(
     gsize len)
 {
     g_object_unref(objv[pos]);
-    memmove(objv + pos, objv + pos + 1, sizeof(GObject*) * (len - pos));
+    memmove(objv + pos, objv + (pos + 1), sizeof(GObject*) * (len - pos));
     return g_realloc(objv, sizeof(GObject*) * len);
 }
 
