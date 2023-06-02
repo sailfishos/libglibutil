@@ -47,6 +47,7 @@ test_null(
 {
     g_assert(!gutil_objv_copy(NULL));
     g_assert(!gutil_objv_add(NULL, NULL));
+    g_assert(!gutil_objv_append(NULL, NULL));
     g_assert(!gutil_objv_insert(NULL, NULL, 0));
     g_assert(!gutil_objv_remove(NULL, NULL, FALSE));
     g_assert(!gutil_objv_remove_at(NULL, 0));
@@ -193,6 +194,56 @@ test_insert(
     g_assert(!g_weak_ref_get(&r2));
     g_assert(!g_weak_ref_get(&r3));
 }
+
+/*==========================================================================*
+ * append
+ *==========================================================================*/
+
+static
+void
+test_append(
+    void)
+{
+    GObject* o1 = g_object_new(TEST_OBJECT_TYPE, NULL);
+    GObject* o2 = g_object_new(TEST_OBJECT_TYPE, NULL);
+    GObject* o3 = g_object_new(TEST_OBJECT_TYPE, NULL);
+    GObject** v1 = NULL;
+    GObject** v2 = NULL;
+    GWeakRef r1, r2, r3;
+
+    g_weak_ref_init(&r1, o1);
+    g_weak_ref_init(&r2, o2);
+    g_weak_ref_init(&r3, o3);
+
+    v1 = gutil_objv_add(NULL, o1);
+    v2 = gutil_objv_append(NULL, v1);
+    g_assert_cmpuint(gutil_ptrv_length(v2), == ,1);
+    g_assert(gutil_objv_equal(v1, v2));
+    gutil_objv_free(v2);
+
+    v2 = gutil_objv_add(gutil_objv_add(NULL, o2), o3);
+    g_assert(gutil_objv_append(v2, NULL) == v2);
+
+    v1 = gutil_objv_append(v1, v2);
+
+    g_assert_cmpuint(gutil_ptrv_length(v1), == ,3);
+    g_assert_cmpuint(gutil_ptrv_length(v2), == ,2);
+    g_assert(gutil_objv_at(v1, 0) == o1);
+    g_assert(gutil_objv_at(v1, 1) == o2);
+    g_assert(gutil_objv_at(v1, 2) == o3);
+
+    g_object_unref(o1);
+    g_object_unref(o2);
+    g_object_unref(o3);
+
+    gutil_objv_free(v1);
+    gutil_objv_free(v2);
+
+    g_assert(!g_weak_ref_get(&r1));
+    g_assert(!g_weak_ref_get(&r2));
+    g_assert(!g_weak_ref_get(&r3));
+}
+
 /*==========================================================================*
  * copy
  *==========================================================================*/
@@ -299,6 +350,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("null"), test_null);
     g_test_add_func(TEST_("basic"), test_basic);
     g_test_add_func(TEST_("insert"), test_insert);
+    g_test_add_func(TEST_("append"), test_append);
     g_test_add_func(TEST_("copy"), test_copy);
     g_test_add_func(TEST_("remove"), test_remove);
     test_init(&test_opt, argc, argv);

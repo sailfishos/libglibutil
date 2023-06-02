@@ -67,6 +67,12 @@ gutil_objv_insert(
     G_GNUC_WARN_UNUSED_RESULT;
 
 GObject**
+gutil_objv_append(
+    GObject** objv,
+    GObject* const* objs) /* Since 1.0.71 */
+    G_GNUC_WARN_UNUSED_RESULT;
+
+GObject**
 gutil_objv_remove(
     GObject** objv,
     GObject* obj,

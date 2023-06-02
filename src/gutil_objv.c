@@ -102,6 +102,29 @@ gutil_objv_insert(
     return objv;
 }
 
+GObject**
+gutil_objv_append(
+    GObject** objv,
+    GObject* const* objs) /* Since 1.0.71 */
+{
+    const gsize len2 = gutil_ptrv_length(objs);
+
+    if (len2 > 0) {
+        const gsize len1 = gutil_ptrv_length(objv);
+        GObject* const* src;
+        GObject** dest;
+
+        objv = g_renew(GObject*, objv, len1 + len2 + 1);
+        dest = objv + len1;
+        src = objs;
+        while (*src) {
+            *dest++ = g_object_ref(*src++);
+        }
+        *dest = NULL;
+    }
+    return objv;
+}
+
 static
 gssize
 gutil_objv_find_last_impl(
