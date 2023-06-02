@@ -94,6 +94,22 @@ test_disconnect(
 }
 
 /*==========================================================================*
+ * ref
+ *==========================================================================*/
+
+static
+void
+test_ref(
+    void)
+{
+    GObject* obj = g_object_new(TEST_OBJECT_TYPE, NULL);
+
+    g_assert(!gutil_object_ref(NULL));
+    g_assert(gutil_object_ref(obj) == obj);
+    g_object_unref(obj);
+}
+
+/*==========================================================================*
  * hex2bin
  *==========================================================================*/
 
@@ -864,6 +880,7 @@ int main(int argc, char* argv[])
 
     g_test_add_func(TEST_("version"), test_version);
     g_test_add_func(TEST_("disconnect"), test_disconnect);
+    g_test_add_func(TEST_("ref"), test_ref);
     g_test_add_func(TEST_("hex2bin"), test_hex2bin);
     g_test_add_func(TEST_("hexdump"), test_hexdump);
     g_test_add_func(TEST_("parse_int"), test_parse_int);

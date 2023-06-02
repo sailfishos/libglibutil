@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2022 Jolla Ltd.
- * Copyright (C) 2016-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -42,6 +42,10 @@ gutil_disconnect_handlers(
     gpointer instance,
     gulong* ids,
     int count);
+
+void*
+gutil_object_ref(
+    void* object); /* Since 1.0.71 */
 
 void*
 gutil_hex2bin(
