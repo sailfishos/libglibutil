@@ -67,6 +67,16 @@ gutil_object_ref(
     return object;
 }
 
+void
+gutil_object_unref(
+    void* object) /* Since 1.0.71 */
+{
+    /* Just a NULL-tolerant version of g_object_unref */
+    if (object) {
+        g_object_unref(object);
+    }
+}
+
 void*
 gutil_hex2bin(
     const char* str,

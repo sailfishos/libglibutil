@@ -47,6 +47,10 @@ void*
 gutil_object_ref(
     void* object); /* Since 1.0.71 */
 
+void
+gutil_object_unref(
+    void* object); /* Since 1.0.71 */
+
 void*
 gutil_hex2bin(
     const char* str,
