@@ -159,6 +159,10 @@ gsize
 gutil_ptrv_length(
     const void* ptrv); /* Since 1.0.50 */
 
+gboolean
+gutil_ptrv_is_empty(
+    const void* ptrv); /* Since 1.0.71 */
+
 void
 gutil_ptrv_free(
     void** ptrv); /* Since 1.0.51 */

@@ -583,7 +583,7 @@ gsize
 gutil_ptrv_length(
     const void* ptrv) /* Since 1.0.50 */
 {
-    if (G_LIKELY(ptrv)) {
+    if (ptrv) {
         gsize len = 0;
         const gconstpointer* ptr = ptrv;
 
@@ -592,6 +592,13 @@ gutil_ptrv_length(
     } else {
         return 0;
     }
+}
+
+gboolean
+gutil_ptrv_is_empty(
+    const void* ptrv) /* Since 1.0.71 */
+{
+    return !ptrv || !((gconstpointer*)ptrv)[0];
 }
 
 /* Frees NULL-terminated array of pointers and whatever they're pointing to. */

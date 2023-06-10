@@ -682,6 +682,23 @@ test_ptrv_length(
 }
 
 /*==========================================================================*
+ * ptrv_is_empty
+ *==========================================================================*/
+
+static
+void
+test_ptrv_is_empty(
+    void)
+{
+    static const gconstpointer ptrv0[] = { NULL };
+    static const gconstpointer ptrv1[] = { ptrv0, NULL };
+
+    g_assert(gutil_ptrv_is_empty(NULL));
+    g_assert(gutil_ptrv_is_empty(ptrv0));
+    g_assert(!gutil_ptrv_is_empty(ptrv1));
+}
+
+/*==========================================================================*
  * ptrv_free
  *==========================================================================*/
 
@@ -909,7 +926,8 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("bytes_concat"), test_bytes_concat);
     g_test_add_func(TEST_("bytes_xor"), test_bytes_xor);
     g_test_add_func(TEST_("bytes_equal"), test_bytes_equal);
-    g_test_add_func(TEST_("ptrv_lenght"), test_ptrv_length);
+    g_test_add_func(TEST_("ptrv_length"), test_ptrv_length);
+    g_test_add_func(TEST_("ptrv_is_empty"), test_ptrv_is_empty);
     g_test_add_func(TEST_("ptrv_free"), test_ptrv_free);
     g_test_add_func(TEST_("memdup"), test_memdup);
     g_test_add_func(TEST_("strlen"), test_strlen);
