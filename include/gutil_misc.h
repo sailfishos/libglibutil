@@ -64,6 +64,12 @@ gutil_bin2hex(
     gboolean upper_case) /* Since 1.0.71 */
     G_GNUC_WARN_UNUSED_RESULT;
 
+char*
+gutil_data2hex(
+    const GUtilData* data,
+    gboolean upper_case) /* Since 1.0.71 */
+    G_GNUC_WARN_UNUSED_RESULT;
+
 GBytes*
 gutil_hex2bytes(
     const char* str,

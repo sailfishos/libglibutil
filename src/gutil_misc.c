@@ -136,6 +136,14 @@ gutil_bin2hex(
     return out;
 }
 
+char*
+gutil_data2hex(
+    const GUtilData* data,
+    gboolean upper_case) /* Since 1.0.71 */
+{
+    return data ? gutil_bin2hex(data->bytes, data->size, upper_case) : NULL;
+}
+
 GBytes*
 gutil_hex2bytes(
     const char* str,

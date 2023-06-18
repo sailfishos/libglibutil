@@ -107,6 +107,7 @@ test_ref(
     g_assert(!gutil_object_ref(NULL));
     g_assert(gutil_object_ref(obj) == obj);
     g_object_unref(obj);
+    g_object_unref(obj);
 }
 
 /*==========================================================================*
@@ -177,8 +178,12 @@ void
 test_bin2hex(
     void)
 {
-    static const guchar data[] = { 0x89, 0xab, 0xcd, 0xef };
+    static const guchar bin[] = { 0x89, 0xab, 0xcd, 0xef };
+    static const GUtilData data = { TEST_ARRAY_AND_SIZE(bin) };
     char* str;
+
+    /* gutil_data2hex return NULL if data is NULL */
+    g_assert(!gutil_data2hex(NULL, FALSE));
 
     /* Data isn't touched if len is zero */
     str = gutil_bin2hex(NULL, 0, FALSE);
@@ -186,12 +191,20 @@ test_bin2hex(
     g_free(str);
 
     /* Lower case */
-    str = gutil_bin2hex(data, sizeof(data), FALSE);
+    str = gutil_bin2hex(bin, sizeof(bin), FALSE);
+    g_assert_cmpstr(str, == ,"89abcdef");
+    g_free(str);
+
+    str = gutil_data2hex(&data, FALSE);
     g_assert_cmpstr(str, == ,"89abcdef");
     g_free(str);
 
     /* Upper case */
-    str = gutil_bin2hex(data, sizeof(data), TRUE);
+    str = gutil_bin2hex(bin, sizeof(bin), TRUE);
+    g_assert_cmpstr(str, == ,"89ABCDEF");
+    g_free(str);
+
+    str = gutil_data2hex(&data, TRUE);
     g_assert_cmpstr(str, == ,"89ABCDEF");
     g_free(str);
 }
