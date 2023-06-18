@@ -1,3 +1,15 @@
+libglibutil (1.0.71) unstable; urgency=low
+
+  * Added gutil_object_ref()
+  * Added gutil_object_unref()
+  * Added gutil_objv_append()
+  * Added gutil_objv_insert()
+  * Added gutil_ptrv_is_empty()
+  * Added gutil_bin2hex()
+  * Added gutil_data2hex()
+
+ -- Slava Monich <slava@monich.com>  Sun, 18 Jun 2023 14:24:13 +0300
+
 libglibutil (1.0.70) unstable; urgency=low
 
   * Added gutil_objv module
