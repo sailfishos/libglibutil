@@ -57,6 +57,13 @@ gutil_hex2bin(
     gssize len,
     void* data);
 
+char*
+gutil_bin2hex(
+    const void* data,
+    gsize len,
+    gboolean upper_case) /* Since 1.0.71 */
+    G_GNUC_WARN_UNUSED_RESULT;
+
 GBytes*
 gutil_hex2bytes(
     const char* str,

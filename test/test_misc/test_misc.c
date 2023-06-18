@@ -169,6 +169,34 @@ test_hex2bin(
 }
 
 /*==========================================================================*
+ * bin2hex
+ *==========================================================================*/
+
+static
+void
+test_bin2hex(
+    void)
+{
+    static const guchar data[] = { 0x89, 0xab, 0xcd, 0xef };
+    char* str;
+
+    /* Data isn't touched if len is zero */
+    str = gutil_bin2hex(NULL, 0, FALSE);
+    g_assert_cmpstr(str, == ,"");
+    g_free(str);
+
+    /* Lower case */
+    str = gutil_bin2hex(data, sizeof(data), FALSE);
+    g_assert_cmpstr(str, == ,"89abcdef");
+    g_free(str);
+
+    /* Upper case */
+    str = gutil_bin2hex(data, sizeof(data), TRUE);
+    g_assert_cmpstr(str, == ,"89ABCDEF");
+    g_free(str);
+}
+
+/*==========================================================================*
  * hexdump
  *==========================================================================*/
 
@@ -913,6 +941,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("ref"), test_ref);
     g_test_add_func(TEST_("unref"), test_unref);
     g_test_add_func(TEST_("hex2bin"), test_hex2bin);
+    g_test_add_func(TEST_("bin2hex"), test_bin2hex);
     g_test_add_func(TEST_("hexdump"), test_hexdump);
     g_test_add_func(TEST_("parse_int"), test_parse_int);
     g_test_add_func(TEST_("parse_uint"), test_parse_uint);

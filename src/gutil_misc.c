@@ -111,6 +111,31 @@ gutil_hex2bin(
     return NULL;
 }
 
+char*
+gutil_bin2hex(
+    const void* data,
+    gsize len,
+    gboolean upper_case) /* Since 1.0.71 */
+{
+    static const char hex[] = "0123456789abcdef";
+    static const char HEX[] = "0123456789ABCDEF";
+    const char* map = upper_case ? HEX : hex;
+    const guchar* ptr = data;
+    const guchar* end = ptr + len;
+    char* out = g_malloc(2 * len + 1);
+    char* dest = out;
+
+    while (ptr < end) {
+        const guchar b = *ptr++;
+
+        *dest++ = map[(b >> 4) & 0xf];
+        *dest++ = map[b & 0xf];
+    }
+
+    *dest = 0;
+    return out;
+}
+
 GBytes*
 gutil_hex2bytes(
     const char* str,
