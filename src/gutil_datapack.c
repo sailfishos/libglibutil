@@ -110,7 +110,7 @@ gutil_signed_mbn_encode2(
         }
 
         if (value < 0) {
-            const int maxbits = sizeof(value) * 8;
+            const guint maxbits = sizeof(value) * 8;
 
             /* Special treatment of negative numbers */
             if (size * 7 > maxbits) {
