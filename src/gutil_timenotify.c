@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2016-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2019 Jolla Ltd.
- * Copyright (C) 2016-2019 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -61,21 +61,24 @@ enum gutil_time_notify_signal {
 
 static guint gutil_time_notify_signals[SIGNAL_COUNT] = { 0 };
 
+#define PARENT_CLASS gutil_time_notify_parent_class
+#define THIS_TYPE gutil_time_notify_get_type()
+#define THIS(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, THIS_TYPE, GUtilTimeNotify)
+
+GType THIS_TYPE G_GNUC_INTERNAL;
 typedef GObjectClass GUtilTimeNotifyClass;
 G_DEFINE_TYPE(GUtilTimeNotify, gutil_time_notify, G_TYPE_OBJECT)
-#define GUTIL_TIME_NOTIFY_TYPE (gutil_time_notify_get_type())
-#define GUTIL_TIME_NOTIFY(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),\
-        GUTIL_TIME_NOTIFY_TYPE, GUtilTimeNotify))
 
 GUtilTimeNotify*
 gutil_time_notify_new()
 {
     /* There's no need to have more than one instance. */
     static GUtilTimeNotify* gutil_time_notify_instance = NULL;
+
     if (gutil_time_notify_instance) {
         gutil_time_notify_ref(gutil_time_notify_instance);
     } else {
-        gutil_time_notify_instance = g_object_new(GUTIL_TIME_NOTIFY_TYPE, 0);
+        gutil_time_notify_instance = g_object_new(THIS_TYPE, 0);
         g_object_add_weak_pointer(G_OBJECT(gutil_time_notify_instance),
             (gpointer*)(&gutil_time_notify_instance));
     }
@@ -87,7 +90,7 @@ gutil_time_notify_ref(
     GUtilTimeNotify* self)
 {
     if (G_LIKELY(self)) {
-        g_object_ref(GUTIL_TIME_NOTIFY(self));
+        g_object_ref(THIS(self));
     }
     return self;
 }
@@ -97,7 +100,7 @@ gutil_time_notify_unref(
     GUtilTimeNotify* self)
 {
     if (G_LIKELY(self)) {
-        g_object_unref(GUTIL_TIME_NOTIFY(self));
+        g_object_unref(THIS(self));
     }
 }
 
@@ -128,7 +131,8 @@ gutil_time_notify_callback(
     GIOCondition condition,
     gpointer user_data)
 {
-    GUtilTimeNotify* self = GUTIL_TIME_NOTIFY(user_data);
+    GUtilTimeNotify* self = THIS(user_data);
+
     if (condition & (G_IO_NVAL | G_IO_ERR | G_IO_HUP)) {
         self->io_watch_id = 0;
         return G_SOURCE_REMOVE;
@@ -136,6 +140,7 @@ gutil_time_notify_callback(
         gsize bytes_read = 0;
         GError* error = NULL;
         guint64 exp;
+
         gutil_time_notify_ref(self);
         g_io_channel_read_chars(self->io_channel, (void*)&exp, sizeof(exp),
             &bytes_read, &error);
@@ -156,8 +161,10 @@ gutil_time_notify_init(
     GUtilTimeNotify* self)
 {
     const int fd = timerfd_create(CLOCK_REALTIME, 0);
+
     if (fd >= 0) {
         struct itimerspec timer;
+
         self->io_channel = g_io_channel_unix_new(fd);
         g_io_channel_set_close_on_unref(self->io_channel, TRUE);
         g_io_channel_set_encoding(self->io_channel, NULL, NULL);
@@ -184,7 +191,8 @@ void
 gutil_time_notify_finalize(
     GObject* object)
 {
-    GUtilTimeNotify* self = GUTIL_TIME_NOTIFY(object);
+    GUtilTimeNotify* self = THIS(object);
+
     if (self->io_channel) {
         if (self->io_watch_id) {
             g_source_remove(self->io_watch_id);
@@ -192,7 +200,7 @@ gutil_time_notify_finalize(
         g_io_channel_shutdown(self->io_channel, FALSE, NULL);
         g_io_channel_unref(self->io_channel);
     }
-    G_OBJECT_CLASS(gutil_time_notify_parent_class)->finalize(object);
+    G_OBJECT_CLASS(PARENT_CLASS)->finalize(object);
 }
 
 static
@@ -200,8 +208,7 @@ void
 gutil_time_notify_class_init(
     GUtilTimeNotifyClass* klass)
 {
-    GObjectClass* object_class = G_OBJECT_CLASS(klass);
-    object_class->finalize = gutil_time_notify_finalize;
+    G_OBJECT_CLASS(klass)->finalize = gutil_time_notify_finalize;
     gutil_time_notify_signals[SIGNAL_TIME_CHANGED] =
         g_signal_new(SIGNAL_TIME_CHANGED_NAME, G_OBJECT_CLASS_TYPE(klass),
             G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE, 0);
