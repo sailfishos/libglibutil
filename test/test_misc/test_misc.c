@@ -549,6 +549,37 @@ test_data_from_string(
 }
 
 /*==========================================================================*
+ * data_copy
+ *==========================================================================*/
+
+static
+void
+test_data_copy(
+    void)
+{
+    static const guint8 src_data[] = { '1', '2', '3' };
+    GUtilData* data;
+    GUtilData src;
+
+    TEST_INIT_DATA(src, src_data);
+
+    g_assert(!gutil_data_copy(NULL));
+    data = gutil_data_copy(&src);
+    g_assert(gutil_data_equal(data, &src));
+    g_free(data);
+
+    /* This is wrong but when pointer is NULL, the length is ignored */
+    data = gutil_data_new(NULL, 1000);
+    g_assert(!data->bytes);
+    g_assert(!data->size);
+    g_free(data);
+
+    data = gutil_data_new(TEST_ARRAY_AND_SIZE(src_data));
+    g_assert(gutil_data_equal(data, &src));
+    g_free(data);
+}
+
+/*==========================================================================*
  * bytes_concat
  *==========================================================================*/
 
@@ -965,6 +996,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("data_suffix"), test_data_suffix);
     g_test_add_func(TEST_("data_from_bytes"), test_data_from_bytes);
     g_test_add_func(TEST_("data_from_string"), test_data_from_string);
+    g_test_add_func(TEST_("data_copy"), test_data_copy);
     g_test_add_func(TEST_("bytes_concat"), test_bytes_concat);
     g_test_add_func(TEST_("bytes_xor"), test_bytes_xor);
     g_test_add_func(TEST_("bytes_equal"), test_bytes_equal);

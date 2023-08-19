@@ -133,6 +133,17 @@ gutil_data_from_bytes(
     GUtilData* data,
     GBytes* bytes); /* Since 1.0.31 */
 
+GUtilData*
+gutil_data_new(
+    const void* bytes,
+    guint len) /* Since 1.0.72 */
+    G_GNUC_WARN_UNUSED_RESULT;
+
+GUtilData*
+gutil_data_copy(
+    const GUtilData* data) /* Since 1.0.72 */
+    G_GNUC_WARN_UNUSED_RESULT;
+
 GBytes*
 gutil_bytes_concat(
     GBytes* bytes,

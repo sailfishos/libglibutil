@@ -348,7 +348,7 @@ gutil_data_equal(
 const GUtilData*
 gutil_data_from_string(
     GUtilData* data,
-    const char* str)
+    const char* str) /* Since 1.0.31 */
 {
     if (data) {
         if (str) {
@@ -365,7 +365,7 @@ gutil_data_from_string(
 const GUtilData*
 gutil_data_from_bytes(
     GUtilData* data,
-    GBytes* bytes)
+    GBytes* bytes) /* Since 1.0.31 */
 {
     if (data) {
         if (bytes) {
@@ -376,6 +376,41 @@ gutil_data_from_bytes(
         }
     }
     return data;
+}
+
+GUtilData*
+gutil_data_new(
+    const void* bytes,
+    guint len) /* Since 1.0.72 */
+{
+    /*
+     * The whole thing is allocated from a single memory block and
+     * has to be freed with a single g_free()
+     */
+    const gsize total = len + sizeof(GUtilData);
+    GUtilData* data = g_malloc(total);
+
+    if (bytes) {
+        void* contents = (void*)(data + 1);
+
+        data->bytes = contents;
+        data->size = len;
+        memcpy(contents, bytes, len);
+    } else {
+        memset(data, 0, sizeof(*data));
+    }
+    return data;
+}
+
+GUtilData*
+gutil_data_copy(
+    const GUtilData* data) /* Since 1.0.72 */
+{
+    /*
+     * The whole thing is allocated from a single memory block and
+     * has to be freed with a single g_free()
+     */
+    return data ? gutil_data_new(data->bytes, data->size) : NULL;
 }
 
 gboolean
