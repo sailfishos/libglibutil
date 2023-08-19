@@ -32,6 +32,43 @@
 #include "gutil_objv.h"
 #include "gutil_misc.h"
 
+GObject**
+gutil_objv_new(
+    GObject* obj1,
+    ...) /* Since 1.0.72 */
+{
+    gsize len = 0;
+    GObject** objv;
+    GObject** ptr;
+
+    if (obj1) {
+        GObject* obj;
+        va_list args;
+
+        len++;
+        va_start(args, obj1);
+        while ((obj = va_arg(args, GObject*)) != NULL) {
+            len++;
+        }
+        va_end(args);
+    }
+
+    ptr = objv = g_new(GObject*, len + 1);
+    if (obj1) {
+        GObject* obj;
+        va_list args;
+
+        g_object_ref(*ptr++ = obj1);
+        va_start(args, obj1);
+        while ((obj = va_arg(args, GObject*)) != NULL) {
+            g_object_ref(*ptr++ = obj);
+        }
+        va_end(args);
+    }
+    *ptr = NULL;
+    return objv;
+}
+
 void
 gutil_objv_free(
     GObject** objv)
@@ -52,7 +89,7 @@ gutil_objv_copy(
         GObject* const* ptr = objv;
         gsize n = 0;
 
-        /* Count the services and bump references at the same time */
+        /* Count the objects and bump references at the same time */
         while (*ptr) {
             g_object_ref(*ptr++);
             n++;

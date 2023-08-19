@@ -44,6 +44,13 @@
 
 G_BEGIN_DECLS
 
+GObject**
+gutil_objv_new(
+    GObject* obj,
+    ...) /* Since 1.0.72 */
+    G_GNUC_WARN_UNUSED_RESULT
+    G_GNUC_NULL_TERMINATED;
+
 void
 gutil_objv_free(
     GObject** objv);

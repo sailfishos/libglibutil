@@ -115,6 +115,47 @@ test_basic(
 }
 
 /*==========================================================================*
+ * new
+ *==========================================================================*/
+
+static
+void
+test_new(
+    void)
+{
+    GObject* o1 = g_object_new(TEST_OBJECT_TYPE, NULL);
+    GObject* o2 = g_object_new(TEST_OBJECT_TYPE, NULL);
+    GObject** v;
+    GWeakRef r1, r2;
+
+    g_weak_ref_init(&r1, o1);
+    g_weak_ref_init(&r2, o2);
+
+    v = gutil_objv_new(NULL, NULL);
+    g_assert(v);
+    g_assert(!gutil_ptrv_length(v));
+    gutil_objv_free(v);
+
+    /* v keeps references to both objects */
+    v = gutil_objv_new(o1, o2, NULL);
+    g_assert(v[0] == o1);
+    g_assert(v[1] == o2);
+    g_assert(!v[2]);
+
+    g_object_unref(o1);
+    g_assert(g_weak_ref_get(&r1) == o1);
+    g_object_unref(o1);
+
+    g_object_unref(o2);
+    g_assert(g_weak_ref_get(&r2) == o2);
+    g_object_unref(o2);
+
+    gutil_objv_free(v);
+    g_assert(!g_weak_ref_get(&r1));
+    g_assert(!g_weak_ref_get(&r2));
+}
+
+/*==========================================================================*
  * insert
  *==========================================================================*/
 
@@ -349,6 +390,7 @@ int main(int argc, char* argv[])
     g_test_init(&argc, &argv, NULL);
     g_test_add_func(TEST_("null"), test_null);
     g_test_add_func(TEST_("basic"), test_basic);
+    g_test_add_func(TEST_("new"), test_new);
     g_test_add_func(TEST_("insert"), test_insert);
     g_test_add_func(TEST_("append"), test_append);
     g_test_add_func(TEST_("copy"), test_copy);
