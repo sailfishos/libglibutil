@@ -1,3 +1,12 @@
+libglibutil (1.0.72) unstable; urgency=low
+
+  * Don't export gutil_time_notify_get_type()
+  * Added gutil_data_new()
+  * Added gutil_data_copy()
+  * Added gutil_objv_new()
+
+ -- Slava Monich <slava@monich.com>  Sun, 20 Aug 2023 02:05:13 +0300
+
 libglibutil (1.0.71) unstable; urgency=low
 
   * Added gutil_object_ref()
