@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2017-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2017-2022 Jolla Ltd.
- * Copyright (C) 2017-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -157,6 +157,7 @@ test_log_file(
     FILE* out = fopencookie(buf, "w", funcs);
     FILE* default_stdout = stdout;
     const int level = gutil_log_default.level;
+    gboolean use_timestamp;
     GLogProc2 log_proc;
 
     g_assert(out);
@@ -212,6 +213,41 @@ test_log_file(
     GDEBUG("%s", buf->str);
     g_assert_cmpstr(buf->str, == ,"Test\n");
     g_string_set_size(buf, 0);
+
+    /* Timestamp prefix */
+    use_timestamp = gutil_log_timestamp;
+    gutil_log_timestamp = TRUE;
+    stdout = out;
+    gutil_log_set_timestamp_format("timestamp1 ");
+    gutil_log_set_timestamp_format("timestamp1 ");
+    gutil_log(NULL, GLOG_LEVEL_ALWAYS, "test1");
+    stdout = default_stdout;
+    g_assert(fflush(out) == 0);
+    GDEBUG("%s", buf->str);
+    g_assert_cmpstr(buf->str, == ,"timestamp1 test1\n");
+    g_string_set_size(buf, 0);
+
+    stdout = out;
+    gutil_log_set_timestamp_format("timestamp2 ");
+    gutil_log(NULL, GLOG_LEVEL_ALWAYS, "test2");
+    stdout = default_stdout;
+    g_assert(fflush(out) == 0);
+    GDEBUG("%s", buf->str);
+    g_assert_cmpstr(buf->str, == ,"timestamp2 test2\n");
+    g_string_set_size(buf, 0);
+
+    stdout = out;
+    gutil_log_set_timestamp_format("");
+    gutil_log(NULL, GLOG_LEVEL_ALWAYS, "test");
+    stdout = default_stdout;
+    g_assert(fflush(out) == 0);
+    GDEBUG("%s", buf->str);
+    g_assert_cmpstr(buf->str, == ,"test\n");
+    g_string_set_size(buf, 0);
+
+    gutil_log_set_timestamp_format(NULL);
+    gutil_log_set_timestamp_format(NULL);
+    gutil_log_timestamp = use_timestamp;
 
     /* Forward output to test_log_drop */
     log_proc = gutil_log_default.log_proc;

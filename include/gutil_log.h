@@ -139,6 +139,12 @@ gutil_logv(
     const char* format,
     va_list va);
 
+/* Check if logging is enabled for the specified log level */
+gboolean
+gutil_log_enabled(
+    const GLogModule* module,
+    int level);
+
 void
 gutil_log_dump(
     const GLogModule* module,
@@ -154,11 +160,9 @@ gutil_log_dump_bytes(
     const char* prefix,
     GBytes* bytes); /* Since 1.0.67 */
 
-/* Check if logging is enabled for the specified log level */
-gboolean
-gutil_log_enabled(
-    const GLogModule* module,
-    int level);
+void
+gutil_log_set_timestamp_format(
+    const char* f /* see strftime(3) */ ); /* Since 1.0.73 */
 
 /* Known log types */
 extern const char GLOG_TYPE_STDOUT[];
