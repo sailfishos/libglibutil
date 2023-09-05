@@ -1,3 +1,10 @@
+libglibutil (1.0.73) unstable; urgency=low
+
+  * Define and use MAKE var instead of explicitly calling make
+  * Added gutil_log_set_timestamp_format()
+
+ -- Slava Monich <slava@monich.com>  Tue, 05 Sep 2023 15:53:55 +0300
+
 libglibutil (1.0.72) unstable; urgency=low
 
   * Don't export gutil_time_notify_get_type()
