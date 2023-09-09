@@ -80,7 +80,6 @@ SRC = \
 CC ?= $(CROSS_COMPILE)gcc
 STRIP ?= strip
 LD = $(CC)
-MAKE ?= make
 WARNINGS = -Wall
 INCLUDES = -I$(INCLUDE_DIR)
 BASE_FLAGS = -fPIC
