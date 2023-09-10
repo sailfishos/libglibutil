@@ -580,6 +580,35 @@ test_data_copy(
 }
 
 /*==========================================================================*
+ * data_copy_as_variant
+ *==========================================================================*/
+
+static
+void
+test_data_copy_as_variant(
+    void)
+{
+    static const guint8 bytes[] = { '1', '2', '3' };
+    GVariant* var;
+    GUtilData data;
+
+    g_assert(!gutil_data_copy_as_variant(NULL));
+
+    memset(&data, 0, sizeof(data));
+    var = gutil_data_copy_as_variant(&data);
+    g_assert(var);
+    g_assert_cmpuint(g_variant_get_size(var), == ,0);
+    g_variant_unref(g_variant_ref_sink(var));
+
+    TEST_INIT_DATA(data, bytes);
+    var = gutil_data_copy_as_variant(&data);
+    g_assert(var);
+    g_assert_cmpuint(data.size, == ,g_variant_get_size(var));
+    g_assert(!memcmp(data.bytes, g_variant_get_data(var), data.size));
+    g_variant_unref(g_variant_ref_sink(var));
+}
+
+/*==========================================================================*
  * bytes_concat
  *==========================================================================*/
 
@@ -997,6 +1026,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("data_from_bytes"), test_data_from_bytes);
     g_test_add_func(TEST_("data_from_string"), test_data_from_string);
     g_test_add_func(TEST_("data_copy"), test_data_copy);
+    g_test_add_func(TEST_("data_copy_as_variant"), test_data_copy_as_variant);
     g_test_add_func(TEST_("bytes_concat"), test_bytes_concat);
     g_test_add_func(TEST_("bytes_xor"), test_bytes_xor);
     g_test_add_func(TEST_("bytes_equal"), test_bytes_equal);

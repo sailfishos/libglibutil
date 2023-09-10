@@ -413,6 +413,21 @@ gutil_data_copy(
     return data ? gutil_data_new(data->bytes, data->size) : NULL;
 }
 
+GVariant*
+gutil_data_copy_as_variant(
+    const GUtilData* data) /* Since 1.0.74 */
+{
+    /*
+     * Return a floating reference to a new array GVariant instance
+     * or NULL if the input is NULL.
+     */
+    return !data ? NULL : data->size ?
+        g_variant_new_fixed_array(G_VARIANT_TYPE_BYTE,
+             data->bytes, data->size, 1) :
+        g_variant_new_from_data(G_VARIANT_TYPE_BYTESTRING,
+             NULL, 0, TRUE, NULL, NULL);
+}
+
 gboolean
 gutil_data_has_prefix(
     const GUtilData* data,

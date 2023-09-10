@@ -144,6 +144,11 @@ gutil_data_copy(
     const GUtilData* data) /* Since 1.0.72 */
     G_GNUC_WARN_UNUSED_RESULT;
 
+GVariant*
+gutil_data_copy_as_variant(
+    const GUtilData* data) /* Since 1.0.74 */
+    G_GNUC_WARN_UNUSED_RESULT;
+
 GBytes*
 gutil_bytes_concat(
     GBytes* bytes,
