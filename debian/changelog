@@ -1,3 +1,9 @@
+libglibutil (1.0.74) unstable; urgency=low
+
+  * Added Added gutil_data_copy_as_variant()
+
+ -- Slava Monich <slava@monich.com>  Sun, 10 Sep 2023 04:11:17 +0300
+
 libglibutil (1.0.73) unstable; urgency=low
 
   * Define and use MAKE var instead of explicitly calling make
