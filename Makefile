@@ -80,7 +80,7 @@ SRC = \
 CC ?= $(CROSS_COMPILE)gcc
 STRIP ?= strip
 LD = $(CC)
-WARNINGS = -Wall
+WARNINGS ?= -Wall
 INCLUDES = -I$(INCLUDE_DIR)
 BASE_FLAGS = -fPIC
 FULL_CFLAGS = $(BASE_FLAGS) $(CFLAGS) $(DEFINES) $(WARNINGS) $(INCLUDES) \
@@ -88,7 +88,8 @@ FULL_CFLAGS = $(BASE_FLAGS) $(CFLAGS) $(DEFINES) $(WARNINGS) $(INCLUDES) \
   -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_MAX_ALLOWED \
   -MMD -MP $(shell pkg-config --cflags $(PKGS))
 FULL_LDFLAGS = $(BASE_FLAGS) $(LDFLAGS) -shared -Wl,-soname,$(LIB_SONAME) \
-  $(shell pkg-config --libs $(PKGS))
+  -Wl,--version-script=$(LIB_NAME).ver
+LIBS := $(shell pkg-config --libs $(PKGS))
 DEBUG_FLAGS = -g
 RELEASE_FLAGS =
 COVERAGE_FLAGS = -g
@@ -195,10 +196,10 @@ $(COVERAGE_BUILD_DIR)/%.o : $(SRC_DIR)/%.c
 	$(CC) -c $(COVERAGE_CFLAGS) -MT"$@" -MF"$(@:%.o=%.d)" $< -o $@
 
 $(DEBUG_LIB): $(DEBUG_OBJS)
-	$(LD) $(DEBUG_OBJS) $(DEBUG_LDFLAGS) -o $@
+	$(LD) $(DEBUG_OBJS) $(DEBUG_LDFLAGS) -o $@ $(LIBS)
 
 $(RELEASE_LIB): $(RELEASE_OBJS)
-	$(LD) $(RELEASE_OBJS) $(RELEASE_LDFLAGS) -o $@
+	$(LD) $(RELEASE_OBJS) $(RELEASE_LDFLAGS) -o $@ $(LIBS)
 ifeq ($(KEEP_SYMBOLS),0)
 	$(STRIP) $@
 endif

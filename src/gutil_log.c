@@ -2,7 +2,7 @@
  * Copyright (C) 2014-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2014-2022 Jolla Ltd.
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +34,10 @@
 #include "gutil_misc.h"
 
 #include <stdlib.h>
+
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
 
 #ifdef unix
 #  include <unistd.h>
@@ -445,6 +449,7 @@ gutil_log(
     ...)
 {
     va_list va;
+
     va_start(va, format);
     gutil_logv(module, level, format, va);
     va_end(va);
@@ -540,6 +545,7 @@ gutil_log_dump_bytes(
     if (G_LIKELY(bytes) && gutil_log_enabled(module, level)) {
         gsize size = 0;
         const guint8* data = g_bytes_get_data(bytes, &size);
+
         gutil_log_dump2(module, level, prefix, data, size);
     }
 }
@@ -582,9 +588,11 @@ gutil_log_parse_level(
     if (str && str[0]) {
         guint i;
         const size_t len = strlen(str);
+
         if (len == 1) {
             const char* valid_numbers = "012345";
             const char* number = strchr(valid_numbers, str[0]);
+
             if (number) {
                 return number - valid_numbers;
             }
@@ -617,9 +625,11 @@ gutil_log_parse_option(
     const char* sep = strchr(opt, ':');
     if (sep) {
         const int modlevel = gutil_log_parse_level(sep+1, error);
+
         if (modlevel >= 0) {
             int i;
             const size_t namelen = sep - opt;
+
             for (i=0; i<count; i++) {
                 if (!g_ascii_strncasecmp(modules[i]->name, opt, namelen) &&
                     strlen(modules[i]->name) == namelen) {
@@ -653,6 +663,7 @@ gutil_log_description(
 {
     int i;
     GString* desc = g_string_sized_new(128);
+
     g_string_append(desc, "Log Levels:\n");
     for (i=0; i<=GLOG_LEVEL_VERBOSE; i++) {
         g_string_append_printf(desc, "   %d, ", i);

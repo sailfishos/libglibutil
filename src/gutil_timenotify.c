@@ -46,6 +46,10 @@
 #define NO_SANITIZE_CFI
 #endif
 
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
+
 #ifndef TFD_TIMER_CANCEL_ON_SET
 #  define TFD_TIMER_CANCEL_ON_SET (1 << 1)
 #endif

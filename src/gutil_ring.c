@@ -1,8 +1,8 @@
 /*
+ * Copyright (C) 2016-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2020 Jolla Ltd.
- * Copyright (C) 2016-2020 Slava Monich <slava.monich@jolla.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,6 +33,10 @@
 #include "gutil_ring.h"
 #include "gutil_macros.h"
 #include "gutil_log.h"
+
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
 
 struct gutil_ring {
     gint ref_count;
@@ -65,7 +69,8 @@ gutil_ring_new_full(
     GDestroyNotify free_func)
 {
     GUtilRing* r = g_slice_new0(GUtilRing);
-    r->ref_count = 1;
+
+    g_atomic_int_set(&r->ref_count, 1);
     r->start = r->end = -1;
     r->maxsiz = (max_size < 0) ? GUTIL_RING_UNLIMITED_SIZE : max_size;
     r->free_func = free_func;
@@ -97,6 +102,7 @@ gutil_ring_unref(
             if (r->free_func) {
                 const gint n = gutil_ring_size(r);
                 gint i;
+
                 for (i=0; i<n; i++) {
                     r->free_func(r->data[(r->start + i) % r->alloc]);
                 }
@@ -114,7 +120,7 @@ gutil_ring_set_free_func(
 {
     if (G_LIKELY(r)) {
         r->free_func = free_func;
-    }    
+    }
 }
 
 gint
@@ -133,6 +139,7 @@ gutil_ring_set_max_size(
     if (max_size < 0) max_size = GUTIL_RING_UNLIMITED_SIZE;
     if (G_LIKELY(r) && r->maxsiz != max_size) {
         const gint size = gutil_ring_size(r);
+
         if (max_size >= 0 && size > max_size) {
             gutil_ring_drop(r, size - max_size);
         }
@@ -166,6 +173,7 @@ gutil_ring_clear(
         gint n = gutil_ring_size(r);
         if (n > 0) {
             GDestroyNotify free_func = r->free_func;
+
             if (free_func) {
                 do {
                     free_func(gutil_ring_get(r));
@@ -184,9 +192,11 @@ gutil_ring_compact(
 {
     if (G_LIKELY(r)) {
         int n = gutil_ring_size(r);
+
         if (r->alloc > n) {
             if (n > 0) {
                 gpointer* buf = g_new(gpointer,n);
+
                 if (r->start < r->end) {
                     memcpy(buf, r->data + r->start, sizeof(gpointer) * n);
                 } else {
@@ -223,6 +233,7 @@ gutil_ring_reserve(
             return FALSE;
         } else {
             gpointer* buf;
+
             /* At least double the allocation size */
             minsize = MAX(minsize, r->alloc*2);
             if (r->maxsiz > 0 && minsize > r->maxsiz) {
@@ -232,11 +243,13 @@ gutil_ring_reserve(
             buf = g_new(gpointer, minsize);
             if (r->start < r->end) {
                 const int n = r->end - r->start;
+
                 memcpy(buf, r->data + r->start, sizeof(gpointer) * n);
                 r->start = 0;
                 r->end = n;
             } else if (r->start >= 0) {
                 const int tail = r->alloc - r->start;
+
                 memcpy(buf, r->data + r->start, sizeof(gpointer) * tail);
                 memcpy(buf + tail, r->data, sizeof(gpointer) * r->end);
                 r->start = 0;
@@ -304,6 +317,7 @@ gutil_ring_get(
 {
     if (G_LIKELY(r) && r->start >= 0) {
         gpointer data = r->data[r->start++];
+
         if (r->start == r->end) {
             r->start = r->end = -1;
         } else {
@@ -323,6 +337,7 @@ gutil_ring_get_last(
 {
     if (G_LIKELY(r) && r->start >= 0) {
         gpointer data;
+
         r->end = (r->end + r->alloc - 1) % r->alloc;
         data = r->data[r->end];
         if (r->start == r->end) {
@@ -339,6 +354,7 @@ gutil_ring_drop(
     gint n)
 {
     int size, dropped = 0;
+
     if (n > 0 && (size = gutil_ring_size(r)) > 0) {
         if (n >= size) {
             dropped = size;
@@ -366,6 +382,7 @@ gutil_ring_drop_last(
     gint n)
 {
     int size, dropped = 0;
+
     if (n > 0 && (size = gutil_ring_size(r)) > 0) {
         if (n >= size) {
             dropped = size;
@@ -405,11 +422,13 @@ gutil_ring_flatten(
     gint* size)
 {
     gpointer* data = NULL;
-    gint n = gutil_ring_size(r);
+    const gint n = gutil_ring_size(r);
+
     if (G_LIKELY(r) && n > 0) {
         if (r->start > 0 && r->start >= r->end) {
-            gpointer* buf = g_new(gpointer, n); 
+            gpointer* buf = g_new(gpointer, n);
             const gint n1 = r->alloc - r->start;
+
             memcpy(buf, r->data + r->start, sizeof(gpointer) * n1);
             memcpy(buf + n1, r->data, sizeof(gpointer) * r->end);
             g_free(r->data);

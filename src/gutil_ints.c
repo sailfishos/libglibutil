@@ -1,8 +1,8 @@
 /*
+ * Copyright (C) 2017-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2017-2021 Jolla Ltd.
- * Copyright (C) 2017-2021 Slava Monich <slava.monich@jolla.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +34,10 @@
 #include "gutil_ints.h"
 #include "gutil_misc.h"
 #include "gutil_macros.h"
+
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
 
 struct gutil_ints {
     const int* data;
@@ -80,11 +84,12 @@ gutil_ints_new_with_free_func(
 {
     if (data && count) {
         GUtilInts* ints = g_slice_new(GUtilInts);
+
         ints->data = data;
         ints->count = count;
         ints->free_func = free_func;
         ints->user_data = user_data;
-        ints->ref_count = 1;
+        g_atomic_int_set(&ints->ref_count, 1);
         return ints;
     } else {
         return NULL;
@@ -107,6 +112,7 @@ gutil_ints_new_from_ints(
 {
     if (ints && offset < ints->count) {
         guint end = offset + count;
+
         if (end > ints->count) {
             end = ints->count;
         }
@@ -148,6 +154,7 @@ gutil_ints_unref_to_data(
 {
     if (ints) {
         int* result;
+
         if (count) {
             *count = ints->count;
         }
@@ -204,6 +211,7 @@ gutil_ints_find(
 {
     if (ints) {
         guint i;
+
         for (i=0; i<ints->count; i++) {
             if (ints->data[i] == value) {
                 return i;
@@ -225,6 +233,7 @@ gutil_ints_contains(
      */
     if (ints) {
         guint i;
+
         for (i=0; i<ints->count; i++) {
             if (ints->data[i] == value) {
                 return TRUE;
@@ -241,6 +250,7 @@ gutil_ints_hash(
     if (data) {
         const GUtilInts* ints = data;
         guint i, h = 1234;
+
         for (i=0; i<ints->count; i++) {
             h ^= ints->data[i] * (i+1);
         }
@@ -257,6 +267,7 @@ gutil_ints_equal(
 {
     const GUtilInts* i1 = a;
     const GUtilInts* i2 = b;
+
     if (i1 == i2) {
         return TRUE;
     } else if (i1 && i2) {
@@ -280,11 +291,13 @@ gutil_ints_compare(
 {
     const GUtilInts* i1 = a;
     const GUtilInts* i2 = b;
+
     if (i1 == i2) {
         return 0;
     } else if (i1 && i2) {
         const int ret = memcmp(i1->data, i2->data,
             MIN(i1->count, i2->count) * sizeof(int));
+
         if (ret || i1->count == i2->count) {
             return ret;
         } else {

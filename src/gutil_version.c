@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2023 Slava Monich <slava@monich.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,10 @@
  */
 
 #include "gutil_version.h"
+
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
 
 const guint gutil_version_major = GUTIL_VERSION_MAJOR;
 const guint gutil_version_minor = GUTIL_VERSION_MINOR;
