@@ -77,6 +77,7 @@ SRC = \
 # Tools and flags
 #
 
+PKG_CONFIG ?= pkg-config
 CC ?= $(CROSS_COMPILE)gcc
 STRIP ?= strip
 LD = $(CC)
@@ -86,10 +87,10 @@ BASE_FLAGS = -fPIC
 FULL_CFLAGS = $(BASE_FLAGS) $(CFLAGS) $(DEFINES) $(WARNINGS) $(INCLUDES) \
   -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_32 \
   -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_MAX_ALLOWED \
-  -MMD -MP $(shell pkg-config --cflags $(PKGS))
+  -MMD -MP $(shell $(PKG_CONFIG) --cflags $(PKGS))
 FULL_LDFLAGS = $(BASE_FLAGS) $(LDFLAGS) -shared -Wl,-soname,$(LIB_SONAME) \
   -Wl,--version-script=$(LIB_NAME).ver
-LIBS := $(shell pkg-config --libs $(PKGS))
+LIBS := $(shell $(PKG_CONFIG) --libs $(PKGS))
 DEBUG_FLAGS = -g
 RELEASE_FLAGS =
 COVERAGE_FLAGS = -g
