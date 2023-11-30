@@ -2,7 +2,7 @@
  * Copyright (C) 2016-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2019 Jolla Ltd.
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,6 +39,12 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/timerfd.h>
+
+#ifdef __clang__
+#define NO_SANITIZE_CFI __attribute__((no_sanitize("cfi")))
+#else
+#define NO_SANITIZE_CFI
+#endif
 
 #ifndef TFD_TIMER_CANCEL_ON_SET
 #  define TFD_TIMER_CANCEL_ON_SET (1 << 1)
@@ -186,6 +192,7 @@ gutil_time_notify_init(
     }
 }
 
+NO_SANITIZE_CFI
 static
 void
 gutil_time_notify_finalize(

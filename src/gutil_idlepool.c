@@ -1,8 +1,8 @@
 /*
+ * Copyright (C) 2016-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2020 Jolla Ltd.
- * Copyright (C) 2016-2020 Slava Monich <slava.monich@jolla.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -56,8 +56,17 @@ GUtilIdlePool*
 gutil_idle_pool_new()
 {
     GUtilIdlePool* self = g_slice_new0(GUtilIdlePool);
+
     g_atomic_int_set(&self->ref_count, 1);
     return self;
+}
+
+static
+void
+gutil_idle_pool_unref_1(
+    gpointer pool)
+{
+    gutil_idle_pool_unref(pool);
 }
 
 GUtilIdlePool*
@@ -70,11 +79,11 @@ gutil_idle_pool_get(
             return *shared;
         } else {
             GUtilIdlePool* pool = gutil_idle_pool_new();
+
             pool->shared = shared;
             /* New shared object will destroy itself if the caller
              * doesn't reference it. */
-            gutil_idle_pool_add(pool, pool, (GDestroyNotify)
-                gutil_idle_pool_unref);
+            gutil_idle_pool_add(pool, pool, gutil_idle_pool_unref_1);
             *shared = pool;
             return pool;
         }
@@ -123,8 +132,10 @@ gutil_idle_pool_drain(
 {
     if (G_LIKELY(self)) {
         GUtilIdlePoolItem* items = self->first;
+
         while (items) {
             GUtilIdlePoolItem* item = items;
+
             self->first = self->last = NULL;
             while (item) {
                 item->destroy(item->pointer);
@@ -146,6 +157,7 @@ gutil_idle_pool_idle(
     gpointer user_data)
 {
     GUtilIdlePool* self = user_data;
+
     self->idle_id = 0;
     gutil_idle_pool_ref(self);
     gutil_idle_pool_drain(self);
@@ -161,6 +173,7 @@ gutil_idle_pool_add(
 {
     if (G_LIKELY(self) && G_LIKELY(destroy)) {
         GUtilIdlePoolItem* item = g_slice_new(GUtilIdlePoolItem);
+
         item->next = NULL;
         item->pointer = pointer;
         item->destroy = destroy;
@@ -177,13 +190,21 @@ gutil_idle_pool_add(
     }
 }
 
+static
+void
+gutil_idle_pool_strv_free(
+    gpointer strv)
+{
+    g_strfreev(strv);
+}
+
 void
 gutil_idle_pool_add_strv(
     GUtilIdlePool* self,
     char** strv) /* Since 1.0.32 */
 {
     if (G_LIKELY(strv)) {
-        gutil_idle_pool_add(self, strv, (GDestroyNotify) g_strfreev);
+        gutil_idle_pool_add(self, strv, gutil_idle_pool_strv_free);
     }
 }
 
@@ -197,14 +218,30 @@ gutil_idle_pool_add_object(
     }
 }
 
+static
+void
+gutil_idle_pool_variant_unref(
+    gpointer var)
+{
+    g_variant_unref(var);
+}
+
 void
 gutil_idle_pool_add_variant(
     GUtilIdlePool* self,
     GVariant* variant)
 {
     if (G_LIKELY(variant)) {
-        gutil_idle_pool_add(self, variant, (GDestroyNotify)g_variant_unref);
+        gutil_idle_pool_add(self, variant, gutil_idle_pool_variant_unref);
     }
+}
+
+static
+void
+gutil_idle_pool_ptr_array_unref(
+    gpointer array)
+{
+    g_ptr_array_unref(array);
 }
 
 void
@@ -213,8 +250,16 @@ gutil_idle_pool_add_ptr_array(
     GPtrArray* array)
 {
     if (G_LIKELY(array)) {
-        gutil_idle_pool_add(self, array, (GDestroyNotify)g_ptr_array_unref);
+        gutil_idle_pool_add(self, array, gutil_idle_pool_ptr_array_unref);
     }
+}
+
+static
+void
+gutil_idle_pool_bytes_unref(
+    gpointer bytes)
+{
+    g_bytes_unref(bytes);
 }
 
 void
@@ -223,7 +268,7 @@ gutil_idle_pool_add_bytes(
     GBytes* bytes) /* Since 1.0.34 */
 {
     if (G_LIKELY(bytes)) {
-        gutil_idle_pool_add(self, bytes, (GDestroyNotify)g_bytes_unref);
+        gutil_idle_pool_add(self, bytes, gutil_idle_pool_bytes_unref);
     }
 }
 

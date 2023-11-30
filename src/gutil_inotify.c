@@ -1,8 +1,8 @@
 /*
+ * Copyright (C) 2014-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2014-2018 Jolla Ltd.
- * Contact: Slava Monich <slava.monich@jolla.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,9 +13,9 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of Jolla Ltd nor the names of its contributors may
- *      be used to endorse or promote products derived from this software
- *      without specific prior written permission.
+ *   3. Neither the names of the copyright holders nor the names of its
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -38,6 +38,12 @@
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <errno.h>
+
+#ifdef __clang__
+#define NO_SANITIZE_CFI __attribute__((no_sanitize("cfi")))
+#else
+#define NO_SANITIZE_CFI
+#endif
 
 typedef struct gutil_inotify {
     int ref_count;
@@ -74,10 +80,13 @@ enum gutil_inotify_watch_signal {
 
 static guint gutil_inotify_watch_signals[SIGNAL_COUNT] = { 0 };
 
-G_DEFINE_TYPE(GUtilInotifyWatch, gutil_inotify_watch, G_TYPE_OBJECT)
-#define GUTIL_INOTIFY_WATCH_TYPE (gutil_inotify_watch_get_type())
-#define GUTIL_INOTIFY_WATCH(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),\
-        GUTIL_INOTIFY_WATCH_TYPE, GUtilInotifyWatch))
+#define PARENT_TYPE G_TYPE_OBJECT
+#define PARENT_CLASS gutil_inotify_watch_parent_class
+#define THIS_TYPE gutil_inotify_watch_get_type()
+#define THIS(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, THIS_TYPE, GUtilInotifyWatch)
+
+G_GNUC_INTERNAL GType THIS_TYPE;
+G_DEFINE_TYPE(GUtilInotifyWatch, gutil_inotify_watch, PARENT_TYPE)
 
 /*==========================================================================*
  * GUtilInotify
@@ -124,6 +133,7 @@ gutil_inotify_read(
 {
     gsize nbytes = 0;
     GError* error = NULL;
+
     g_io_channel_read_chars(self->io_channel, self->buf, sizeof(self->buf),
         &nbytes, &error);
     if (error) {
@@ -132,10 +142,12 @@ gutil_inotify_read(
         return FALSE;
     } else {
         const char* next = self->buf;
+
         while (nbytes > 0) {
             const struct inotify_event* event = (void*)next;
             const size_t len = sizeof(struct inotify_event) + event->len;
             const char* path = event->len ? event->name : NULL;
+
             GDEBUG("Inotify event 0x%04x for %s", event->mask, path);
             GASSERT(len <= nbytes);
             if (len > nbytes) {
@@ -143,6 +155,7 @@ gutil_inotify_read(
             } else  {
                 GUtilInotifyWatch* watch = g_hash_table_lookup(self->watches,
                     GINT_TO_POINTER(event->wd));
+
                 if (watch) {
                     gutil_inotify_watch_ref(watch);
                     g_signal_emit(watch,
@@ -166,11 +179,13 @@ gutil_inotify_callback(
     gpointer user_data)
 {
     GUtilInotify* self = user_data;
+
     if (condition & (G_IO_NVAL | G_IO_ERR | G_IO_HUP)) {
         self->io_watch_id = 0;
         return G_SOURCE_REMOVE;
     } else {
         gboolean ok;
+
         gutil_inotify_ref(self);
         ok = (condition & G_IO_IN) && gutil_inotify_read(self);
         if (!ok) self->io_watch_id = 0;
@@ -185,9 +200,11 @@ gutil_inotify_create(
     int fd)
 {
     GIOChannel* channel = g_io_channel_unix_new(fd);
+
     GASSERT(channel);
     if (channel) {
         GUtilInotify* inotify = g_new(GUtilInotify, 1);
+
         inotify->ref_count = 1;
         inotify->fd = fd;
         inotify->io_channel = channel;
@@ -211,6 +228,7 @@ gutil_inotify_new()
         gutil_inotify_ref(gutil_inotify_instance);
     } else {
         int fd = inotify_init();
+
         if (fd >= 0) {
             /* GUtilInotify takes ownership of the file descriptor */
             gutil_inotify_instance = gutil_inotify_create(fd);
@@ -255,11 +273,13 @@ gutil_inotify_watch_new(
 {
     if (G_LIKELY(path)) {
         GUtilInotify* inotify = gutil_inotify_new();
+
         if (G_LIKELY(inotify)) {
             int wd = inotify_add_watch(inotify->fd, path, mask);
+
             if (wd >= 0) {
-                GUtilInotifyWatch* self =
-                    g_object_new(GUTIL_INOTIFY_WATCH_TYPE,0);
+                GUtilInotifyWatch* self = g_object_new(THIS_TYPE, NULL);
+
                 self->inotify = inotify;
                 self->wd = wd;
                 self->mask = mask;
@@ -305,7 +325,7 @@ gutil_inotify_watch_ref(
     GUtilInotifyWatch* self)
 {
     if (G_LIKELY(self)) {
-        g_object_ref(GUTIL_INOTIFY_WATCH(self));
+        g_object_ref(THIS(self));
         return self;
     } else {
         return NULL;
@@ -317,7 +337,7 @@ gutil_inotify_watch_unref(
     GUtilInotifyWatch* self)
 {
     if (G_LIKELY(self)) {
-        g_object_unref(GUTIL_INOTIFY_WATCH(self));
+        g_object_unref(THIS(self));
     }
 }
 
@@ -348,25 +368,18 @@ gutil_inotify_watch_init(
 {
 }
 
-static
-void
-gutil_inotify_watch_dispose(
-    GObject* object)
-{
-    GUtilInotifyWatch* self = GUTIL_INOTIFY_WATCH(object);
-    gutil_inotify_watch_stop(self);
-    G_OBJECT_CLASS(gutil_inotify_watch_parent_class)->dispose(object);
-}
-
+NO_SANITIZE_CFI
 static
 void
 gutil_inotify_watch_finalize(
     GObject* object)
 {
-    GUtilInotifyWatch* self = GUTIL_INOTIFY_WATCH(object);
+    GUtilInotifyWatch* self = THIS(object);
+
+    gutil_inotify_watch_stop(self);
     gutil_inotify_unref(self->inotify);
     g_free(self->path);
-    G_OBJECT_CLASS(gutil_inotify_watch_parent_class)->finalize(object);
+    G_OBJECT_CLASS(PARENT_CLASS)->finalize(object);
 }
 
 static
@@ -374,7 +387,7 @@ void gutil_inotify_watch_class_init(
     GUtilInotifyWatchClass* klass)
 {
     GObjectClass* object_class = G_OBJECT_CLASS(klass);
-    object_class->dispose = gutil_inotify_watch_dispose;
+
     object_class->finalize = gutil_inotify_watch_finalize;
     gutil_inotify_watch_signals[SIGNAL_WATCH_EVENT] =
         g_signal_new(SIGNAL_WATCH_EVENT_NAME, G_OBJECT_CLASS_TYPE(klass),
@@ -394,8 +407,10 @@ gutil_inotify_watch_callback_new(
     void* arg)
 {
     GUtilInotifyWatch* watch = gutil_inotify_watch_new(path, mask);
+
     if (watch) {
         GUtilInotifyWatchCallback* cb = g_new(GUtilInotifyWatchCallback,1);
+
         cb->watch = watch;
         cb->id = gutil_inotify_watch_add_handler(watch, fn, arg);
         return cb;
