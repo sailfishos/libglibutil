@@ -45,6 +45,10 @@
 #define NO_SANITIZE_CFI
 #endif
 
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
+
 typedef struct gutil_inotify {
     int ref_count;
     int fd;

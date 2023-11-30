@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2016-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2022 Jolla Ltd.
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,6 +37,10 @@
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
+
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
 
 void
 gutil_disconnect_handlers(
@@ -190,6 +194,7 @@ gutil_hexdump(
         }
         if (i < len) {
             const guchar b = bytes[i];
+
             *ptr++ = hex[(b >> 4) & 0xf];
             *ptr++ = hex[b & 0xf];
         } else {

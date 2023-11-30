@@ -1,8 +1,8 @@
 /*
+ * Copyright (C) 2017-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2017 Jolla Ltd.
- * Contact: Slava Monich <slava.monich@jolla.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,9 +13,9 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of Jolla Ltd nor the names of its contributors may
- *      be used to endorse or promote products derived from this software
- *      without specific prior written permission.
+ *   3. Neither the names of the copyright holders nor the names of its
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -32,6 +32,10 @@
 
 #include "gutil_history.h"
 #include "gutil_log.h"
+
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
 
 #define GUTIL_HISTORY_DEFAULT_TIME_FUNC g_get_monotonic_time
 
@@ -65,13 +69,14 @@ gutil_int_history_new_full(
     GUtilHistoryTimeFunc fn)
 {
     if (max_size > 0 && max_interval > 0) {
-        /* 
+        /*
          * We don't allow to dynamically change the maximum history size
          * so we can allocate the whole thing from a single memory block.
          */
         GUtilIntHistory* h = g_malloc0(sizeof(GUtilIntHistory) +
-            (max_size-1)*sizeof(GUtilIntHistoryEntry));
-        h->ref_count = 1;
+            (max_size - 1) * sizeof(GUtilIntHistoryEntry));
+
+        g_atomic_int_set(&h->ref_count, 1);
         h->max_size = max_size;
         h->max_interval = max_interval;
         h->first = h->last = -1;
@@ -111,6 +116,7 @@ gutil_int_history_flush(
     const gint64 now)
 {
     const gint64 cutoff = now - h->max_interval;
+
     if (h->entry[h->last].time >= cutoff) {
         /* At least the last entry is valid */
         while (h->entry[h->first].time < cutoff) {
@@ -147,6 +153,7 @@ gutil_int_history_interval(
 {
     if (G_LIKELY(h) && h->last >= 0) {
 	const gint64 now = h->time();
+
         if (gutil_int_history_flush(h, now)) {
             return now - h->entry[h->first].time;
         }
@@ -179,9 +186,11 @@ gutil_int_history_median_at(
         gint64 t = h->entry[pos].time;
         gint64 dt = 0;
         gint64 area = 0;
+
         while (pos != h->last) {
             gint64 t1;
             int v1;
+
             pos = (pos + 1) % h->max_size;
             t1 = h->entry[pos].time;
             v1 = h->entry[pos].value;
@@ -202,10 +211,12 @@ gutil_int_history_add(
 {
     if (G_LIKELY(h)) {
 	gint64 now = h->time();
+
         if (h->last < 0 || !gutil_int_history_flush(h, now)) {
             h->last = h->first = 0;
         } else {
             const gint64 last_time = h->entry[h->last].time;
+
             if (now > last_time) {
                 /* Need a new entry */
                 h->last = (h->last + 1) % h->max_size;
@@ -231,6 +242,7 @@ gutil_int_history_median(
 {
     if (G_LIKELY(h) && h->last >= 0) {
 	const gint64 now = h->time();
+
         if (gutil_int_history_flush(h, now)) {
             return gutil_int_history_median_at(h, now);
         }

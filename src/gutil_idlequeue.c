@@ -1,8 +1,8 @@
 /*
+ * Copyright (C) 2017-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2017-2020 Jolla Ltd.
- * Copyright (C) 2017-2020 Slava Monich <slava.monich@jolla.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,6 +33,10 @@
 #include "gutil_idlequeue.h"
 #include "gutil_macros.h"
 #include "gutil_log.h"
+
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
 
 typedef struct gutil_idle_queue_item GUtilIdleQueueItem;
 
@@ -121,7 +125,8 @@ GUtilIdleQueue*
 gutil_idle_queue_new()
 {
     GUtilIdleQueue* q = g_slice_new0(GUtilIdleQueue);
-    q->ref_count = 1;
+
+    g_atomic_int_set(&q->ref_count, 1);
     return q;
 }
 

@@ -1,8 +1,8 @@
 /*
+ * Copyright (C) 2017-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2017 Jolla Ltd.
- * Contact: Slava Monich <slava.monich@jolla.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,9 +13,9 @@
  *   2. Redistributions in binary form must reproduce the above copyright
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
- *   3. Neither the name of Jolla Ltd nor the names of its contributors may
- *      be used to endorse or promote products derived from this software
- *      without specific prior written permission.
+ *   3. Neither the names of the copyright holders nor the names of its
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -32,6 +32,10 @@
 
 #include "gutil_intarray.h"
 #include "gutil_ints.h"
+
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
 
 G_STATIC_ASSERT(sizeof(GUtilIntArray) == sizeof(GArray));
 #define ELEMENT_SIZE (sizeof(int))
@@ -56,6 +60,7 @@ gutil_int_array_new_from_vals(
     guint count)
 {
     GUtilIntArray* array = gutil_int_array_sized_new(count);
+
     gutil_int_array_append_vals(array, vals, count);
     return array;
 }
@@ -91,6 +96,7 @@ gutil_int_array_free_to_ints(
         if (array->count) {
             guint count = array->count;
             int* values = gutil_int_array_free(array, FALSE);
+
             return gutil_ints_new_take(values, count);
         } else {
             gutil_int_array_free(array, TRUE);
@@ -198,6 +204,7 @@ gutil_int_array_find(
 {
     if (array) {
         guint i;
+
         for (i = 0; i < array->count; i++) {
             if (array->data[i] == value) {
                 return i;
@@ -220,7 +227,8 @@ gutil_int_array_remove(
     GUtilIntArray* array,
     int value)
 {
-    int pos = gutil_int_array_find(array, value);
+    const int pos = gutil_int_array_find(array, value);
+
     if (pos >= 0) {
         g_array_remove_index((GArray*)array, pos);
         return TRUE;
@@ -233,7 +241,8 @@ gutil_int_array_remove_fast(
     GUtilIntArray* array,
     int value)
 {
-    int pos = gutil_int_array_find(array, value);
+    const int pos = gutil_int_array_find(array, value);
+
     if (pos >= 0) {
         g_array_remove_index_fast((GArray*)array, pos);
         return TRUE;
@@ -247,6 +256,7 @@ gutil_int_array_remove_all(
     int value)
 {
     guint n;
+
     for (n = 0; gutil_int_array_remove(array, value); n++);
     return n;
 }
@@ -257,6 +267,7 @@ gutil_int_array_remove_all_fast(
     int value)
 {
     guint n;
+
     for (n = 0; gutil_int_array_remove_fast(array, value); n++);
     return n;
 }
@@ -291,6 +302,7 @@ gutil_int_array_remove_range(
 {
     if (array && pos < array->count && count) {
         guint end = pos + count;
+
         if (end > array->count) {
             end = array->count;
         }
@@ -307,6 +319,7 @@ gutil_int_array_sort_ascending_proc(
 {
     const int* v1 = a;
     const int* v2 = b;
+
     return *v1 - *v2;
 }
 
@@ -327,6 +340,7 @@ gutil_int_array_sort_descending_proc(
 {
     const int* v1 = a;
     const int* v2 = b;
+
     return *v2 - *v1;
 }
 

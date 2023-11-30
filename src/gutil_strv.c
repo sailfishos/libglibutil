@@ -1,8 +1,8 @@
 /*
+ * Copyright (C) 2014-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2014-2022 Jolla Ltd.
- * Copyright (C) 2014-2022 Slava Monich <slava.monich@jolla.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,6 +35,10 @@
 
 #include <stdlib.h>
 
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
+
 /**
  * NULL-tolerant version of g_strv_length
  */
@@ -55,6 +59,7 @@ gutil_strv_at(
 {
     if (G_LIKELY(sv)) {
         guint k = 0;
+
         while (sv[k] && k < i) k++;
         if (k == i) {
             /* We also end up here if i == len but that's OK */
@@ -73,6 +78,7 @@ gutil_strv_last(
 {
     if (G_LIKELY(sv) && G_LIKELY(sv[0])) {
         guint k = 0;
+
         while (sv[k + 1]) k++;
         return sv[k];
     }
@@ -341,7 +347,8 @@ gutil_strv_sort(
     GStrV* sv,
     gboolean ascending)
 {
-    guint len = gutil_strv_length(sv);
+    const guint len = gutil_strv_length(sv);
+
     if (len > 0) {
         qsort(sv, len, sizeof(char*), ascending ?
               gutil_strv_sort_ascending :
@@ -364,10 +371,12 @@ gutil_strv_bsearch(
     gboolean ascending) /* Since 1.0.40 */
 {
     if (s) {
-        guint len = gutil_strv_length(sv);
+        const guint len = gutil_strv_length(sv);
+
         if (len > 0) {
             GStrV* found = bsearch(&s, sv, len, sizeof(char*), ascending ?
                 gutil_strv_sort_ascending : gutil_strv_sort_descending);
+
             if (found) {
                 return found - sv;
             }
@@ -385,6 +394,7 @@ gutil_strv_strip(
 {
     if (sv) {
         GStrV* ptr;
+
         for (ptr = sv; *ptr; ptr++) {
             *ptr = g_strstrip(*ptr);
         }
