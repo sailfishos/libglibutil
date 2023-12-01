@@ -1,3 +1,11 @@
+libglibutil (1.0.75) unstable; urgency=low
+
+  * Cross-compilation tweaks
+  * Compatibility with clang -fsanitize=cfi
+  * Export all and only required symbols
+
+ -- Slava Monich <slava@monich.com>  Fri, 01 Dec 2023 02:01:34 +0200
+
 libglibutil (1.0.74) unstable; urgency=low
 
   * Added Added gutil_data_copy_as_variant()
