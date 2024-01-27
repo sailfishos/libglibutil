@@ -38,6 +38,7 @@ global:
     gutil_idle_pool_destroy;
     gutil_idle_pool_drain;
     gutil_idle_pool_get;
+    gutil_idle_pool_get_default;
     gutil_idle_pool_new;
     gutil_idle_pool_ref;
     gutil_idle_pool_unref;

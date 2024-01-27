@@ -1,8 +1,8 @@
 /*
+ * Copyright (C) 2016-2024 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2018 Jolla Ltd.
- * Copyright (C) 2016-2018 Slava Monich <slava.monich@jolla.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,8 +14,8 @@
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
  *   3. Neither the names of the copyright holders nor the names of its
- *      contributors may be used to endorse or promote products derived from
- *      this software without specific prior written permission.
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -60,11 +60,16 @@ G_BEGIN_DECLS
  */
 
 GUtilIdlePool*
-gutil_idle_pool_new(void);
+gutil_idle_pool_new(
+    void);
 
 GUtilIdlePool*
 gutil_idle_pool_get(
     GUtilIdlePool** shared);
+
+GUtilIdlePool*
+gutil_idle_pool_get_default(
+    void); /* Since 1.0.76 */
 
 GUtilIdlePool*
 gutil_idle_pool_ref(

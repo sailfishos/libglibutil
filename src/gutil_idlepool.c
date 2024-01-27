@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2016-2024 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2020 Jolla Ltd.
  *
  * You may use this file under the terms of the BSD license as follows:
@@ -51,6 +51,7 @@ struct gutil_idle_pool_item {
 struct gutil_idle_pool {
     gint ref_count;
     guint idle_id;
+    GThread* thread;
     GUtilIdlePoolItem* first;
     GUtilIdlePoolItem* last;
     GUtilIdlePool** shared;
@@ -61,6 +62,8 @@ gutil_idle_pool_new()
 {
     GUtilIdlePool* self = g_slice_new0(GUtilIdlePool);
 
+    /* No need to take a ref as we never dereference this pointer */
+    self->thread = g_thread_self();
     g_atomic_int_set(&self->ref_count, 1);
     return self;
 }
@@ -94,6 +97,25 @@ gutil_idle_pool_get(
     } else {
         return gutil_idle_pool_new();
     }
+}
+
+/*
+ * Thread specific GUtilIdlePool gets created on demand and remains alive
+ * until the thread exits or gutil_idle_pool_release_default is called. The
+ * thread should have a GMainContext or else strange things may happen (see
+ * the comments in gutil_idle_pool_idle).
+ */
+GUtilIdlePool*
+gutil_idle_pool_get_default() /* Since 1.0.76 */
+{
+    static GPrivate thread_pool = G_PRIVATE_INIT(gutil_idle_pool_unref_1);
+    GUtilIdlePool* pool = g_private_get(&thread_pool);
+
+    if (!pool) {
+        pool = gutil_idle_pool_new();
+        g_private_set(&thread_pool, pool);
+    }
+    return pool;
 }
 
 GUtilIdlePool*
@@ -149,8 +171,10 @@ gutil_idle_pool_drain(
             items = self->first;
         }
         if (self->idle_id) {
-            g_source_remove(self->idle_id);
+            const guint id = self->idle_id;
+
             self->idle_id = 0;
+            g_source_remove(id);
         }
     }
 }
@@ -163,9 +187,30 @@ gutil_idle_pool_idle(
     GUtilIdlePool* self = user_data;
 
     self->idle_id = 0;
-    gutil_idle_pool_ref(self);
-    gutil_idle_pool_drain(self);
-    gutil_idle_pool_unref(self);
+
+    /*
+     * gutil_idle_pool_idle may be invoked on a wrong (main) thread if
+     * something is added to a thread specific pool (e.g. the one created
+     * by gutil_idle_pool_get_default) before the thread specific GMainContext
+     * has been pushed to the context stack. In this case we must not touch
+     * the pool because the access to the pool items is not synchronized and
+     * we generally want to destroy items on the same thread which has created
+     * them. Hence the check for the current thread.
+     *
+     * In the worst case (if the thread specific GMainContext never gets
+     * created) this callback will keep getting invoked but the items won't
+     * be actually deallocated until the thread exits. And the pool (together
+     * with the items it contains) may actually end up being destroyed on the
+     * main thread.
+     *
+     * The bottom line is that it's better not to use GUtilIdlePool without
+     * GMainContext.
+     */
+    if (self->thread == g_thread_self()) {
+        gutil_idle_pool_drain(self);
+    } else {
+        GDEBUG("gutil_idle_pool_idle is invoked on a wrong thread");
+    }
     return G_SOURCE_REMOVE;
 }
 
@@ -189,7 +234,15 @@ gutil_idle_pool_add(
         }
         self->last = item;
         if (!self->idle_id) {
-            self->idle_id = g_idle_add(gutil_idle_pool_idle, self);
+            GSource* src = g_idle_source_new();
+            GMainContext* context = g_main_context_get_thread_default();
+
+            g_source_set_priority(src, G_PRIORITY_DEFAULT_IDLE);
+            g_source_set_callback(src, gutil_idle_pool_idle,
+                gutil_idle_pool_ref(self), gutil_idle_pool_unref_1);
+            self->idle_id = g_source_attach(src, context ? context :
+                g_main_context_default());
+            g_source_unref(src);
         }
     }
 }
