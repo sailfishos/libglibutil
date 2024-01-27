@@ -208,6 +208,7 @@ test_null(
     gutil_idle_pool_ref(NULL);
     gutil_idle_pool_unref(NULL);
     gutil_idle_pool_drain(NULL);
+    gutil_idle_pool_destroy(NULL);
     gutil_idle_pool_unref(pool);
 }
 
@@ -417,7 +418,7 @@ test_default_start(
     g_assert(pool == gutil_idle_pool_get_default());
 
     /* This schedules gutil_idle_pool_idle on the main thread */
-    gutil_idle_pool_add(pool, test, test_default_1);
+    gutil_idle_pool_add(NULL /* use default */, test, test_default_1);
 
     /*
      * This will invoke test_default_main on the main thread after

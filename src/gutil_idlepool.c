@@ -148,34 +148,36 @@ void
 gutil_idle_pool_destroy(
     GUtilIdlePool* self) /* Since 1.0.34 */
 {
-    gutil_idle_pool_drain(self);
-    gutil_idle_pool_unref(self);
+    if (G_LIKELY(self)) {
+        gutil_idle_pool_drain(self);
+        gutil_idle_pool_unref(self);
+    }
 }
 
 void
 gutil_idle_pool_drain(
     GUtilIdlePool* self)
 {
-    if (G_LIKELY(self)) {
+    /* If no pool is specified, use the default one for this thread */
+    if (!self) {
+        self = gutil_idle_pool_get_default();
+    }
+    while (self->first) {
         GUtilIdlePoolItem* items = self->first;
+        GUtilIdlePoolItem* item = items;
 
-        while (items) {
-            GUtilIdlePoolItem* item = items;
-
-            self->first = self->last = NULL;
-            while (item) {
-                item->destroy(item->pointer);
-                item = item->next;
-            }
-            g_slice_free_chain(GUtilIdlePoolItem, items, next);
-            items = self->first;
+        self->first = self->last = NULL;
+        while (item) {
+            item->destroy(item->pointer);
+            item = item->next;
         }
-        if (self->idle_id) {
-            const guint id = self->idle_id;
+        g_slice_free_chain(GUtilIdlePoolItem, items, next);
+    }
+    if (self->idle_id) {
+        const guint id = self->idle_id;
 
-            self->idle_id = 0;
-            g_source_remove(id);
-        }
+        self->idle_id = 0;
+        g_source_remove(id);
     }
 }
 
@@ -220,12 +222,17 @@ gutil_idle_pool_add(
     gpointer pointer,
     GDestroyNotify destroy)
 {
-    if (G_LIKELY(self) && G_LIKELY(destroy)) {
+    if (G_LIKELY(destroy)) {
         GUtilIdlePoolItem* item = g_slice_new(GUtilIdlePoolItem);
 
         item->next = NULL;
         item->pointer = pointer;
         item->destroy = destroy;
+
+        /* If no pool is specified, use the default one for this thread */
+        if (!self) {
+            self = gutil_idle_pool_get_default();
+        }
         if (self->last) {
             self->last->next = item;
         } else {
@@ -334,7 +341,7 @@ gutil_idle_pool_add_object_ref(
     GUtilIdlePool* self,
     gpointer object)
 {
-    if (G_LIKELY(self) && G_LIKELY(object)) {
+    if (G_LIKELY(object)) {
         gutil_idle_pool_add_object(self, g_object_ref(object));
     }
 }
@@ -344,7 +351,7 @@ gutil_idle_pool_add_variant_ref(
     GUtilIdlePool* self,
     GVariant* variant)
 {
-    if (G_LIKELY(self) && G_LIKELY(variant)) {
+    if (G_LIKELY(variant)) {
         gutil_idle_pool_add_variant(self, g_variant_ref(variant));
     }
 }
@@ -354,7 +361,7 @@ gutil_idle_pool_add_ptr_array_ref(
     GUtilIdlePool* self,
     GPtrArray* array)
 {
-    if (G_LIKELY(self) && G_LIKELY(array)) {
+    if (G_LIKELY(array)) {
         gutil_idle_pool_add_ptr_array(self, g_ptr_array_ref(array));
     }
 }
@@ -364,7 +371,7 @@ gutil_idle_pool_add_bytes_ref(
     GUtilIdlePool* self,
     GBytes* bytes) /* Since 1.0.34 */
 {
-    if (G_LIKELY(self) && G_LIKELY(bytes)) {
+    if (G_LIKELY(bytes)) {
         gutil_idle_pool_add_bytes(self, g_bytes_ref(bytes));
     }
 }
