@@ -1,8 +1,8 @@
 /*
+ * Copyright (C) 2016-2024 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2018 Jolla Ltd.
- * Copyright (C) 2016-2018 Slava Monich <slava.monich@jolla.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,8 +14,8 @@
  *      notice, this list of conditions and the following disclaimer in the
  *      documentation and/or other materials provided with the distribution.
  *   3. Neither the names of the copyright holders nor the names of its
- *      contributors may be used to endorse or promote products derived from
- *      this software without specific prior written permission.
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -36,7 +36,7 @@
 #include "gutil_strv.h"
 #include "gutil_log.h"
 
-#define TEST_TIMEOUT (10) /* seconds */
+#define TEST_TIMEOUT_SEC (10) /* seconds */
 
 static TestOpt test_opt;
 
@@ -55,6 +55,122 @@ test_done(
     gpointer loop)
 {
     g_main_loop_quit(loop);
+}
+
+static
+gboolean
+test_done_cb(
+    gpointer loop)
+{
+    g_main_loop_quit(loop);
+    return G_SOURCE_REMOVE;
+}
+
+/*==========================================================================*
+ * Test thread
+ *==========================================================================*/
+
+typedef struct test_thread TestThread;
+
+typedef
+void
+(*ThreadBeforeProc)(
+    TestThread* thread,
+    gpointer user_data);
+
+struct test_thread {
+    GThread* thread;
+    GMutex mutex;
+    GCond start_cond;
+    GMainLoop* loop;
+    GMainContext* context;
+    ThreadBeforeProc before_proc;
+    gpointer before_data;
+};
+
+static
+gpointer
+test_thread_proc(
+    gpointer user_data)
+{
+    TestThread* thread = user_data;
+    GMainLoop* loop = g_main_loop_ref(thread->loop);
+    GMainContext* context = g_main_context_ref(thread->context);
+
+    /* Invoke this callback before pushing GMainContext */
+    if (thread->before_proc) {
+        thread->before_proc(thread, thread->before_data);
+    }
+
+    /* Lock */
+    g_mutex_lock(&thread->mutex);
+    g_main_context_push_thread_default(context);
+    g_cond_broadcast(&thread->start_cond);
+    GDEBUG("Test thread started");
+    g_mutex_unlock(&thread->mutex);
+    /* Unlock */
+
+    g_main_loop_run(loop);
+    g_main_loop_unref(loop);
+    g_main_context_pop_thread_default(context);
+    g_main_context_unref(context);
+    GDEBUG("Test thread exiting");
+    return NULL;
+}
+
+static
+TestThread*
+test_thread_new(
+    ThreadBeforeProc before_proc,
+    gpointer before_data)
+{
+    TestThread* thread = g_new0(TestThread, 1);
+
+    g_cond_init(&thread->start_cond);
+    g_mutex_init(&thread->mutex);
+    thread->context = g_main_context_new();
+    thread->loop = g_main_loop_new(thread->context, FALSE);
+    thread->before_proc = before_proc;
+    thread->before_data = before_data;
+
+    /* Lock */
+    g_mutex_lock(&thread->mutex);
+    thread->thread = g_thread_new("test", test_thread_proc, thread);
+    g_assert(g_cond_wait_until(&thread->start_cond, &thread->mutex,
+        g_get_monotonic_time() + TEST_TIMEOUT_SEC * G_TIME_SPAN_SECOND));
+    g_mutex_unlock(&thread->mutex);
+    /* Unlock */
+
+    return thread;
+}
+
+static
+void
+test_thread_invoke_later(
+    TestThread* thread,
+    GSourceFunc fn,
+    gpointer user_data)
+{
+    GSource* src = g_idle_source_new();
+
+    g_source_set_priority(src, G_PRIORITY_DEFAULT);
+    g_source_set_callback(src, fn, user_data, NULL);
+    g_source_attach(src, thread->context);
+    g_source_unref(src);
+}
+
+static
+void
+test_thread_free(
+    TestThread* thread)
+{
+    g_main_loop_quit(thread->loop);
+    g_thread_join(thread->thread);
+    g_main_loop_unref(thread->loop);
+    g_main_context_unref(thread->context);
+    g_cond_clear(&thread->start_cond);
+    g_mutex_clear(&thread->mutex);
+    g_free(thread);
 }
 
 /*==========================================================================*
@@ -161,7 +277,7 @@ test_basic(
     test.pool = gutil_idle_pool_new();
 
     if (!(test_opt.flags & TEST_FLAG_DEBUG)) {
-        g_timeout_add_seconds(TEST_TIMEOUT, test_timeout, loop);
+        g_timeout_add_seconds(TEST_TIMEOUT_SEC, test_timeout, loop);
     }
 
     gutil_idle_pool_unref(gutil_idle_pool_new());
@@ -206,7 +322,7 @@ test_shared(
     g_assert(pool2 != pool);
 
     if (!(test_opt.flags & TEST_FLAG_DEBUG)) {
-        g_timeout_add_seconds(TEST_TIMEOUT, test_timeout, loop);
+        g_timeout_add_seconds(TEST_TIMEOUT_SEC, test_timeout, loop);
     }
 
     /* The pool invokes the callback and destroys itself */
@@ -215,6 +331,120 @@ test_shared(
     g_assert(!shared);
     gutil_idle_pool_unref(pool2);
     g_main_loop_unref(loop);
+}
+
+/*==========================================================================*
+ * Default
+ *==========================================================================*/
+
+typedef struct test_default_data {
+    GMainLoop* loop;
+    TestThread* thread;
+    int step;
+} TestDefault;
+
+static
+void
+test_default_1(
+    gpointer user_data)
+{
+    TestDefault* test = user_data;
+
+    g_assert(g_main_context_get_thread_default());
+    g_assert_cmpint(test->step, == ,1);
+    test->step++;
+}
+
+static
+void
+test_default_2(
+    gpointer user_data)
+{
+    TestDefault* test = user_data;
+
+    /* This function is invoked on the test thread */
+    g_assert(test->thread->thread == g_thread_self());
+    g_assert_cmpint(test->step, == ,2);
+    test->step++;
+    g_idle_add(test_done_cb, test->loop);
+}
+
+static
+gboolean
+test_default_proc(
+    gpointer user_data)
+{
+    TestDefault* test = user_data;
+    GUtilIdlePool* pool = gutil_idle_pool_get_default();
+
+    /* This function is invoked on the test thread */
+    g_assert(test->thread->thread == g_thread_self());
+    g_assert(pool == gutil_idle_pool_get_default());
+    gutil_idle_pool_add(pool, test, test_default_2);
+    return G_SOURCE_REMOVE;
+}
+
+static
+gboolean
+test_default_main(
+    gpointer user_data)
+{
+    TestDefault* test = user_data;
+
+    /*
+     * This function is invoked on the main thread.
+     * test_default_proc will add an item to the thread specific pool
+     * on the test thread, which will schedule gutil_idle_pool_idle
+     * in the right context and eventually invoke test_default_1 and
+     * test_default_2 on the test thread in the right order.
+     */
+    test_thread_invoke_later(test->thread, test_default_proc, test);
+    return G_SOURCE_REMOVE;
+}
+
+static
+void
+test_default_start(
+    TestThread* thread,
+    gpointer user_data)
+{
+    TestDefault* test = user_data;
+    GUtilIdlePool* pool = gutil_idle_pool_get_default();
+
+    g_assert_cmpint(test->step, == ,0);
+    test->step++;
+    g_assert(!g_main_context_get_thread_default());
+    g_assert(pool == gutil_idle_pool_get_default());
+
+    /* This schedules gutil_idle_pool_idle on the main thread */
+    gutil_idle_pool_add(pool, test, test_default_1);
+
+    /*
+     * This will invoke test_default_main on the main thread after
+     * gutil_idle_pool_idle
+     */
+    g_idle_add(test_default_main, test);
+}
+
+static
+void
+test_default(
+    void)
+{
+    TestDefault test;
+
+    memset(&test, 0, sizeof(test));
+    test.loop = g_main_loop_new(NULL, TRUE);
+    test.thread = test_thread_new(test_default_start, &test);
+
+    if (!(test_opt.flags & TEST_FLAG_DEBUG)) {
+        g_timeout_add_seconds(TEST_TIMEOUT_SEC, test_timeout, test.loop);
+    }
+
+    g_main_loop_run(test.loop);
+    test_thread_free(test.thread);
+    g_assert_cmpint(test.step, == ,3);
+    g_main_loop_unref(test.loop);
 }
 
 /*==========================================================================*
@@ -232,6 +462,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("null"), test_null);
     g_test_add_func(TEST_("basic"), test_basic);
     g_test_add_func(TEST_("shared"), test_shared);
+    g_test_add_func(TEST_("default"), test_default);
     test_init(&test_opt, argc, argv);
     return g_test_run();
 }
