@@ -1,3 +1,11 @@
+libglibutil (1.0.76) unstable; urgency=low
+
+  * Added gutil_idle_pool_get_default()
+  * Return the value pushed to the idle pool
+  * Interpret NULL as the default pool when appropriate
+
+ -- Slava Monich <slava@monich.com>  Sun, 28 Jan 2024 02:36:16 +0200
+
 libglibutil (1.0.75) unstable; urgency=low
 
   * Cross-compilation tweaks
