@@ -87,53 +87,53 @@ void
 gutil_idle_pool_drain(
     GUtilIdlePool* pool);
 
-void
+gpointer /* Since 1.0.76 */
 gutil_idle_pool_add(
     GUtilIdlePool* pool,
     gpointer pointer,
     GDestroyNotify destroy);
 
-void
+char** /* Since 1.0.76 */
 gutil_idle_pool_add_strv(
     GUtilIdlePool* pool,
     char** strv); /* Since 1.0.32 */
 
-void
+gpointer /* Since 1.0.76 */
 gutil_idle_pool_add_object(
     GUtilIdlePool* pool,
     gpointer object);
 
-void
+GVariant* /* Since 1.0.76 */
 gutil_idle_pool_add_variant(
     GUtilIdlePool* pool,
     GVariant* variant);
 
-void
+GPtrArray* /* Since 1.0.76 */
 gutil_idle_pool_add_ptr_array(
     GUtilIdlePool* pool,
     GPtrArray* array);
 
-void
+GBytes* /* Since 1.0.76 */
 gutil_idle_pool_add_bytes(
     GUtilIdlePool* pool,
     GBytes* bytes); /* Since 1.0.34 */
 
-void
+gpointer /* Since 1.0.76 */
 gutil_idle_pool_add_object_ref(
     GUtilIdlePool* pool,
     gpointer object);
 
-void
+GVariant* /* Since 1.0.76 */
 gutil_idle_pool_add_variant_ref(
     GUtilIdlePool* pool,
     GVariant* variant);
 
-void
+GPtrArray* /* Since 1.0.76 */
 gutil_idle_pool_add_ptr_array_ref(
     GUtilIdlePool* pool,
     GPtrArray* array);
 
-void
+GBytes* /* Since 1.0.76 */
 gutil_idle_pool_add_bytes_ref(
     GUtilIdlePool* pool,
     GBytes* bytes); /* Since 1.0.34 */
