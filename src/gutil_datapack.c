@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2023-2024 Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of the BSD license as follows:
  *
@@ -410,7 +410,8 @@ gutil_tlv_decode(
     guint64 tag, len;
 
     if (gutil_unsigned_mbn_decode(&tmp, &tag) && tag <= INT_MAX &&
-        gutil_unsigned_mbn_decode(&tmp, &len) && (tmp.end - tmp.ptr) >= len) {
+        gutil_unsigned_mbn_decode(&tmp, &len) &&
+        (tmp.end - tmp.ptr) >= (gssize) len) {
         if (val) {
             val->bytes = tmp.ptr;
             val->size = (gsize) len;
