@@ -135,11 +135,13 @@ gboolean
 gutil_inotify_read(
     GUtilInotify* self)
 {
+    G_GNUC_UNUSED GIOStatus status;
     gsize nbytes = 0;
     GError* error = NULL;
 
-    g_io_channel_read_chars(self->io_channel, self->buf, sizeof(self->buf),
+    status = g_io_channel_read_chars(self->io_channel, self->buf, sizeof(self->buf),
         &nbytes, &error);
+    GASSERT(status == G_IO_STATUS_NORMAL || (status == G_IO_STATUS_ERROR && error));
     if (error) {
         GERR("Inotify read failed: %s", error->message);
         g_error_free(error);
