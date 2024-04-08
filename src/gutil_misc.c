@@ -228,7 +228,8 @@ gutil_strstrip(
 
     if (g_ascii_isspace(str[0]) || g_ascii_isspace(str[len - 1])) {
         /* Need to modify the original string */
-        return (*tmp = g_strstrip(gutil_memdup(str, len + 1)));
+        *tmp = gutil_memdup(str, len + 1);
+        return g_strstrip(*tmp);
     } else {
         /* The original string is fine as is */
         return str;
