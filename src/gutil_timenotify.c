@@ -147,13 +147,15 @@ gutil_time_notify_callback(
         self->io_watch_id = 0;
         return G_SOURCE_REMOVE;
     } else {
+        G_GNUC_UNUSED GIOStatus status;
         gsize bytes_read = 0;
         GError* error = NULL;
         guint64 exp;
 
         gutil_time_notify_ref(self);
-        g_io_channel_read_chars(self->io_channel, (void*)&exp, sizeof(exp),
+        status = g_io_channel_read_chars(self->io_channel, (void*)&exp, sizeof(exp),
             &bytes_read, &error);
+        GASSERT(status == G_IO_STATUS_ERROR && error);
         if (error) {
             /* ECANCELED is expected */
             GDEBUG("%s", error->message);
