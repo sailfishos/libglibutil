@@ -1,3 +1,9 @@
+libglibutil (1.0.77) unstable; urgency=low
+
+  * Eliminate defects found by Coverity
+
+ -- Slava Monich <slava@monich.com>  Wed, 10 Apr 2024 04:13:16 +0300
+
 libglibutil (1.0.76) unstable; urgency=low
 
   * Added gutil_idle_pool_get_default()
