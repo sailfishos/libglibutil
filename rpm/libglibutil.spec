@@ -35,7 +35,7 @@ This package contains the development library for %{name}.
 %setup -q
 
 %build
-make %{_smp_mflags} LIBDIR=%{_libdir} KEEP_SYMBOLS=1 release pkgconfig
+%make_build LIBDIR=%{_libdir} KEEP_SYMBOLS=1 release pkgconfig
 
 %install
 make LIBDIR=%{_libdir} DESTDIR=%{buildroot} install-dev
