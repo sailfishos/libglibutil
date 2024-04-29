@@ -16,6 +16,9 @@ BuildRequires: pkgconfig(glib-2.0) >= %{glib_version}
 BuildRequires: pkgconfig(rpm)
 %define license_support %(pkg-config --exists 'rpm >= 4.11'; echo $?)
 
+# make_build macro appeared in rpm 4.12
+%{!?make_build: %define make_build make %{?_smp_mflags}}
+
 Requires: glib2 >= %{glib_version}
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
