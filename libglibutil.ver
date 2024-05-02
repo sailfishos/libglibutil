@@ -190,6 +190,8 @@ global:
     gutil_signed_mbn_encode;
     gutil_signed_mbn_encode2;
     gutil_signed_mbn_size;
+    gutil_source_clear;
+    gutil_source_remove;
     gutil_strlen0;
     gutil_strv_add;
     gutil_strv_addv;
