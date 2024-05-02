@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2023-2024 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2022 Jolla Ltd.
  *
  * You may use this file under the terms of BSD license as follows:
@@ -121,6 +121,36 @@ test_unref(
 {
     gutil_object_unref(NULL);
     gutil_object_unref(g_object_new(TEST_OBJECT_TYPE, NULL));
+}
+
+/*==========================================================================*
+ * source
+ *==========================================================================*/
+
+static
+gboolean
+test_source_cb(
+    gpointer data)
+{
+    g_assert_not_reached();
+    return G_SOURCE_REMOVE;
+}
+
+static
+void
+test_source(
+    void)
+{
+    guint id = 0;
+
+    g_assert(!gutil_source_clear(NULL));
+    g_assert(!gutil_source_clear(&id));
+    id = g_idle_add(test_source_cb, NULL);
+    g_assert(gutil_source_clear(&id));
+    g_assert_cmpuint(id, == ,0);
+
+    g_assert(!gutil_source_remove(0));
+    g_assert(gutil_source_remove(g_idle_add(test_source_cb, NULL)));
 }
 
 /*==========================================================================*
@@ -1012,6 +1042,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("version"), test_version);
     g_test_add_func(TEST_("disconnect"), test_disconnect);
     g_test_add_func(TEST_("ref"), test_ref);
+    g_test_add_func(TEST_("source"), test_source);
     g_test_add_func(TEST_("unref"), test_unref);
     g_test_add_func(TEST_("hex2bin"), test_hex2bin);
     g_test_add_func(TEST_("bin2hex"), test_bin2hex);

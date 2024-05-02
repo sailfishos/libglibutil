@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2017-2024 Slava Monich <slava@monich.com>
  * Copyright (C) 2017-2020 Jolla Ltd.
  *
  * You may use this file under the terms of the BSD license as follows:
@@ -32,6 +32,7 @@
 
 #include "gutil_idlequeue.h"
 #include "gutil_macros.h"
+#include "gutil_misc.h"
 #include "gutil_log.h"
 
 #if __GNUC__ >= 4
@@ -268,8 +269,7 @@ gutil_idle_queue_cancel_tag(
             gutil_idle_queue_cancel_first(q);
             GASSERT(q->source_id);
             if (!q->first) {
-                g_source_remove(q->source_id);
-                q->source_id = 0;
+                gutil_source_clear(&q->source_id);
             }
             return TRUE;
         } else {
@@ -305,9 +305,8 @@ gutil_idle_queue_cancel_all(
         while (q->first && q->first->completed) {
             gutil_idle_queue_cancel_first(q);
         }
-        if (!q->first && q->source_id) {
-            g_source_remove(q->source_id);
-            q->source_id = 0;
+        if (!q->first) {
+            gutil_source_clear(&q->source_id);
         }
     }
 }

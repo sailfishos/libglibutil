@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2023-2024 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2022 Jolla Ltd.
  *
  * You may use this file under the terms of BSD license as follows:
@@ -50,6 +50,14 @@ gutil_object_ref(
 void
 gutil_object_unref(
     void* object); /* Since 1.0.71 */
+
+gboolean
+gutil_source_remove(
+    guint id); /* Since 1.0.78 */
+
+gboolean
+gutil_source_clear(
+    guint* id); /* Since 1.0.78 */
 
 void*
 gutil_hex2bin(

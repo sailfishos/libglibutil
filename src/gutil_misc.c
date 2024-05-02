@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2016-2024 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2022 Jolla Ltd.
  *
  * You may use this file under the terms of the BSD license as follows:
@@ -79,6 +79,32 @@ gutil_object_unref(
     if (object) {
         g_object_unref(object);
     }
+}
+
+gboolean
+gutil_source_remove(
+    guint id) /* Since 1.0.78 */
+{
+    /* Zero-tolerant version of g_source_remove */
+    if (id) {
+        g_source_remove(id);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+gboolean
+gutil_source_clear(
+    guint* id) /* Since 1.0.78 */
+{
+    /* Yet another zero-tolerant version of g_source_remove */
+    if (id && *id) {
+        g_source_remove(*id);
+        *id = 0;
+        return TRUE;
+    }
+    return FALSE;
+
 }
 
 void*

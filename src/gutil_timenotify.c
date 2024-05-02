@@ -31,6 +31,7 @@
  */
 
 #include "gutil_timenotify.h"
+#include "gutil_misc.h"
 #include "gutil_log.h"
 
 #include <glib-object.h>
@@ -207,9 +208,7 @@ gutil_time_notify_finalize(
     GUtilTimeNotify* self = THIS(object);
 
     if (self->io_channel) {
-        if (self->io_watch_id) {
-            g_source_remove(self->io_watch_id);
-        }
+        gutil_source_remove(self->io_watch_id);
         g_io_channel_shutdown(self->io_channel, FALSE, NULL);
         g_io_channel_unref(self->io_channel);
     }
