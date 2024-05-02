@@ -1,3 +1,10 @@
+libglibutil (1.0.78) unstable; urgency=low
+
+  * Added gutil_source_remove()
+  * Added gutil_source_clear()
+
+ -- Slava Monich <slava@monich.com>  Thu, 02 May 2024 04:43:18 +0300
+
 libglibutil (1.0.77) unstable; urgency=low
 
   * Eliminate defects found by Coverity
