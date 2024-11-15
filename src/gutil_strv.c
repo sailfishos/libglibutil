@@ -252,6 +252,7 @@ gutil_strv_remove(
                 len--;
                 l = len - pos;
                 while ((i = gutil_strv_find_last_impl(sv + pos, s, l)) >= 0) {
+                    g_assert(pos + i >= 0);
                     sv = gutil_strv_remove_impl(sv, pos + i, len--, TRUE);
                     l = i;
                 }
