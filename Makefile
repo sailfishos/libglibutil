@@ -235,7 +235,10 @@ LIBDIR ?= usr/lib
 ABS_LIBDIR := $(shell echo /$(LIBDIR) | sed -r 's|/+|/|g')
 
 $(PKGCONFIG): $(LIB_NAME).pc.in Makefile
-	sed -e 's|@version@|$(PCVERSION)|g' -e 's|@libdir@|$(ABS_LIBDIR)|g' $< > $@
+	sed -e 's|@version@|$(PCVERSION)|g' \
+		-e 's|@libdir@|$(DESTDIR)$(ABS_LIBDIR)|g' \
+		-e 's|@incdir@|$(DESTDIR)/usr/include|g' \
+		$< > $@
 
 debian/%.install: debian/%.install.in
 	sed 's|@LIBDIR@|$(LIBDIR)|g' $< > $@
