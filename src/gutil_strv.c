@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2014-2025 Slava Monich <slava@monich.com>
  * Copyright (C) 2014-2022 Jolla Ltd.
  *
  * You may use this file under the terms of the BSD license as follows:
@@ -240,6 +240,7 @@ gutil_strv_remove(
     gboolean remove_all)
 {
     if (G_LIKELY(sv) && G_LIKELY(s)) {
+        /* coverity[tainted_data_return:FALSE] */
         const int pos = gutil_strv_find(sv, s);
 
         if (pos >= 0) {
