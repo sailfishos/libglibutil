@@ -1,6 +1,12 @@
+libglibutil (1.0.80) unstable; urgency=low
+
+  * Silenced Coverity Scan false positive
+
+ -- Slava Monich <slava@monich.com>  Tue, 06 May 2025 18:06:05 +0300
+
 libglibutil (1.0.79) unstable; urgency=low
 
-  * Exported gutil_source_remove() and Added gutil_source_clear()
+  * Exported gutil_source_remove() and gutil_source_clear()
 
  -- Slava Monich <slava@monich.com>  Thu, 02 May 2024 17:40:30 +0300
 
