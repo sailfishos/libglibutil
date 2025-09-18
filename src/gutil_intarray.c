@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2017-2025 Slava Monich <slava@monich.com>
  * Copyright (C) 2017 Jolla Ltd.
  *
  * You may use this file under the terms of the BSD license as follows:
@@ -51,7 +51,7 @@ gutil_int_array_sized_new(
     guint reserved)
 {
     return (GUtilIntArray*)g_array_sized_new(FALSE, FALSE, ELEMENT_SIZE,
-        reserved * ELEMENT_SIZE);
+        reserved);
 }
 
 GUtilIntArray*
