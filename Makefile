@@ -235,7 +235,10 @@ LIBDIR ?= usr/lib
 ABS_LIBDIR := $(shell echo /$(LIBDIR) | sed -r 's|/+|/|g')
 
 $(PKGCONFIG): $(LIB_NAME).pc.in Makefile
-	sed -e 's|@version@|$(PCVERSION)|g' -e 's|@libdir@|$(ABS_LIBDIR)|g' $< > $@
+	sed -e 's|@version@|$(PCVERSION)|g' \
+		-e 's|@libdir@|$(LOCDST)$(ABS_LIBDIR)|g' \
+		-e 's|@incdir@|$(LOCDST)/usr/include|g' \
+		$< > $@
 
 debian/%.install: debian/%.install.in
 	sed 's|@LIBDIR@|$(LIBDIR)|g' $< > $@
@@ -250,9 +253,9 @@ INSTALL = install
 INSTALL_DIRS = $(INSTALL) -d
 INSTALL_FILES = $(INSTALL) -m $(INSTALL_PERM)
 
-INSTALL_LIB_DIR = $(DESTDIR)$(ABS_LIBDIR)
-INSTALL_INCLUDE_DIR = $(DESTDIR)/usr/include/gutil
-INSTALL_PKGCONFIG_DIR = $(DESTDIR)$(ABS_LIBDIR)/pkgconfig
+INSTALL_LIB_DIR = $(DESTDIR)$(LOCDST)$(ABS_LIBDIR)
+INSTALL_INCLUDE_DIR = $(DESTDIR)$(LOCDST)/usr/include/gutil
+INSTALL_PKGCONFIG_DIR = $(DESTDIR)$(LOCDST)$(ABS_LIBDIR)/pkgconfig
 
 #
 # rpm based systems expect libraries to be 755
