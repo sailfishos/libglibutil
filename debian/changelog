@@ -1,3 +1,10 @@
+libglibutil (1.0.81) unstable; urgency=low
+
+  * Don't preallocate too much in gutil_int_array_sized_new(
+  * Conform to openSUSE shared library packaging policy
+
+ -- Slava Monich <slava@monich.com>  Mon, 23 Mar 2026 02:08:59 +0200
+
 libglibutil (1.0.80) unstable; urgency=low
 
   * Silenced Coverity Scan false positive
