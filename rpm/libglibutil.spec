@@ -27,6 +27,7 @@ BuildRequires: pkgconfig(rpm)
 Provides glib utility functions and macros
 
 %package -n %{libname}
+Provides: %{name} = %{version}
 Summary: Runtime library for %{name}
 %else
 %define libname %{name}
