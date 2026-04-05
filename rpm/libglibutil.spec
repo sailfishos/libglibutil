@@ -28,6 +28,7 @@ Provides glib utility functions and macros
 
 %package -n %{libname}
 Summary: Runtime library for %{name}
+Provides: %{name} = %{version}
 %else
 %define libname %{name}
 %endif
