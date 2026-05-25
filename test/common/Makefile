@@ -1,6 +1,8 @@
 # -*- Mode: makefile-gmake -*-
 
-.PHONY: clean all debug release coverage debug_lib release_lib coverage_lib
+.PHONY: clean cleaner all debug release coverage valgrind
+.PHONY: debug_lib release_lib coverage_lib
+.PHONY: test test-banner test-debug test-release
 
 #
 # Real test makefile defines EXE (and possibly SRC) and includes this one.
@@ -46,7 +48,7 @@ CC ?= $(CROSS_COMPILE)gcc
 LD = $(CC)
 WARNINGS = -Wall
 INCLUDES = -I$(LIB_DIR)/include -I$(LIB_DIR)/src -I$(COMMON_DIR)
-BASE_FLAGS = -fPIC
+BASE_FLAGS = -fPIC -g
 BASE_LDFLAGS = $(BASE_FLAGS) $(LDFLAGS)
 BASE_CFLAGS = $(BASE_FLAGS) $(CFLAGS)
 FULL_CFLAGS = $(BASE_CFLAGS) $(DEFINES) $(WARNINGS) $(INCLUDES) -MMD -MP \
@@ -56,23 +58,14 @@ FULL_CFLAGS = $(BASE_CFLAGS) $(DEFINES) $(WARNINGS) $(INCLUDES) -MMD -MP \
 FULL_LDFLAGS = $(BASE_LDFLAGS)
 LIBS = $(shell $(PKG_CONFIG) --libs $(PKGS))
 QUIET_MAKE = $(MAKE) --no-print-directory
-DEBUG_FLAGS = -g
-RELEASE_FLAGS =
-COVERAGE_FLAGS = -g
 
-KEEP_SYMBOLS ?= 0
-ifneq ($(KEEP_SYMBOLS),0)
-RELEASE_FLAGS += -g
-SUBMAKE_OPTS += KEEP_SYMBOLS=1
-endif
+DEBUG_LDFLAGS = $(FULL_LDFLAGS)
+RELEASE_LDFLAGS = $(FULL_LDFLAGS)
+COVERAGE_LDFLAGS = $(FULL_LDFLAGS) --coverage
 
-DEBUG_LDFLAGS = $(FULL_LDFLAGS) $(DEBUG_FLAGS)
-RELEASE_LDFLAGS = $(FULL_LDFLAGS) $(RELEASE_FLAGS)
-COVERAGE_LDFLAGS = $(FULL_LDFLAGS) $(COVERAGE_FLAGS) --coverage
-
-DEBUG_CFLAGS = $(FULL_CFLAGS) $(DEBUG_FLAGS) -DDEBUG
-RELEASE_CFLAGS = $(FULL_CFLAGS) $(RELEASE_FLAGS) -O2
-COVERAGE_CFLAGS = $(FULL_CFLAGS) $(COVERAGE_FLAGS) --coverage
+DEBUG_CFLAGS = $(FULL_CFLAGS) -DDEBUG
+RELEASE_CFLAGS = $(FULL_CFLAGS) -O2
+COVERAGE_CFLAGS = $(FULL_CFLAGS) --coverage
 
 #
 # Files
@@ -136,14 +129,19 @@ clean:
 cleaner: clean
 	@$(MAKE) -C $(LIB_DIR) clean
 
-test_banner:
+test-banner:
 	@echo "===========" $(EXE) "=========== "
 
-test: test_banner debug 
-	@$(DEBUG_EXE)
+test-debug: test-banner debug
+	@$(DEBUG_EXE) $(TEST_OPTS)
 
-valgrind: test_banner debug
-	@G_DEBUG=gc-friendly G_SLICE=always-malloc valgrind --tool=memcheck --leak-check=full --show-possibly-lost=no $(DEBUG_EXE)
+test-release: test-banner release
+	@$(RELEASE_EXE) $(TEST_OPTS)
+
+test: test-release
+
+valgrind: test-banner release
+	@G_DEBUG=gc-friendly G_SLICE=always-malloc valgrind --tool=memcheck --leak-check=full --show-possibly-lost=no $(RELEASE_EXE) $(TEST_OPTS)
 
 $(DEBUG_BUILD_DIR):
 	mkdir -p $@
@@ -177,9 +175,6 @@ $(DEBUG_EXE): $(DEBUG_LIB) $(DEBUG_BUILD_DIR) $(DEBUG_OBJS)
 
 $(RELEASE_EXE): $(RELEASE_LIB) $(RELEASE_BUILD_DIR) $(RELEASE_OBJS)
 	$(LD) $(RELEASE_LDFLAGS) $(RELEASE_OBJS) $< $(LIBS) -o $@
-ifeq ($(KEEP_SYMBOLS),0)
-	strip $@
-endif
 
 $(COVERAGE_EXE): $(COVERAGE_LIB) $(COVERAGE_BUILD_DIR) $(COVERAGE_OBJS)
 	$(LD) $(COVERAGE_LDFLAGS) $(COVERAGE_OBJS) $< $(LIBS) -o $@
