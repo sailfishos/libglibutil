@@ -1,3 +1,9 @@
+libglibutil (1.0.82) unstable; urgency=low
+
+  * Use release build for unit testing
+
+ -- Slava Monich <slava@monich.com>  Mon, 25 May 2026 19:51:59 +0300
+
 libglibutil (1.0.81) unstable; urgency=low
 
   * Don't preallocate too much in gutil_int_array_sized_new(
