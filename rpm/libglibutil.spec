@@ -1,6 +1,6 @@
 Name: libglibutil
 
-Version: 1.0.82
+Version: 1.0.83
 Release: 0
 Summary: Library of glib utilities
 License: BSD
@@ -65,14 +65,12 @@ make -C test test
 %postun -n %{libname} -p /sbin/ldconfig
 
 %files -n %{libname}
-%defattr(-,root,root,-)
 %{_libdir}/%{name}.so.*
 %if %{license_support} == 0
 %license LICENSE
 %endif
 
 %files devel
-%defattr(-,root,root,-)
 %dir %{_includedir}/gutil
 %{_libdir}/pkgconfig/*.pc
 %{_libdir}/%{name}.so
