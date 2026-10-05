@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2026 Jolla Mobile Ltd
  * Copyright (C) 2014-2021 Jolla Ltd.
  * Copyright (C) 2023 Slava Monich <slava@monich.com>
  *
@@ -40,6 +41,7 @@
 G_BEGIN_DECLS
 
 typedef char* GStrV;
+typedef struct gutil_cleanup GUtilCleanup; /* Since 1.0.83 */
 typedef struct gutil_idle_pool GUtilIdlePool;
 typedef struct gutil_idle_queue GUtilIdleQueue;
 typedef struct gutil_ints GUtilInts;
