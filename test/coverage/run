@@ -4,6 +4,7 @@
 #
 
 TESTS="\
+test_cleanup \
 test_datapack \
 test_history \
 test_idlepool \

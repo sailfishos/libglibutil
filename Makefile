@@ -58,6 +58,7 @@ STATIC_LIB = $(LIB_NAME).a
 #
 
 SRC = \
+  gutil_cleanup.c \
   gutil_datapack.c \
   gutil_history.c \
   gutil_idlepool.c \
