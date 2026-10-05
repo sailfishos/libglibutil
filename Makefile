@@ -29,8 +29,9 @@ COVERAGE_BUILD_DIR = $(BUILD_DIR)/coverage
 # Library version
 #
 
-VERSION_FILE = $(INCLUDE_DIR)/gutil_version.h
-get_version = $(shell grep -E '^ *\#define +GUTIL_VERSION_$1 +[0-9]+$$' $(VERSION_FILE) | sed 's/  */ /g' | cut -d ' ' -f 3)
+HASH := \#
+VERSION_FILE := $(INCLUDE_DIR)/gutil_version.h
+get_version = $(shell grep -E '^ *$(HASH)define +GUTIL_VERSION_$1 +[0-9]+$$' $(VERSION_FILE) | sed 's/  */ /g' | cut -d ' ' -f 3)
 
 VERSION_MAJOR := $(call get_version,MAJOR)
 VERSION_MINOR := $(call get_version,MINOR)
