@@ -1,18 +1,36 @@
 Source: libglibutil
-Section: libs
-Priority: optional
+Standards-Version: 4.7.4
 Maintainer: Slava Monich <slava.monich@jolla.com>
-Build-Depends: debhelper (>= 8.1.3), libglib2.0-dev (>= 2.32)
-Standards-Version: 3.8.4
-
-Package: libglibutil
 Section: libs
+Build-Depends:
+ debhelper-compat (= 13),
+ libglib2.0-dev,
+Vcs-Browser: https://github.com/sailfishos/libglibutil
+Vcs-Git: https://github.com/sailfishos/libglibutil
+Homepage: https://github.com/sailfishos/libglibutil
+
+Package: libglibutil1
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Breaks:
+ libglibutil,
+Replaces:
+ libglibutil,
 Description: Library of glib utilities
+ The library is a bunch of reusable utilities on top of glib.
+ .
+ This package contains the library.
 
 Package: libglibutil-dev
-Section: libdevel
 Architecture: any
-Depends: libglibutil (= ${binary:Version}), ${misc:Depends}
-Description: Development files for libglibutil
+Section: libdevel
+Depends:
+ libglibutil1 (= ${binary:Version}),
+ libglib2.0-dev,
+ ${misc:Depends},
+Description: Library of glib utilities (dev fiiles)
+ The library is a bunch of reusable utilities on top of glib.
+ .
+ This package contains the development files.

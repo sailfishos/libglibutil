@@ -1,3 +1,0 @@
-debian/tmp/@LIBDIR@/libglibutil.so @LIBDIR@
-debian/tmp/@LIBDIR@/pkgconfig/libglibutil.pc @LIBDIR@/pkgconfig
-debian/tmp/usr/include/* usr/include/
