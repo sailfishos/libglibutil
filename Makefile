@@ -1,7 +1,7 @@
 # -*- Mode: makefile-gmake -*-
 
 .PHONY: clean all debug release coverage pkgconfig install install-dev test
-.PHONY: print_debug_lib print_release_lib print_coverage_lib
+
 #
 # Required packages
 #
@@ -148,15 +148,6 @@ release: $(RELEASE_STATIC_LIB) $(RELEASE_DEV_LINK)
 coverage: $(COVERAGE_STATIC_LIB)
 
 pkgconfig: $(PKGCONFIG)
-
-print_debug_lib:
-	@echo $(DEBUG_STATIC_LIB)
-
-print_release_lib:
-	@echo $(RELEASE_STATIC_LIB)
-
-print_coverage_lib:
-	@echo $(COVERAGE_STATIC_LIB)
 
 clean:
 	$(MAKE) -C test clean

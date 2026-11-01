@@ -57,7 +57,6 @@ FULL_CFLAGS = $(BASE_CFLAGS) $(DEFINES) $(WARNINGS) $(INCLUDES) -MMD -MP \
   $(shell $(PKG_CONFIG) --cflags $(PKGS))
 FULL_LDFLAGS = $(BASE_LDFLAGS)
 LIBS = $(shell $(PKG_CONFIG) --libs $(PKGS))
-QUIET_MAKE = $(MAKE) --no-print-directory
 
 DEBUG_LDFLAGS = $(FULL_LDFLAGS)
 RELEASE_LDFLAGS = $(FULL_LDFLAGS)
@@ -81,13 +80,13 @@ COVERAGE_OBJS = \
   $(COMMON_SRC:%.c=$(COVERAGE_BUILD_DIR)/common_%.o) \
   $(SRC:%.c=$(COVERAGE_BUILD_DIR)/%.o)
 
-DEBUG_LIB_FILE := $(shell $(QUIET_MAKE) -C $(LIB_DIR) print_debug_lib)
-RELEASE_LIB_FILE := $(shell $(QUIET_MAKE) -C $(LIB_DIR) print_release_lib)
-COVERAGE_LIB_FILE := $(shell $(QUIET_MAKE) -C $(LIB_DIR) print_coverage_lib)
+DEBUG_LIB := $(LIB_DIR)/build/debug/libglibutil.a
+RELEASE_LIB := $(LIB_DIR)/build/release/libglibutil.a
+COVERAGE_LIB := $(LIB_DIR)/build/coverage/libglibutil.a
 
-DEBUG_LIB := $(LIB_DIR)/$(DEBUG_LIB_FILE)
-RELEASE_LIB := $(LIB_DIR)/$(RELEASE_LIB_FILE)
-COVERAGE_LIB := $(LIB_DIR)/$(COVERAGE_LIB_FILE)
+DEBUG_EXE = $(DEBUG_BUILD_DIR)/$(EXE)
+RELEASE_EXE = $(RELEASE_BUILD_DIR)/$(EXE)
+COVERAGE_EXE = $(COVERAGE_BUILD_DIR)/$(EXE)
 
 #
 # Dependencies
@@ -104,6 +103,10 @@ $(DEBUG_LIB): | debug_lib
 $(RELEASE_LIB): | release_lib
 $(COVERAGE_LIB): | coverage_lib
 
+$(DEBUG_EXE): | debug_lib
+$(RELEASE_EXE): | release_lib
+$(COVERAGE_EXE): | coverage_lib
+
 $(DEBUG_OBJS): | $(DEBUG_BUILD_DIR)
 $(RELEASE_OBJS): | $(RELEASE_BUILD_DIR)
 $(COVERAGE_OBJS): | $(COVERAGE_BUILD_DIR)
@@ -112,15 +115,11 @@ $(COVERAGE_OBJS): | $(COVERAGE_BUILD_DIR)
 # Rules
 #
 
-DEBUG_EXE = $(DEBUG_BUILD_DIR)/$(EXE)
-RELEASE_EXE = $(RELEASE_BUILD_DIR)/$(EXE)
-COVERAGE_EXE = $(COVERAGE_BUILD_DIR)/$(EXE)
+debug: $(DEBUG_EXE)
 
-debug: debug_lib $(DEBUG_EXE)
+release: $(RELEASE_EXE)
 
-release: release_lib $(RELEASE_EXE)
-
-coverage: coverage_lib $(COVERAGE_EXE)
+coverage: $(COVERAGE_EXE)
 
 clean:
 	rm -f *~
