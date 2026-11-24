@@ -1,6 +1,6 @@
 name=glibutil
 libdir=@libdir@
-includedir=/usr/include
+includedir=@incdir@
 
 Name: libglibutil
 Description: Library of glib utilities
